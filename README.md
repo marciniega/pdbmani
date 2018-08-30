@@ -1,3 +1,4 @@
 # pdbmani
-library to play around with pdb data files.
-I just testing.
+readme-edits
+library to play around with pdb data files
+dddddddd
