@@ -16,7 +16,7 @@ class Atom(object):
 
       def print_info(self):
           coord_print = '%7.2f %7.2f %7.2f'%(self.coord[0],self.coord[1],self.coord[2])
-          print '%4s %s %3s %s'%(self.resi,self.resn,self.name,coord_print)
+          print ('%4s %s %3s %s'%(self.resi,self.resn,self.name,coord_print))
 
       def UpDateValue(self,property_to_change,new_value):
           """ Re-name a given attribute."""
@@ -51,8 +51,8 @@ class Residue(object):
       def PrintResSummary(self):
           """ Print residue information
                 Resi   Resn   Chain   No.Atoms"""
-          print 'Resi %4s Resn  %4s Chain %2s No.AToms  %2s'\
-                %(self.resi,self.resn,self.chain,self.atomwithin)
+          print ('Resi %4s Resn  %4s Chain %2s No.AToms  %2s'\
+                %(self.resi,self.resn,self.chain,self.atomwithin))
 
       def AddAtom(self, name, coords, rfact, atom_number, occup, element,rfact_std=None):
           """ Add an atom information to current residue."""
