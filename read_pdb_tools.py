@@ -1,7 +1,11 @@
 import numpy as np
-from operations import *
-from math_vect_tools import *
 import numpy.linalg as np_linalg
+# metodo necesario para importar la libreria desde el repositorio #
+import sys
+sys.path.append('math_tricks/')
+from math_vect_tools import *
+from operations import *
+#                                     #                            #
 
 class Atom(object):
       #TODO check if coord has 3 dimensions.
@@ -517,3 +521,4 @@ class NoAtomInResidueError(Exception):
           self.msg = msg
       def __str__(self):
           return self.msg
+

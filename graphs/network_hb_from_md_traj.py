@@ -134,7 +134,7 @@ class Network(object):
                      #print c.name,cc.name,"  ",energy,"  ",ang
                      self.add_arist(Arist(cc_name,energy))
 
-      def write_arist_short(self,of,short=True):
+      def write_arist_short(self,of,iteration,short=True):
           for i in range(self.count_arists()):
                 f = self.arists[i]
                 fout = f.output_format(self.offset)
@@ -142,7 +142,7 @@ class Network(object):
                    line = "%-4s"%fout
                 else:
                    line = "%-13s"%fout+"%.3f"%f.dist
-                of.write('%s\n'%line)
+                of.write('%s\n'%line+str(iteration)+" ")
 
       def write_conne_short(self,of,short=True):
           while self.current < self.end:
