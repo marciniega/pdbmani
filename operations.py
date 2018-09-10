@@ -1,6 +1,6 @@
-import numpy as np
+# metodo para importar las librerias.
 import sys
-sys.path.append('/Users/marcelino/Things_Tools/scripts_python/math_tricks/')
+sys.path.append('math_tricks/')
 import math_vect_tools as vcts
 
 def check_list_of_atoms(res,atoms_list):
