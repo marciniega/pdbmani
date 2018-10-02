@@ -20,7 +20,7 @@ class Atom(object):
 
       def print_info(self):
           coord_print = '%7.2f %7.2f %7.2f'%(self.coord[0],self.coord[1],self.coord[2])
-          print ('%4s %s %3s %s'%(self.resi,self.resn,self.name,coord_print))
+          print('%4s %s %3s %s'%(self.resi,self.resn,self.name,coord_print))
 
       def UpDateValue(self,property_to_change,new_value):
           """ Re-name a given attribute."""
@@ -205,8 +205,8 @@ class PdbStruct(object):
 
       def PrintPdbInfo(self):
           """ Print information regarding the number of residues and frame"""
-          print "Number of residues and frame: %s    %s"%(self.seqlength ,self.timefrm)
-          print "Number of chains:             %s "%len(self.chains.keys())
+          print ("Number of residues and frame: %s    %s"%(self.seqlength ,self.timefrm))
+          print ("Number of chains:             %s "%len(self.chains.keys()))
 
       def GetSeqInd(self):
           """ Retrive the sequence by residue number"""
@@ -443,8 +443,8 @@ class Trajectory(object):
           #       frame.append(line)
 
       def PrintTrajInfo(self):
-          print 'This trajectory file : %s'%self.name
-          print 'has %s frames'%self.length
+          print ('This trajectory file : %s'%self.name)
+          print ('has %s frames'%self.length)
 
       def GetFrame(self,frame):
           return self.frames[frame]

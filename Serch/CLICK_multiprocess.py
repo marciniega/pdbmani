@@ -514,13 +514,13 @@ def calculate_rmsd_rot_trans(atom1, atom2):
 
 
 # %%time
-from datetime import datetime
-start = datetime.now()
-for j in range(df_lc1.shape[0]):
-    print('--'*20,j,'--'*20)
-    for i in range(df_lc2.shape[0]):
-        calculate_rmsd_rot_trans(j,i)
-
-end = datetime.now() - start
-print(end)
+# from datetime import datetime
+# start = datetime.now()
+# for j in range(df_lc1.shape[0]):
+#     print('--'*20,j,'--'*20)
+#     for i in range(df_lc2.shape[0]):
+#         calculate_rmsd_rot_trans(j,i)
+#
+# end = datetime.now() - start
+# print(end)
 
