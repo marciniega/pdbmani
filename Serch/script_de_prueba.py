@@ -9,7 +9,7 @@ import read_pdb_tools as rpt
 
 
 #Lectura de archivo
-infile = 'trj_0.pdb'#sys.argv[1]
+infile = '1tig.pdb'#sys.argv[1]
 # archivo de salida
 outfile = open('%s.txt' %infile.split('.')[0], 'w')
 
