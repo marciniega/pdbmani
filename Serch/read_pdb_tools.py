@@ -30,7 +30,7 @@ class Residue(object):
       """Store residue info
               Rememer that the Atom Class is accessed through Residue.
               Atoms are defined as attributes of the Residue."""
-      def __init__(self, resi, resn, chain ,atomnames=None,atoms=None):
+      def __init__(self, resi, resn, chain, atomnames=None, atoms=None):
           self.resi = int(resi)
           self.resn = resn
           self.chain = chain
@@ -49,7 +49,7 @@ class Residue(object):
              self.current += 1
              return self.atomnames[self.current - 1]
 
-      def ResetAtomIter( self , start = 0):
+      def ResetAtomIter( self, start=0):
           self.current = start
 
       def PrintResSummary(self):
