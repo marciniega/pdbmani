@@ -28,7 +28,7 @@ class Atom(object):
 
 class Residue(object):
       """Store residue info
-              Remember that the Atom Class is accessed through Residue.
+              Rememer that the Atom Class is accessed through Residue.
               Atoms are defined as attributes of the Residue."""
       def __init__(self, resi, resn, chain ,atomnames=None,atoms=None):
           self.resi = int(resi)
@@ -206,7 +206,7 @@ class PdbStruct(object):
       def PrintPdbInfo(self):
           """ Print information regarding the number of residues and frame"""
           print ("Number of residues and frame: %s    %s"%(self.seqlength ,self.timefrm))
-          print ("Number of chains:             %s "%len(self.chains.keys()))
+          print ("Number of chains:             %s "%len(self.chains.keys()),self.chains.keys())
 
       def GetSeqInd(self):
           """ Retrive the sequence by residue number"""
@@ -219,6 +219,10 @@ class PdbStruct(object):
       def GetRes(self, idx):
           """ Retrive the residue object. As input the residue number should be given."""
           return [ res for res in self.pdbdata if int(res.resi) == idx ][0]
+
+      def GetResChain(self, chain='A'):
+          """ Retrive the Residues of the chain ('A','B','C'.'D','E','F')"""
+          return [ res for res in self.pdbdata if res.chain == chain ]
 
       def GetSeqRfact(self,atoms_to_consider=None):
           """ Return an array of the B-factors, each residue has an assingment.
@@ -260,7 +264,7 @@ class PdbStruct(object):
 
           # checking which residues
           try:
-             assert not isinstance(setofinterest, basestring) # checking no string
+             assert not isinstance(setofinterest, str) # checking no string #basestring phython2.7
           except:
              raise SystemExit("Input should be a list (the residues of interest)")
 
@@ -273,8 +277,8 @@ class PdbStruct(object):
           atm = atoms_to_consider
           for idx in indexes:
               res = self.GetRes(idx)
-              if hasattr(res, atm):
-                 atom_ob = getattr(res,atm)
+              if atm in res.atomnames:
+                 atom_ob = res.GetAtom(atm)
                  atom_pos = np.array(atom_ob.coord)
               else:
                  raise NoAtomInResidueError("The residue %s%s in structure %s does not have atom %s"%(res.resi,res.resn,self.name,atm))
