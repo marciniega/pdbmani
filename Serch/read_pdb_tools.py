@@ -156,7 +156,7 @@ class PdbStruct(object):
 
       def ResetResIter( self , start = 0):
           self.current = start
-
+#POR AGREGAR DSSP AQUI Y EN PDBSTRUCT Y RESIDUO
       def AddPdbData(self,pdb_name):
           """ Reads a pdb file and stores its information """
           if type(pdb_name) is str:

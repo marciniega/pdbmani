@@ -775,28 +775,7 @@ def center_vectors(df_lc):
 # en check por que se utiliza vector gorro en lugar de posiciones iniciales 
 # el articulo no dice...
 
-def R_ij(i,j,a1=0,a2=0):
-    """Recuerda que 0-->1,1-->2,2-->2 en los indices de R
-    a1,a2 corresponden a que atomo quieren que se compare 
-    """
-    #se genera un diccionario para asignar los valores como en el articulo 
-    #y no tener equivocaciones
-    dict_convencion = {1:0,2:1,3:2}
 
-    i = dict_convencion.get(i)
-    j = dict_convencion.get(j)
-    
-    values = []
-    append = values.append
-    for k in [11,12,13]: #8,9,10 corresponde a la columna de vec_gorro_0,_1,_2 
-        #REVISAR VEC_GORRO
-        atom_value1 = prueba1[:,k][a1][i]
-        atom_value2 = prueba2[:,k][a2][j]
-        value = atom_value1 * atom_value2
-        append(value)
-        
-    valor = sum(values)
-    return(valor)
 
 
 # In[54]:
@@ -808,34 +787,7 @@ def R_ij(i,j,a1=0,a2=0):
 # In[56]:
 
 
-def giant_matrix(i,j):
-    """cliques a comparar: i,j
-    desde aqui se itera sobre cada i y hay que variar los vectores 
-    coordenada 
-    Regresa la matriz gigante (matriz simetrica del articulo)"""
-    #primer renglon
-    R11R22R33 = (R_ij(1,1,a1=i,a2=j) + R_ij(2,2,a1=i,a2=j) + R_ij(3,3,a1=i,a2=j))
-    R23_R32 = (R_ij(2,3,a1=i,a2=j) - R_ij(3,2,a1=i,a2=j))
-    R31_R13 = (R_ij(3,1,a1=i,a2=j) - R_ij(1,3,a1=i,a2=j))
-    R12_R21 = (R_ij(1,2,a1=i,a2=j) - R_ij(2,1,a1=i,a2=j))
-    #segundo renglon
-    R11_R22_R33 = (R_ij(1,1,a1=i,a2=j) - R_ij(2,2,a1=i,a2=j) - R_ij(3,3,a1=i,a2=j))
-    R12R21 = (R_ij(1,2,a1=i,a2=j) + R_ij(2,1,a1=i,a2=j))
-    R13R31 = (R_ij(1,3,a1=i,a2=j) + R_ij(3,1,a1=i,a2=j))
-    #tercer renglon
-    _R11R22_R33 = (-R_ij(1,1,a1=i,a2=j) + R_ij(2,2,a1=i,a2=j) - R_ij(3,3,a1=i,a2=j))
-    R23R32 = (R_ij(2,3,a1=i,a2=j) + R_ij(3,2,a1=0,a2=0))
-    #cuarto renglon
-    _R11_R22R33 = (-R_ij(1,1,a1=i,a2=j) - R_ij(2,2,a1=i,a2=j) + R_ij(3,3,a1=i,a2=j))
 
-    matriz_gigante = [
-        [R11R22R33, R23_R32 , R31_R13, R12_R21],
-        [R23_R32, R11_R22_R33, R12R21, R13R31],
-        [R31_R13, R12R21, _R11R22_R33, R23R32],
-        [R12_R21, R13R31, R23R32, _R11_R22R33]
-    ]
-    
-    return(matriz_gigante)
 
 
 # In[58]:
@@ -847,21 +799,6 @@ def giant_matrix(i,j):
 # In[59]:
 
 
-def rotation_matrix(matriz_gigante):
-    """utilizando la funcion giant_matrix, fijando los valores de i,j
-    se calcula la matriz de rotacion con los eigenvectores y eigenvalores
-    arroja una matriz de rotacion que depende de la matriz gigante
-    """
-    eignvalues,eigenvectors = np.linalg.eig(matriz_gigante)
-    q = eigenvectors[:,np.argmax(eignvalues)]
-    q0,q1,q2,q3 = q[0],q[1],q[2],q[3]
-    #matriz de rotacion con eigenvectores
-    mat_rot = np.array([
-                [(q0**2+q1**2-q2**2-q3**2), 2*(q1*q2-q0*q3),2*(q1*q3+q0*q2)],
-                [2*(q1*q2+q0*q3), (q0**2-q1**2+q2**2-q3**2),2*(q2*q3-q0*q1)],
-                [2*(q1*q3-q0*q2),2*(q2*q3+q0*q1), (q0**2-q1**2-q2**2+q3**2)]
-    ])
-    return(mat_rot)
 
 
 # In[60]:
@@ -873,18 +810,6 @@ def rotation_matrix(matriz_gigante):
 # # In[61]:
 
 
-def rotation_vectors(vector_gorro,mat_rot):
-    """obtencion de vector rotado,
-    utilizando la matriz de rotacion 
-    y los vectores gorro a rotar y trasladar"""
-    #multiplicacion de matrices de cada vector rotado
-    coord_rot_tras = []
-    append = coord_rot_tras.append
-    matmul = np.matmul
-    for i in vector_gorro:
-        append(matmul(mat_rot,i.reshape(3,1)).T[0])
-
-    return(coord_rot_tras)
 
 # ## Calculo del RMSD con previo filtro de SSM y SAM
 # Aqui iria el codigo de SSM y SAM para filtrado y despues se calcula el rmsd de cada clique, por lo que primero hay que filtrar
@@ -892,16 +817,6 @@ def rotation_vectors(vector_gorro,mat_rot):
 # In[93]:
 
 
-def rmsd_between_cliques(atom_trans_rot,atom_to_compare):
-    """Calculo de rmsd entre cliques tomando el atomo rotado y trasladado
-    y el atomo a comparar, por el momento solo imprime el resultado"""
-    # primer RMSD entre atomos
-    p12 = np.sum((np.array(atom_to_compare)-atom_trans_rot)**2,1)
-    rmsd_i = lambda i: np.sqrt(i)/3
-    rmsd_final = rmsd_i(p12).mean()
-    
-    if rmsd_final <= 0.15: ##AQUI LOS DETECTA QUIENES CUMPLEN CON EL FILTRO...
-        print('RMSD_final:', rmsd_final)
 
 
 # In[94]:
@@ -923,13 +838,108 @@ def rmsd_between_cliques(atom_trans_rot,atom_to_compare):
 # In[96]:
 
 
-def calculate_rmsd_rot_trans(atom1,atom2):
+def calculate_rmsd_rot_trans(atom1,atom2,prueba1,prueba2):
+
+    def R_ij(i, j, a1=0, a2=0):
+        """Recuerda que 0-->1,1-->2,2-->2 en los indices de R
+        a1,a2 corresponden a que atomo quieren que se compare
+        """
+        # se genera un diccionario para asignar los valores como en el articulo
+        # y no tener equivocaciones
+        dict_convencion = {1: 0, 2: 1, 3: 2}
+
+        i = dict_convencion.get(i)
+        j = dict_convencion.get(j)
+
+        values = []
+        append = values.append
+        for k in [11, 12, 13]:  # 8,9,10 corresponde a la columna de vec_gorro_0,_1,_2
+            # REVISAR VEC_GORRO
+            atom_value1 = prueba1[:, k][a1][i]
+            atom_value2 = prueba2[:, k][a2][j]
+            value = atom_value1 * atom_value2
+            append(value)
+
+        valor = sum(values)
+        return (valor)
+
+    def giant_matrix(i, j):
+        """cliques a comparar: i,j
+        desde aqui se itera sobre cada i y hay que variar los vectores
+        coordenada
+        Regresa la matriz gigante (matriz simetrica del articulo)"""
+        # primer renglon
+        R11R22R33 = (R_ij(1, 1, a1=i, a2=j) + R_ij(2, 2, a1=i, a2=j) + R_ij(3, 3, a1=i, a2=j))
+        R23_R32 = (R_ij(2, 3, a1=i, a2=j) - R_ij(3, 2, a1=i, a2=j))
+        R31_R13 = (R_ij(3, 1, a1=i, a2=j) - R_ij(1, 3, a1=i, a2=j))
+        R12_R21 = (R_ij(1, 2, a1=i, a2=j) - R_ij(2, 1, a1=i, a2=j))
+        # segundo renglon
+        R11_R22_R33 = (R_ij(1, 1, a1=i, a2=j) - R_ij(2, 2, a1=i, a2=j) - R_ij(3, 3, a1=i, a2=j))
+        R12R21 = (R_ij(1, 2, a1=i, a2=j) + R_ij(2, 1, a1=i, a2=j))
+        R13R31 = (R_ij(1, 3, a1=i, a2=j) + R_ij(3, 1, a1=i, a2=j))
+        # tercer renglon
+        _R11R22_R33 = (-R_ij(1, 1, a1=i, a2=j) + R_ij(2, 2, a1=i, a2=j) - R_ij(3, 3, a1=i, a2=j))
+        R23R32 = (R_ij(2, 3, a1=i, a2=j) + R_ij(3, 2, a1=0, a2=0))
+        # cuarto renglon
+        _R11_R22R33 = (-R_ij(1, 1, a1=i, a2=j) - R_ij(2, 2, a1=i, a2=j) + R_ij(3, 3, a1=i, a2=j))
+
+        matriz_gigante = [
+            [R11R22R33, R23_R32, R31_R13, R12_R21],
+            [R23_R32, R11_R22_R33, R12R21, R13R31],
+            [R31_R13, R12R21, _R11R22_R33, R23R32],
+            [R12_R21, R13R31, R23R32, _R11_R22R33]
+        ]
+        return (matriz_gigante)
+
+    def rotation_matrix(matriz_gigante):
+        """utilizando la funcion giant_matrix, fijando los valores de i,j
+        se calcula la matriz de rotacion con los eigenvectores y eigenvalores
+        arroja una matriz de rotacion que depende de la matriz gigante
+        """
+        eignvalues, eigenvectors = np.linalg.eig(matriz_gigante)
+        q = eigenvectors[:, np.argmax(eignvalues)]
+        q0, q1, q2, q3 = q[0], q[1], q[2], q[3]
+        # matriz de rotacion con eigenvectores
+        mat_rot = np.array([
+            [(q0 ** 2 + q1 ** 2 - q2 ** 2 - q3 ** 2), 2 * (q1 * q2 - q0 * q3), 2 * (q1 * q3 + q0 * q2)],
+            [2 * (q1 * q2 + q0 * q3), (q0 ** 2 - q1 ** 2 + q2 ** 2 - q3 ** 2), 2 * (q2 * q3 - q0 * q1)],
+            [2 * (q1 * q3 - q0 * q2), 2 * (q2 * q3 + q0 * q1), (q0 ** 2 - q1 ** 2 - q2 ** 2 + q3 ** 2)]
+        ])
+        return (mat_rot)
+
+    def rotation_vectors(vector_gorro, mat_rot):
+        """obtencion de vector rotado,
+        utilizando la matriz de rotacion
+        y los vectores gorro a rotar y trasladar"""
+        # multiplicacion de matrices de cada vector rotado
+        coord_rot_tras = []
+        append = coord_rot_tras.append
+        matmul = np.matmul
+        for i in vector_gorro:
+            append(matmul(mat_rot, i.reshape(3, 1)).T[0])
+
+        return (coord_rot_tras)
+
+    def rmsd_between_cliques(atom_trans_rot, atom_to_compare):
+        """Calculo de rmsd entre cliques tomando el atomo rotado y trasladado
+        y el atomo a comparar, por el momento solo imprime el resultado"""
+        # primer RMSD entre atomos
+        p12 = np.sum((np.array(atom_to_compare) - atom_trans_rot) ** 2, 1)
+        rmsd_i = lambda i: np.sqrt(i) / 3
+        rmsd_final = rmsd_i(p12).mean()
+
+        # if rmsd_final <= 0.15:  ##AQUI LOS DETECTA QUIENES CUMPLEN CON EL FILTRO...
+        #     print('RMSD_final:', rmsd_final)
+
+        return(rmsd_final)
+
     matriz_gigante = giant_matrix(atom1,atom2)
     mat_rot = rotation_matrix(matriz_gigante)
     x_rot = rotation_vectors(prueba1[:,14][atom1],mat_rot)
     coord_rot_clique_2 = x_rot + np.array(prueba2[:,10][atom2]) #xrot + baricentro a mover
-    rmsd_between_cliques(coord_rot_clique_2,np.array(prueba2[:,9][atom2]))
+    rmsd_final = rmsd_between_cliques(coord_rot_clique_2,np.array(prueba2[:,9][atom2]))
     # clique rotado y trasladado vs clique coordenadas
+    return(rmsd_final)
 
 
 # In[98]:

@@ -11,6 +11,8 @@ from scipy.spatial.distance import pdist, squareform
 import pandas as pd
 # funciones de click generadas en pandas
 import funciones_CLICK as fc
+#iteradores
+import itertools as it
 
 # sys.path.append("../math_tricks/")
 # import math_vect_tools as mymath
@@ -41,7 +43,7 @@ def get_df_distancias(ref):
     apilaindex = index.append
     for res in ref:
         apilacoord(res.GetAtom('CA').coord)
-        apilaindex(res.GetAtom('CA').atom_number)
+        apilaindex(res.resi)
 
     # calcula distancia y regresa dataframe
     distancias = []
@@ -59,6 +61,8 @@ def get_df_distancias(ref):
 
 df_da1,index1 = get_df_distancias(ref1)
 df_da2,index2 = get_df_distancias(ref2)
+
+print(index1)
 
 # se generan cliques, tte devuleve dataframe con cliques de 3 y la lista de cliques sin partir
 df_lc1, cliques1 = fc.gen_3_cliques(df_da1, dth = 10, k=3)
@@ -103,7 +107,7 @@ ss2 = fc.mini_dssp(file2, index2)
 # se le pega la estructura secundaria al dataframe de los cliques
 df_lc1 = fc.get_SS(ss1,df_lc1)
 df_lc2 = fc.get_SS(ss2,df_lc2)
-print('**'*50)
+
 #get coords of cliques
 df_lc1 = fc.get_coord_clique(df_ca1, df_lc1)
 df_lc2 = fc.get_coord_clique(df_ca2, df_lc2)
@@ -116,11 +120,53 @@ df_lc2 = fc.baricenter_clique(df_lc2)
 df_lc1 = fc.center_vectors(df_lc1)
 df_lc2 = fc.center_vectors(df_lc2)
 
+#se pasan a numpy arrays para mayor rapidez
 prueba1 = df_lc1.values
 prueba2 = df_lc2.values
+print('**'*50)
 
-for i in range(df_lc2.shape[0]):
-    fc.calculate_rmsd_rot_trans(10, i)
+#calculo del RMSD
+candidatos = []
+apilacandi = candidatos.append
+calcularmsd = fc.calculate_rmsd_rot_trans
+
+producto = it.product(df_lc1.index.values, df_lc2.index.values)
+# print('total iteraciones:', len(list(producto)))
+#
+# for i,j in producto:
+#     print(i, j)
+import datetime
+
+timenow = datetime.datetime.now()
+# for i, j in producto:
+#     rmsd_final = calcularmsd(i, j, prueba1, prueba2)
+#     if rmsd_final <= 0.15:
+#         apilacandi([i, j])
+
+time = datetime.datetime.now()
+print(len(candidatos))
+print(time - timenow)
+
+# for i in range(df_lc1.shape[0]):
+#     for j in range(df_lc2.shape[0]):
+#         rmsd_final = calcularmsd(i, j, prueba1, prueba2)
+#         if rmsd_final <= 0.15:
+#             apilacandi([j,i])
+
+
+
+
+# for j in range(df_lc1.shape[0]):
+#     for i in range(df_lc2.shape[0]):
+#         fc.calculate_rmsd_rot_trans(j,i,prueba1,prueba2)
+
+
+
+
+
+
+
+
 
 
 
