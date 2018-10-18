@@ -5,6 +5,9 @@ import sys
 sys.path.append('math_tricks/')
 from math_vect_tools import *
 from operations import *
+import subprocess as sp
+import DSSPData as dd
+import pandas as pd
 #                                     #                            #
 
 class Atom(object):
@@ -156,8 +159,8 @@ class PdbStruct(object):
 
       def ResetResIter( self , start = 0):
           self.current = start
-#POR AGREGAR DSSP AQUI Y EN PDBSTRUCT Y RESIDUO
-      def AddPdbData(self,pdb_name):
+
+      def AddPdbData(self,pdb_name, use_dssp = False):
           """ Reads a pdb file and stores its information """
           if type(pdb_name) is str:
              data_pdb = open('%s'%pdb_name,'r').readlines()
@@ -176,7 +179,7 @@ class PdbStruct(object):
                  r_fact = float(line[60:66])
                  chain = "".join(line[20:22].split())
                  occup = float("".join(line[57:61].split()))
-                 if line[21]==' ':
+                 if line[21] == ' ':
                     flag_no_chain = True
                  else:
                     flag_no_chain = False
@@ -197,16 +200,37 @@ class PdbStruct(object):
                     if not chain in chains_in_data.keys():
                        chains_in_data[chain] = res_count
                     ###
-                 residue.AddAtom(aton,coord,r_fact,atn_count,occup,element)
+                 residue.AddAtom(aton, coord, r_fact, atn_count, occup, element)
           self.seqlength = len(data)
           self.current = 0
           self.end = self.seqlength
           self.chains = chains_in_data
 
+
+      def Get_SS(self,file):
+          sp.run(['dssp', '-i', file, '-o', 'output.log'])
+          # parseo el dssp file
+          dd_ob = dd.DSSPData()
+          dssp_file_name = open('output.log')
+          dd_ob.parseDSSP('output.log')
+          # obtengo la estructura y la guardo, posible no es necesario los residuos
+          # solo el numero de atomo que le pego arbitrariamente REVISAR si esta bien
+          ss = [i[2] for i in dd_ob.struct]
+          ss = pd.DataFrame([i for i in zip(ss, dd_ob.resnum, dd_ob.getChainType())])
+          ss.columns = ['pre_ss', 'residue_number', 'chain']
+          ss = ss[ss.chain == 'A']
+          ss = ss[ss.residue_number != ''].reset_index(drop=True)
+          ss['structure'] = np.where(ss.pre_ss.isin(['B', 'E']), 'B',
+                                     np.where(ss.pre_ss.isin(['G', 'H', 'I']), 'H',
+                                              'C'))
+          ss.residue_number = ss.residue_number.astype(int)
+
+          return(ss)
+
       def PrintPdbInfo(self):
           """ Print information regarding the number of residues and frame"""
-          print ("Number of residues and frame: %s    %s"%(self.seqlength ,self.timefrm))
-          print ("Number of chains:             %s "%len(self.chains.keys()),self.chains.keys())
+          print ("Number of residues and frame: %s    %s"%(self.seqlength, self.timefrm))
+          print ("Number of chains:             %s "%len(self.chains.keys()), self.chains.keys())
 
       def GetSeqInd(self):
           """ Retrive the sequence by residue number"""
