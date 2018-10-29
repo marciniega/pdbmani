@@ -11,8 +11,14 @@ from scipy.spatial.distance import pdist, squareform
 import pandas as pd
 # funciones de click generadas en pandas
 import funciones_CLICK as fc
-#iteradores
+# iteradores
 import itertools as it
+# cuenta tiempo de ejecucion
+import datetime
+
+
+timenow = datetime.datetime.now()
+
 
 # sys.path.append("../math_tricks/")
 # import math_vect_tools as mymath
@@ -121,90 +127,93 @@ df_atoms2 = get_df_ca(pdb22)
 # ss2 = fc.mini_dssp(file2, index2)
 
 
-
 # se le pega la estructura secundaria al dataframe de los cliques
-#esto va a cambiar por que lo tiene que obtener del objeto residuo
+# esto va a cambiar por que lo tiene que obtener del objeto residuo
 df_cliques1 = fc.get_SS(ss1, df_cliques1)
 df_cliques2 = fc.get_SS(ss2, df_cliques2)
 
 
 #comparacion SSM
-comp1 = df_cliques1[['ss_0','ss_1','ss_2']].values
-comp2 = df_cliques2[['ss_0','ss_1','ss_2']].values
+comp1 = df_cliques1[['ss_0', 'ss_1', 'ss_2']].values
+comp2 = df_cliques2[['ss_0', 'ss_1', 'ss_2']].values
 
 
 producto = it.product(df_cliques1.index.values, df_cliques2.index.values)
-candidatos_ss = []
-candidatosapila = candidatos_ss.append
-for i, j in producto:
-    score = (list(map(fc.SSM, comp1[i], comp2[j])))
-    if 2 in score:
-        continue
-    else:
-        candidatosapila((i, j))
+# candidatos_ss = []
+# candidatosapila = candidatos_ss.append
+# for i, j in producto:
+#     score = (list(map(fc.SSM, comp1[i], comp2[j])))
+#     if 2 in score:
+#         continue
+#     else:
+#         candidatosapila((i, j))
+
+candidatos_ss = [(i, j) for i, j in producto if 2 not in (list(map(fc.SSM, comp1[i], comp2[j])))]
 
 # print(len(df_cliques1.index.values) * len(df_cliques2.index.values))
 # print(len(candidatos_ss))
 # print(candidatos_ss)
 
 
-# exit()
-
-
-
-#get coords of cliques
+# get coords of cliques
 df_cliques1 = fc.get_coords_clique(df_atoms1, df_cliques1)
 df_cliques2 = fc.get_coords_clique(df_atoms2, df_cliques2)
 
-#baricentro clique
+# baricentro clique
 df_cliques1 = fc.baricenter_clique(df_cliques1)
 df_cliques2 = fc.baricenter_clique(df_cliques2)
 
-#vectores gorro
+# vectores gorro
 df_cliques1 = fc.center_vectors(df_cliques1)
 df_cliques2 = fc.center_vectors(df_cliques2)
 
-#se pasan a numpy arrays para mayor rapidez
-array_df_cliques1 = df_cliques1.values
-array_df_cliques2 = df_cliques2.values
+
+
+# print(list(range(9,15)))
+# a = 0
+# for i,j in enumerate(df_cliques1.columns):
+#
+#     if i > 8:
+#         print(i,j,a)
+#         a = a+1
+
+
+
+# se pasan a numpy arrays para mayor rapidez
+array_df_cliques1 = df_cliques1.values[:, range(9, 15)]
+array_df_cliques2 = df_cliques2.values[:, range(9, 15)]
 
 #calculo del RMSD
-candidatos = []
-apilacandidatos = candidatos.append
-calcularmsd = fc.calculate_rmsd_rot_trans
+# candidatos = []
+# apilacandidatos = candidatos.append
+# calcularmsd = fc.calculate_rmsd_rot_trans
 
-producto = it.product(df_cliques1.index.values, df_cliques2.index.values)
-# print('total iteraciones:', len(list(producto)))
-#
-# for i,j in producto:
-#     print(i, j)
-import datetime
+#prueba final
+# exit()
+# for i, j in candidatos_ss:
+#     rmsd_final = calcularmsd(i, j, array_df_cliques1, array_df_cliques2)
+#     if rmsd_final <= 0.15:
+#         apilacandidatos([i, j])
+
+print(len(candidatos_ss))
+time = datetime.datetime.now()
+print('tiempo pasado en filtro SSM:', time - timenow)
 
 timenow = datetime.datetime.now()
-for i, j in candidatos_ss:
-    rmsd_final = calcularmsd(i, j, array_df_cliques1, array_df_cliques2)
-    if rmsd_final <= 0.15:
-        apilacandidatos([i, j])
+
+candidatos = [(i, j) for i, j in candidatos_ss if fc.calculate_rmsd_rot_trans(
+    i, j, array_df_cliques1, array_df_cliques2) <= 0.15]
 
 time = datetime.datetime.now()
-print(len(candidatos))
 
-
-print(time - timenow)
-
-
-# for i in range(df_lc1.shape[0]):
-#     for j in range(df_lc2.shape[0]):
-#         rmsd_final = calcularmsd(i, j, prueba1, prueba2)
-#         if rmsd_final <= 0.15:
-#             apilacandi([j,i])
+print('numero de candidatos:', len(candidatos))
+print('tiempo pasado:', time - timenow)
 
 
 
 
-# for j in range(df_lc1.shape[0]):
-#     for i in range(df_lc2.shape[0]):
-#         fc.calculate_rmsd_rot_trans(j,i,prueba1,prueba2)
+
+
 
 
 
