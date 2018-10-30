@@ -41,7 +41,6 @@ pdb2 = rpt.PdbStruct("second")
 pdb1.AddPdbData("%s" % file1)
 pdb2.AddPdbData("%s" % file2)
 
-
 # se obtienen los residuos que perteneces a la cadena de interes por default chain = 'A'
 pdb11 = pdb1.GetResChain()
 pdb22 = pdb2.GetResChain()
@@ -129,8 +128,8 @@ df_atoms2 = get_df_ca(pdb22)
 # esto va a cambiar por que lo tiene que obtener del objeto residuo
 # ya se crea en ss1 y no cuesta reevaluar si es mejor desde el residuo
 # checar que es mas rapido si desde residuo o desde dataframe ss
-df_cliques1 = fc.paste_SS(ss1, df_cliques1, num_cliques = num_cliques)
-df_cliques2 = fc.paste_SS(ss2, df_cliques2, num_cliques = num_cliques)
+df_cliques1 = fc.paste_SS(ss1, df_cliques1, num_cliques=num_cliques)
+df_cliques2 = fc.paste_SS(ss2, df_cliques2, num_cliques=num_cliques)
 
 # comparacion SSM #aqui se obtienen los candidatos posibles pasando el filtro de SS
 candidatos_ss = fc.compare_SS(df_cliques1,df_cliques2, num_cliques=num_cliques)
@@ -157,32 +156,25 @@ idx_rmsd1, idx_rmsd2 = 3*num_cliques, 4*num_cliques+3
 array_df_cliques1 = df_cliques1.values[:, range(idx_rmsd1, idx_rmsd2)] #del 9 al 15
 array_df_cliques2 = df_cliques2.values[:, range(idx_rmsd1, idx_rmsd2)]
 
-# print(num_cliques)
-# print(df_cliques1.iloc[0])
-# print('**'*20)
-# print(array_df_cliques1[:, 0][0])
-# print('**'*20)
-# print(array_df_cliques1[:,1 ][0])
-# print('**'*20)
-# print(array_df_cliques1[:, 2][0])
-# print('**'*20)
-# print(array_df_cliques1[:, 3][0])
-# print('**'*20)
-# print(array_df_cliques1[:, 4][0])
-# print('**'*20)
-# print(array_df_cliques1[:, 5][0])
-
 #calculo del RMSD
-
 print(len(candidatos_ss))
 time = datetime.datetime.now()
 print('tiempo pasado en filtro SSM:', time - timenow)
 
 timenow = datetime.datetime.now()
 
+restriccion_rmsd = 0.15
+if num_cliques == 4:
+    restriccion_rmsd = 0.30
+if num_cliques == 5:
+    restriccion_rmsd = 0.60
+if num_cliques == 7:
+    restriccion_rmsd = 1.50
+if num_cliques == 8:
+    restriccion_rmsd = 1.80
 
 candidatos = [(i, j) for i, j in candidatos_ss if fc.calculate_rmsd_rot_trans(
-    i, j, array_df_cliques1, array_df_cliques2, num_cliques) <= 0.15]
+    i, j, array_df_cliques1, array_df_cliques2, num_cliques) <= restriccion_rmsd]
 
 time = datetime.datetime.now()
 

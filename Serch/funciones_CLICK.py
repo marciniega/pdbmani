@@ -442,7 +442,6 @@ def calculate_rmsd_rot_trans(res1, res2, array_cliques1, array_cliques2, num_cli
         # valor = sum(values)
 
         idx_vec_gorro1, idx_vec_gorro2 = 2, 2 + num_cliques
-        # print(list(range(idx_vec_gorro1, idx_vec_gorro2)))
         valor = sum( # VECTORES GORRO AGARRARLOS!!!
             [array_cliques1[:, k][a1][i] * array_cliques2[:, k][a2][j] for k in range(idx_vec_gorro1, idx_vec_gorro2)])
         return (valor)
