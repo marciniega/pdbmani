@@ -27,7 +27,12 @@ timenow = datetime.datetime.now()
 # lectura de archivo
 file1 = '1xxa.pdb' # sys.argv[1]
 file2 = '1tig.pdb' # sys.argv[2]
+
+# numero de cliques, preguntar en el software para generalizarlo...
+num_cliques = 6
+
 # outfile = open('hh_%s.txt'%infile.split('.')[0],'w')
+
 # se define la estructura
 pdb1 = rpt.PdbStruct("first")
 pdb2 = rpt.PdbStruct("second")
@@ -54,13 +59,8 @@ for i, j in zip(pdb22, ss2.structure.values):
 def get_df_distancias(ref):
     """Funcion para obtener el dataframe de distancias de cada proteina"""
     # se generan listas con coordenadas y numero de atomo
-    coord = []
-    index = []
-    apilacoord = coord.append
-    apilaindex = index.append
-    for res in ref:
-        apilacoord(res.GetAtom('CA').coord)
-        apilaindex(res.resi)
+    coord = [res.GetAtom('CA').coord for res in ref]
+    index = [res.resi for res in ref]
 
     # calcula distancia y regresa dataframe
     distancias = []
@@ -80,12 +80,10 @@ def get_df_distancias(ref):
 df_distancias1, index1 = get_df_distancias(pdb11)
 df_distancias2, index2 = get_df_distancias(pdb22)
 
-# print(index1)
-
 # se generan cliques, tte devuleve dataframe con cliques de 3 y la lista de cliques sin partir
-df_cliques1, cliques1 = fc.gen_3_cliques(df_distancias1, dth = 10, k=3)
+df_cliques1, cliques1 = fc.gen_3_cliques(df_distancias1, dth=10, k=num_cliques)
 print('**'*50)
-df_cliques2, cliques2 = fc.gen_3_cliques(df_distancias2, dth = 10, k=3)
+df_cliques2, cliques2 = fc.gen_3_cliques(df_distancias2, dth=10, k=num_cliques)
 print('**'*50)
 
 
@@ -125,75 +123,56 @@ df_atoms2 = get_df_ca(pdb22)
 # ss1 = fc.mini_dssp(file1, index1)
 # print('**'*50)
 # ss2 = fc.mini_dssp(file2, index2)
-
+# ya no por que se obtiene arriba desde read_pdb_tools.py
 
 # se le pega la estructura secundaria al dataframe de los cliques
 # esto va a cambiar por que lo tiene que obtener del objeto residuo
-df_cliques1 = fc.get_SS(ss1, df_cliques1)
-df_cliques2 = fc.get_SS(ss2, df_cliques2)
+# ya se crea en ss1 y no cuesta reevaluar si es mejor desde el residuo
+# checar que es mas rapido si desde residuo o desde dataframe ss
+df_cliques1 = fc.paste_SS(ss1, df_cliques1, num_cliques = num_cliques)
+df_cliques2 = fc.paste_SS(ss2, df_cliques2, num_cliques = num_cliques)
 
-
-#comparacion SSM
-comp1 = df_cliques1[['ss_0', 'ss_1', 'ss_2']].values
-comp2 = df_cliques2[['ss_0', 'ss_1', 'ss_2']].values
-
-
-producto = it.product(df_cliques1.index.values, df_cliques2.index.values)
-# candidatos_ss = []
-# candidatosapila = candidatos_ss.append
-# for i, j in producto:
-#     score = (list(map(fc.SSM, comp1[i], comp2[j])))
-#     if 2 in score:
-#         continue
-#     else:
-#         candidatosapila((i, j))
-
-candidatos_ss = [(i, j) for i, j in producto if 2 not in (list(map(fc.SSM, comp1[i], comp2[j])))]
-
-# print(len(df_cliques1.index.values) * len(df_cliques2.index.values))
-# print(len(candidatos_ss))
-# print(candidatos_ss)
-
+# comparacion SSM #aqui se obtienen los candidatos posibles pasando el filtro de SS
+candidatos_ss = fc.compare_SS(df_cliques1,df_cliques2, num_cliques=num_cliques)
 
 # get coords of cliques
-df_cliques1 = fc.get_coords_clique(df_atoms1, df_cliques1)
-df_cliques2 = fc.get_coords_clique(df_atoms2, df_cliques2)
+df_cliques1 = fc.get_coords_clique(df_atoms1, df_cliques1, num_cliques)
+df_cliques2 = fc.get_coords_clique(df_atoms2, df_cliques2, num_cliques)
 
 # baricentro clique
-df_cliques1 = fc.baricenter_clique(df_cliques1)
-df_cliques2 = fc.baricenter_clique(df_cliques2)
+df_cliques1 = fc.baricenter_clique(df_cliques1, num_cliques)
+df_cliques2 = fc.baricenter_clique(df_cliques2, num_cliques)
 
 # vectores gorro
-df_cliques1 = fc.center_vectors(df_cliques1)
-df_cliques2 = fc.center_vectors(df_cliques2)
+df_cliques1 = fc.center_vectors(df_cliques1, num_cliques)
+df_cliques2 = fc.center_vectors(df_cliques2, num_cliques)
+
+for i,j in enumerate(df_cliques1.columns):
+    print(i,j)
 
 
-
-# print(list(range(9,15)))
-# a = 0
-# for i,j in enumerate(df_cliques1.columns):
-#
-#     if i > 8:
-#         print(i,j,a)
-#         a = a+1
-
-
-
+idx_rmsd1, idx_rmsd2 = 3*num_cliques, 4*num_cliques+3
+# print(list(range(idx_rmsd1,idx_rmsd2)))
 # se pasan a numpy arrays para mayor rapidez
-array_df_cliques1 = df_cliques1.values[:, range(9, 15)]
-array_df_cliques2 = df_cliques2.values[:, range(9, 15)]
+array_df_cliques1 = df_cliques1.values[:, range(idx_rmsd1, idx_rmsd2)] #del 9 al 15
+array_df_cliques2 = df_cliques2.values[:, range(idx_rmsd1, idx_rmsd2)]
+
+# print(num_cliques)
+# print(df_cliques1.iloc[0])
+# print('**'*20)
+# print(array_df_cliques1[:, 0][0])
+# print('**'*20)
+# print(array_df_cliques1[:,1 ][0])
+# print('**'*20)
+# print(array_df_cliques1[:, 2][0])
+# print('**'*20)
+# print(array_df_cliques1[:, 3][0])
+# print('**'*20)
+# print(array_df_cliques1[:, 4][0])
+# print('**'*20)
+# print(array_df_cliques1[:, 5][0])
 
 #calculo del RMSD
-# candidatos = []
-# apilacandidatos = candidatos.append
-# calcularmsd = fc.calculate_rmsd_rot_trans
-
-#prueba final
-# exit()
-# for i, j in candidatos_ss:
-#     rmsd_final = calcularmsd(i, j, array_df_cliques1, array_df_cliques2)
-#     if rmsd_final <= 0.15:
-#         apilacandidatos([i, j])
 
 print(len(candidatos_ss))
 time = datetime.datetime.now()
@@ -201,8 +180,9 @@ print('tiempo pasado en filtro SSM:', time - timenow)
 
 timenow = datetime.datetime.now()
 
+
 candidatos = [(i, j) for i, j in candidatos_ss if fc.calculate_rmsd_rot_trans(
-    i, j, array_df_cliques1, array_df_cliques2) <= 0.15]
+    i, j, array_df_cliques1, array_df_cliques2, num_cliques) <= 0.15]
 
 time = datetime.datetime.now()
 
