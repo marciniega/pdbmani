@@ -416,8 +416,59 @@ def center_vectors(df_cliques, num_cliques):
     return(df_cliques)
 
 
-def calculate_rmsd_rot_trans(res1, res2, array_cliques1, array_cliques2, num_cliques):
+# baricentro de vectores gorro, todos estan en el origen.
+# def baricenter_vectores_gorro(df_cliques, num_cliques):
+#     """se calcula el baricentro de cada clique
+#     siguiendo la formula de arriba.
+#     df_lc: Dataframe con los cliques y coordenadas
+#     regresa
+#     df_lc:Dataframe con el baricentro de ese clique"""
+#
+#     coord_center = []
+#     for i in range(df_cliques.shape[0]):
+#         # se extrae las coordenadas de los atomos
+#         A = df_cliques.vec_gorro_0[i]
+#         B = df_cliques.vec_gorro_1[i]
+#         C = df_cliques.vec_gorro_2[i]
+#
+#         # X,Y,Z del baricentro, promediando por numero de cliques
+#         x1 = (A[0] + B[0] + C[0]) / num_cliques
+#         y1 = (A[1] + B[1] + C[1]) / num_cliques
+#         z1 = (A[2] + B[2] + C[2]) / num_cliques
+#         if num_cliques >= 4:
+#             D = df_cliques.vec_gorro_3[i]
+#             x1 = (A[0] + B[0] + C[0] + D[0]) / num_cliques
+#             y1 = (A[1] + B[1] + C[1] + D[1]) / num_cliques
+#             z1 = (A[2] + B[2] + C[2] + D[2]) / num_cliques
+#         if num_cliques >= 5:
+#             E = df_cliques.vec_gorro_4[i]
+#             x1 = (A[0] + B[0] + C[0] + D[0] + E[0]) / num_cliques
+#             y1 = (A[1] + B[1] + C[1] + D[1] + E[1]) / num_cliques
+#             z1 = (A[2] + B[2] + C[2] + D[2] + E[2]) / num_cliques
+#         if num_cliques >= 6:
+#             F = df_cliques.vec_gorro_5[i]
+#             x1 = (A[0] + B[0] + C[0] + D[0] + E[0] + F[0]) / num_cliques
+#             y1 = (A[1] + B[1] + C[1] + D[1] + E[1] + F[1]) / num_cliques
+#             z1 = (A[2] + B[2] + C[2] + D[2] + E[2] + F[2]) / num_cliques
+#         if num_cliques >= 7:
+#             G = df_cliques.vec_gorro_6[i]
+#             x1 = (A[0] + B[0] + C[0] + D[0] + E[0] + F[0] + G[0]) / num_cliques
+#             y1 = (A[1] + B[1] + C[1] + D[1] + E[1] + F[1] + G[1]) / num_cliques
+#             z1 = (A[2] + B[2] + C[2] + D[2] + E[2] + F[2] + G[2]) / num_cliques
+#         # se calcula el punto promedio
+#
+#         # se apila para pegarlo en una sola fila correspondiente al clique
+#         coord_center.append(np.array([x1, y1, z1]))
+#
+#     #generacion de la columna
+#     df_cliques['baricentro_vectores_gorro'] = coord_center
+#     return(df_cliques)
 
+
+def calculate_rmsd_rot_trans_m(residuos, array_cliques1, array_cliques2, num_cliques):
+    
+    res1, res2 = residuos
+#     print(res1,res2)
     def R_ij(i, j, a1=0, a2=0):
         """Recuerda que 0-->1,1-->2,2-->2 en los indices de R
         a1,a2 corresponden a que atomo quieren que se compare
@@ -526,4 +577,131 @@ def calculate_rmsd_rot_trans(res1, res2, array_cliques1, array_cliques2, num_cli
     rmsd_final = rmsd_between_cliques(vector_rotado_trasladado_a_clique2, np.array(
         array_cliques2[:, 0][res2], dtype=np.float64)) #antes 9 #PROBABLE CAMBIAR
     # clique rotado y trasladado vs clique coordenadas
+    restriccion_rmsd = 0.15
+    if num_cliques == 4:
+        restriccion_rmsd = 0.30
+    if num_cliques == 5:
+        restriccion_rmsd = 0.60
+    if num_cliques == 7:
+        restriccion_rmsd = 1.50
+    if num_cliques == 8:
+        restriccion_rmsd = 1.80
+        
+    if rmsd_final <= restriccion_rmsd:    
+        return(rmsd_final,(res1,res2))
+    
+    return(rmsd_final,(res1,res2))
+
+def calculate_rmsd_rot_trans(res1, res2, array_cliques1, array_cliques2, num_cliques):
+    
+    def R_ij(i, j, a1=0, a2=0):
+        """Recuerda que 0-->1,1-->2,2-->2 en los indices de R
+        a1,a2 corresponden a que atomo quieren que se compare
+        """
+
+        # SE QUITA DICCIONARIO PARA MAYOR VELOCIDAD (2018/10/24).
+        # se genera un diccionario para asignar los valores como en el articulo
+        # y no tener equivocaciones
+        # dict_convencion = {1: 0, 2: 1, 3: 2}
+        #
+        # i = dict_convencion.get(i)
+        # j = dict_convencion.get(j)
+
+        # values = []
+        # append = values.append
+        # for k in [2, 3, 4]:  # 8,9,10 corresponde a la columna de vec_gorro_0,_1,_2 #antes 11,12,13
+        #     # REVISAR VEC_GORRO
+        #     atom_value1 = array_cliques1[:, k][a1][i]
+        #     atom_value2 = array_cliques2[:, k][a2][j]
+        #     append(atom_value1 * atom_value2)
+        #
+        # valor = sum(values)
+
+        idx_vec_gorro1, idx_vec_gorro2 = 2, 2 + num_cliques
+        valor = sum( # VECTORES GORRO AGARRARLOS!!!
+            [array_cliques1[:, k][a1][i] * array_cliques2[:, k][a2][j] for k in range(idx_vec_gorro1, idx_vec_gorro2)])
+        return (valor)
+
+    def matrix_R(i, j):
+        # CAMBIO (2018/10/24) se dejo de implementar el diccionario de R_ij y se cambiaron los indices
+        # para regresar al calculo del carticulo sumar 1 a los numeros de la matriz R
+        """cliques a comparar: i,j
+        desde aqui se itera sobre cada i y hay que variar los vectores
+        coordenada
+        Regresa la matriz gigante (matriz simetrica del articulo)"""
+        # primer renglon
+        R11R22R33 = (R_ij(0, 0, a1=i, a2=j) + R_ij(1, 1, a1=i, a2=j) + R_ij(2, 2, a1=i, a2=j))
+        R23_R32 = (R_ij(1, 2, a1=i, a2=j) - R_ij(2, 1, a1=i, a2=j))
+        R31_R13 = (R_ij(2, 0, a1=i, a2=j) - R_ij(0, 2, a1=i, a2=j))
+        R12_R21 = (R_ij(0, 1, a1=i, a2=j) - R_ij(1, 0, a1=i, a2=j))
+        # segundo renglon
+        R11_R22_R33 = (R_ij(0, 0, a1=i, a2=j) - R_ij(1, 1, a1=i, a2=j) - R_ij(2, 2, a1=i, a2=j))
+        R12R21 = (R_ij(0, 1, a1=i, a2=j) + R_ij(1, 0, a1=i, a2=j))
+        R13R31 = (R_ij(0, 2, a1=i, a2=j) + R_ij(2, 0, a1=i, a2=j))
+        # tercer renglon
+        _R11R22_R33 = (-R_ij(0, 0, a1=i, a2=j) + R_ij(1, 1, a1=i, a2=j) - R_ij(2, 2, a1=i, a2=j))
+        R23R32 = (R_ij(1, 2, a1=i, a2=j) + R_ij(2, 1, a1=0, a2=0))
+        # cuarto renglon
+        _R11_R22R33 = (-R_ij(0, 0, a1=i, a2=j) - R_ij(1, 1, a1=i, a2=j) + R_ij(2, 2, a1=i, a2=j))
+
+        matriz_R = [
+            [R11R22R33, R23_R32, R31_R13, R12_R21],
+            [R23_R32, R11_R22_R33, R12R21, R13R31],
+            [R31_R13, R12R21, _R11R22_R33, R23R32],
+            [R12_R21, R13R31, R23R32, _R11_R22R33]
+        ]
+        return (matriz_R)
+
+    def rotation_matrix(matriz_R):
+        """utilizando la funcion giant_matrix, fijando los valores de i,j
+        se calcula la matriz de rotacion con los eigenvectores y eigenvalores
+        arroja una matriz de rotacion que depende de la matriz gigante
+        """
+        eignvalues, eigenvectors = np.linalg.eig(matriz_R)
+        q = eigenvectors[:, np.argmax(eignvalues)]
+        q0, q1, q2, q3 = q[0], q[1], q[2], q[3]
+        # matriz de rotacion con eigenvectores
+        matriz_rotacion = np.array([
+            [(q0 ** 2 + q1 ** 2 - q2 ** 2 - q3 ** 2), 2 * (q1 * q2 - q0 * q3), 2 * (q1 * q3 + q0 * q2)],
+            [2 * (q1 * q2 + q0 * q3), (q0 ** 2 - q1 ** 2 + q2 ** 2 - q3 ** 2), 2 * (q2 * q3 - q0 * q1)],
+            [2 * (q1 * q3 - q0 * q2), 2 * (q2 * q3 + q0 * q1), (q0 ** 2 - q1 ** 2 - q2 ** 2 + q3 ** 2)]
+        ], dtype=np.float64)
+        return (matriz_rotacion)
+
+    def rotation_vectors(vector_gorro, matriz_rotacion):
+        """obtencion de vector rotado,
+        utilizando la matriz de rotacion
+        y los vectores gorro a rotar y trasladar"""
+        # multiplicacion de matrices de cada vector rotado
+        # coord_rotado_trasladado = []
+        # append = coord_rotado_trasladado.append
+        # matmul = np.matmul
+        # for i in vector_gorro:
+        #     append(matmul(matriz_rotacion, i.reshape(3, 1)).T[0])
+
+        coord_rotado_trasladado = [np.matmul(
+            matriz_rotacion, i.reshape(3, 1)).T[0] for i in vector_gorro]
+        return (coord_rotado_trasladado)
+
+    def rmsd_between_cliques(clique_trasladado_rotado, atom_to_compare):
+        """Calculo de rmsd entre cliques tomando el atomo rotado y trasladado
+        y el atomo a comparar, por el momento solo imprime el resultado"""
+        # primer RMSD entre atomos
+        p12 = np.sum((np.array(
+            atom_to_compare, dtype=np.float64) - clique_trasladado_rotado) ** 2, 1)
+        rmsd_i = lambda i: np.sqrt(i) / 3
+        rmsd_final = rmsd_i(p12).mean()
+
+        return(rmsd_final)
+
+    matriz_R = matrix_R(res1, res2)
+    matriz_rotacion = rotation_matrix(matriz_R)
+    idx_vectores_gorro = num_cliques +2
+    vector_rotado = rotation_vectors(array_cliques1[:, idx_vectores_gorro][res1], matriz_rotacion) #antes 14 #vectores gorro
+    vector_rotado_trasladado_a_clique2 = vector_rotado + np.array(array_cliques2[:, 1][res2], dtype=np.float64)  # xrot + baricentro a mover #antes 10
+    rmsd_final = rmsd_between_cliques(vector_rotado_trasladado_a_clique2, np.array(
+        array_cliques2[:, 0][res2], dtype=np.float64)) #antes 9 #PROBABLE CAMBIAR
+    # clique rotado y trasladado vs clique coordenadas
+    
+    
     return(rmsd_final)

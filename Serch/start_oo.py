@@ -29,7 +29,7 @@ file1 = '1xxa.pdb' # sys.argv[1]
 file2 = '1tig.pdb' # sys.argv[2]
 
 # numero de cliques, preguntar en el software para generalizarlo...
-num_cliques = 6
+num_cliques = 3
 
 # outfile = open('hh_%s.txt'%infile.split('.')[0],'w')
 
@@ -146,10 +146,10 @@ df_cliques2 = fc.baricenter_clique(df_cliques2, num_cliques)
 df_cliques1 = fc.center_vectors(df_cliques1, num_cliques)
 df_cliques2 = fc.center_vectors(df_cliques2, num_cliques)
 
-for i,j in enumerate(df_cliques1.columns):
-    print(i,j)
+for i, j in enumerate(df_cliques1.columns):
+    print(i, j)
 
-
+# para obtener el vector de columna de interes sin importar el numero de cliques.
 idx_rmsd1, idx_rmsd2 = 3*num_cliques, 4*num_cliques+3
 # print(list(range(idx_rmsd1,idx_rmsd2)))
 # se pasan a numpy arrays para mayor rapidez
