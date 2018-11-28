@@ -16,6 +16,11 @@ import itertools as it
 # cuenta tiempo de ejecucion
 import datetime
 
+# multiprocessing
+import multiprocessing
+from functools import partial
+
+
 
 timenow = datetime.datetime.now()
 
@@ -25,8 +30,8 @@ timenow = datetime.datetime.now()
 
 # assert( len(sys.argv) > 1)
 # lectura de archivo
-file1 = '1xxa.pdb' # sys.argv[1]
-file2 = '1tig.pdb' # sys.argv[2]
+file1 = '1xxa.pdb'  # sys.argv[1]
+file2 = '1tig.pdb'  # sys.argv[2]
 
 # numero de cliques, preguntar en el software para generalizarlo...
 num_cliques = 3
@@ -173,8 +178,23 @@ if num_cliques == 7:
 if num_cliques == 8:
     restriccion_rmsd = 1.80
 
-candidatos = [(i, j) for i, j in candidatos_ss if fc.calculate_rmsd_rot_trans(
-    i, j, array_df_cliques1, array_df_cliques2, num_cliques) <= restriccion_rmsd]
+# MANERA ANTIGUA DE OBTENER LOS CANDITOS
+# candidatos = [(i, j) for i, j in candidatos_ss if fc.calculate_rmsd_rot_trans(
+#     i, j, array_df_cliques1, array_df_cliques2, num_cliques) <= restriccion_rmsd]
+
+#MANERA NUEVA CON MULTIPROCESSING
+long_candidatos_ss = len(candidatos_ss)
+p = multiprocessing.Pool(multiprocessing.cpu_count()-1)
+
+rmsd_1 = p.map(partial(fc.calculate_rmsd_rot_trans_m,
+                    array_cliques1 = array_df_cliques1,
+                    array_cliques2 = array_df_cliques2,
+                    num_cliques = num_cliques), candidatos_ss
+                     )
+
+f1 = pd.DataFrame(rmsd_1)
+f1 = f1[f1[0] <= restriccion_rmsd]
+candidatos = f1[1].values
 
 time = datetime.datetime.now()
 
