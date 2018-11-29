@@ -468,8 +468,30 @@ def center_vectors(df_cliques, num_cliques):
 def calculate_rmsd_rot_trans_m(residuos, array_cliques1, array_cliques2, num_cliques):
     
     res1, res2 = residuos
-#     print(res1,res2)
-    def R_ij(i, j, a1=0, a2=0):
+    matriz_R = matrix_R(res1, res2)
+    matriz_rotacion = rotation_matrix(matriz_R)
+    idx_vectores_gorro = num_cliques +2
+    vector_rotado = rotation_vectors(array_cliques1[:, idx_vectores_gorro][res1], matriz_rotacion) #antes 14 #vectores gorro
+    vector_rotado_trasladado_a_clique2 = vector_rotado + np.array(array_cliques2[:, 1][res2], dtype=np.float64)  # xrot + baricentro a mover #antes 10
+    rmsd_final = rmsd_between_cliques(vector_rotado_trasladado_a_clique2, np.array(
+        array_cliques2[:, 0][res2], dtype=np.float64)) #antes 9 #PROBABLE CAMBIAR
+    # clique rotado y trasladado vs clique coordenadas
+    restriccion_rmsd = 0.15
+    if num_cliques == 4:
+        restriccion_rmsd = 0.30
+    if num_cliques == 5:
+        restriccion_rmsd = 0.60
+    if num_cliques == 7:
+        restriccion_rmsd = 1.50
+    if num_cliques == 8:
+        restriccion_rmsd = 1.80
+        
+    if rmsd_final <= restriccion_rmsd:    
+        return(rmsd_final,(res1,res2))
+    
+    return(rmsd_final,(res1,res2))
+
+def R_ij(i, j, a1=0, a2=0):
         """Recuerda que 0-->1,1-->2,2-->2 en los indices de R
         a1,a2 corresponden a que atomo quieren que se compare
         """
@@ -568,29 +590,6 @@ def calculate_rmsd_rot_trans_m(residuos, array_cliques1, array_cliques2, num_cli
         rmsd_final = rmsd_i(p12).mean()
 
         return(rmsd_final)
-
-    matriz_R = matrix_R(res1, res2)
-    matriz_rotacion = rotation_matrix(matriz_R)
-    idx_vectores_gorro = num_cliques +2
-    vector_rotado = rotation_vectors(array_cliques1[:, idx_vectores_gorro][res1], matriz_rotacion) #antes 14 #vectores gorro
-    vector_rotado_trasladado_a_clique2 = vector_rotado + np.array(array_cliques2[:, 1][res2], dtype=np.float64)  # xrot + baricentro a mover #antes 10
-    rmsd_final = rmsd_between_cliques(vector_rotado_trasladado_a_clique2, np.array(
-        array_cliques2[:, 0][res2], dtype=np.float64)) #antes 9 #PROBABLE CAMBIAR
-    # clique rotado y trasladado vs clique coordenadas
-    restriccion_rmsd = 0.15
-    if num_cliques == 4:
-        restriccion_rmsd = 0.30
-    if num_cliques == 5:
-        restriccion_rmsd = 0.60
-    if num_cliques == 7:
-        restriccion_rmsd = 1.50
-    if num_cliques == 8:
-        restriccion_rmsd = 1.80
-        
-    if rmsd_final <= restriccion_rmsd:    
-        return(rmsd_final,(res1,res2))
-    
-    return(rmsd_final,(res1,res2))
 
 def calculate_rmsd_rot_trans(res1, res2, array_cliques1, array_cliques2, num_cliques):
     

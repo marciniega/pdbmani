@@ -21,9 +21,7 @@ import multiprocessing
 from functools import partial
 
 
-
 timenow = datetime.datetime.now()
-
 
 # sys.path.append("../math_tricks/")
 # import math_vect_tools as mymath
@@ -161,10 +159,34 @@ idx_rmsd1, idx_rmsd2 = 3*num_cliques, 4*num_cliques+3
 array_df_cliques1 = df_cliques1.values[:, range(idx_rmsd1, idx_rmsd2)] #del 9 al 15
 array_df_cliques2 = df_cliques2.values[:, range(idx_rmsd1, idx_rmsd2)]
 
+# Filtro de distancia minima entre cliques
+from scipy.spatial import distance
+a = (0, 0, 0)
+
+df_cliques1['distancia_promedio'] = [np.mean([distance.euclidean(a, i[0]),
+                                              distance.euclidean(a, i[1]),
+                                              distance.euclidean(a, i[2])]) for i in df_cliques1.vectores_gorro]
+df_cliques2['distancia_promedio'] = [np.mean([distance.euclidean(a, i[0]),
+                                              distance.euclidean(a, i[1]),
+                                              distance.euclidean(a, i[2])]) for i in df_cliques2.vectores_gorro]
+
+array_dist_promedio1 = df_cliques1.values[:, 15]  # distancia_promedio
+array_dist_promedio2 = df_cliques2.values[:, 15]
+
+# diff_distancia = [array_dist_promedio1[i] - array_dist_promedio2[j] for i, j in candidatos_ss]
+
+candidatos_filter_dist = [(i, j) for i, j in candidatos_ss if (
+        array_dist_promedio1[i] - array_dist_promedio2[j] >= -0.5) & (
+        array_dist_promedio1[i] - array_dist_promedio2[j] <= 0.5)]
+
+
+print('num candidatos filtro SS', len(candidatos_ss))
+print('num candidatos filtro distancia y ss', len(candidatos_filter_dist))
+
 #calculo del RMSD
-print(len(candidatos_ss))
+
 time = datetime.datetime.now()
-print('tiempo pasado en filtro SSM:', time - timenow)
+print('tiempo pasado en filtros:', time - timenow)
 
 timenow = datetime.datetime.now()
 
@@ -178,18 +200,19 @@ if num_cliques == 7:
 if num_cliques == 8:
     restriccion_rmsd = 1.80
 
-# MANERA ANTIGUA DE OBTENER LOS CANDITOS
+# MANERA ANTIGUA DE OBTENER LOS CANDIDATOS
 # candidatos = [(i, j) for i, j in candidatos_ss if fc.calculate_rmsd_rot_trans(
 #     i, j, array_df_cliques1, array_df_cliques2, num_cliques) <= restriccion_rmsd]
 
-#MANERA NUEVA CON MULTIPROCESSING
-long_candidatos_ss = len(candidatos_ss)
+# MANERA NUEVA CON MULTIPROCESSING
+long_candidatos_ss = len(candidatos_filter_dist)
+
 p = multiprocessing.Pool(multiprocessing.cpu_count()-1)
 
 rmsd_1 = p.map(partial(fc.calculate_rmsd_rot_trans_m,
-                    array_cliques1 = array_df_cliques1,
-                    array_cliques2 = array_df_cliques2,
-                    num_cliques = num_cliques), candidatos_ss
+                    array_cliques1=array_df_cliques1,
+                    array_cliques2=array_df_cliques2,
+                    num_cliques=num_cliques), candidatos_filter_dist
                      )
 
 f1 = pd.DataFrame(rmsd_1)

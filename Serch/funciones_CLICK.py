@@ -571,11 +571,11 @@ def calculate_rmsd_rot_trans_m(residuos, array_cliques1, array_cliques2, num_cli
 
     matriz_R = matrix_R(res1, res2)
     matriz_rotacion = rotation_matrix(matriz_R)
-    idx_vectores_gorro = num_cliques +2
-    vector_rotado = rotation_vectors(array_cliques1[:, idx_vectores_gorro][res1], matriz_rotacion) #antes 14 #vectores gorro
+    idx_vectores_gorro = num_cliques + 2
+    vector_rotado = rotation_vectors(array_cliques1[:, idx_vectores_gorro][res1], matriz_rotacion) # antes 14 #vectores gorro
     vector_rotado_trasladado_a_clique2 = vector_rotado + np.array(array_cliques2[:, 1][res2], dtype=np.float64)  # xrot + baricentro a mover #antes 10
     rmsd_final = rmsd_between_cliques(vector_rotado_trasladado_a_clique2, np.array(
-        array_cliques2[:, 0][res2], dtype=np.float64)) #antes 9 #PROBABLE CAMBIAR
+        array_cliques2[:, 0][res2], dtype=np.float64)) # antes 9 #PROBABLE CAMBIAR
     # clique rotado y trasladado vs clique coordenadas
 
     restriccion_rmsd = 0.15
@@ -670,28 +670,3 @@ def get_rot_vector(residuos, array_cliques1, array_cliques2, num_cliques):
 
     return(vector_rotado)
 
-
-# def rmsd_between_cliques(clique_trasladado_rotado, atom_to_compare):
-#     """Calculo de rmsd entre cliques tomando el atomo rotado y trasladado
-#     y el atomo a comparar, por el momento solo imprime el resultado"""
-#     # primer RMSD entre atomos
-#     p12 = np.sum((np.array(
-#         atom_to_compare, dtype=np.float64) - clique_trasladado_rotado) ** 2, 1)
-#     rmsd_i = lambda i: np.sqrt(i) / 3
-#     rmsd_final = rmsd_i(p12).mean()
-#
-#     return(rmsd_final)
-
-
-# def calculate_rmsd_rot_trans(res1, res2, array_cliques1, array_cliques2, num_cliques):
-#
-#     matriz_R = matrix_R(res1, res2)
-#     matriz_rotacion = rotation_matrix(matriz_R)
-#     idx_vectores_gorro = num_cliques +2
-#     vector_rotado = rotation_vectors(array_cliques1[:, idx_vectores_gorro][res1], matriz_rotacion) #antes 14 #vectores gorro
-#     vector_rotado_trasladado_a_clique2 = vector_rotado + np.array(array_cliques2[:, 1][res2], dtype=np.float64)  # xrot + baricentro a mover #antes 10
-#     rmsd_final = rmsd_between_cliques(vector_rotado_trasladado_a_clique2, np.array(
-#         array_cliques2[:, 0][res2], dtype=np.float64)) #antes 9 #PROBABLE CAMBIAR
-#     # clique rotado y trasladado vs clique coordenadas
-#
-#     return(rmsd_final)
