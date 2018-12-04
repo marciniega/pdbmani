@@ -2,41 +2,32 @@
 # coding: utf-8
 
 
-#libreria de analisis de datos y una caracterizacion para su facil lectura.
+# libreria de analisis de datos y una caracterizacion para su facil lectura.
 import pandas as pd
 pd.set_option('display.float_format', lambda x: '%.5f' % x)
 pd.set_option('max_rows', 100)
 pd.set_option('max_columns', 40)
 pd.set_option('display.max_colwidth', -1)
-#libreria de generacion de rede y cliques
+# libreria de generacion de rede y cliques
 import networkx as nx,community
 
-#libreria de visualizacion de datos y un formato dado
-import matplotlib.pyplot as plt
-plt.style.use('ggplot')
-font = {'family' : 'sans',
-        'weight' : 'bold',
-        'size'   : 20}
-plt.rc('font', **font)
-plt.rcParams['xtick.labelsize'] = 16
-plt.rcParams['axes.labelsize'] = 18
-plt.rcParams['ytick.labelsize'] = 16
-plt.rcParams[u'figure.figsize'] = (16,8)
+# libreria para calcular la distancia minima del filtro
+from scipy.spatial import distance
 
-#mas librerias que voy obteniendo
+# mas librerias que voy obteniendo
 import biopandas.pdb as bp
 biop = bp.PandasPdb() #libreria de lectura de pdbs
 
-#libreria de calculo de distancia euclidiana
+# libreria de calculo de distancia euclidiana
 from scipy.spatial.distance import pdist, squareform
 
-#libreria de mate
+# libreria de mate
 import numpy as np
 
-#libreria de iteraciones
+# libreria de iteraciones
 import itertools as it
 
-#Libreria de MA para RMSD
+# Libreria de MA para RMSD
 import sys
 sys.path.append('math_tricks/')
 import math_vect_tools as mvt
@@ -52,7 +43,7 @@ import DSSPData as dd
 # path1 = '1xxa.pdb'
 # path2 = '1tig.pdb'
 
-#funcion de lectura con biopandas
+# funcion de lectura con biopandas
 def read_biopdb(path):
     """Extrae las cordenadas de los atomos de C_alfa y los acomoda en un vector
     devuelve un dataframe con las coordenadas y el numero de residuo"""
@@ -81,14 +72,14 @@ def distancia_entre_atomos(df_atoms):
     df_da: Dataframe como una matriz de adyacencias donde el valor es la distancia"""
     df_atoms_ca = df_atoms[df_atoms.atom_name == 'CA']
     distancias = []
-    #se calcula la distancia euclidiana entre cada atomo de carbon alfalfa
+    # se calcula la distancia euclidiana entre cada atomo de carbon alfalfa
     for v,i in zip(df_atoms_ca.vector_coordenadas,df_atoms_ca.atom_number):
         distancia_un_atomo = []
         for av,j in zip(df_atoms_ca.vector_coordenadas,df_atoms_ca.atom_number):
             distancia = pdist(np.array([v,av]), metric='euclidean').item()
             distancia_un_atomo.append(distancia)
         distancias.append(distancia_un_atomo)
-    #se genera la matriz de adyacencias para la red
+    # se genera la matriz de adyacencias para la red
     df_distancias = pd.DataFrame(index=df_atoms_ca.atom_number,
                          columns=df_atoms_ca.atom_number,
                          data=distancias)
@@ -100,11 +91,11 @@ def gen_3_cliques(df_distancias, dth = 10, k=3):
     a dth y forma los k-cliques que elijas 
     valores por default:
     dth=10, k=3"""
-    #red de distancias completa
+    # red de distancias completa
     red = nx.from_pandas_adjacency(df_distancias)
 #     print("red antes de filtros:",nx.info(red))
 
-    #filtro de distancias
+    # filtro de distancias
     edgesstrong = [(u,v) for (u,v,d) in red.edges(data=True) if d["weight"] <= dth]
 
     red = nx.Graph(edgesstrong)
@@ -670,3 +661,55 @@ def get_rot_vector(residuos, array_cliques1, array_cliques2, num_cliques):
 
     return(vector_rotado)
 
+def get_distancia_promedio(num_cliques,df_cliques1,df_cliques2):
+    a = (0, 0, 0)
+    dist = distance.euclidean
+    if num_cliques == 3:
+        df_cliques1['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2])]) for i in df_cliques1.vectores_gorro]
+        df_cliques2['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2])]) for i in df_cliques2.vectores_gorro]
+
+    elif num_cliques == 4:
+        df_cliques1['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3])]) for i in df_cliques1.vectores_gorro]
+        df_cliques2['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3])]) for i in df_cliques2.vectores_gorro]
+
+    elif num_cliques == 5:
+        df_cliques1['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4])]) for i in
+            df_cliques1.vectores_gorro]
+        df_cliques2['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4])]) for i in
+            df_cliques2.vectores_gorro]
+
+    elif num_cliques == 6:
+        df_cliques1['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5])]) for i in
+            df_cliques1.vectores_gorro]
+        df_cliques2['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5])]) for i in
+            df_cliques2.vectores_gorro]
+
+    elif num_cliques == 7:
+        df_cliques1['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5]), dist(a, i[6])])
+            for i in df_cliques1.vectores_gorro]
+        df_cliques2['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5]), dist(a, i[6])])
+            for i in df_cliques2.vectores_gorro]
+
+    elif num_cliques == 8:
+        df_cliques1['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5]), dist(a, i[6]),
+             dist(a, i[7])]) for i in df_cliques1.vectores_gorro]
+        df_cliques2['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5]), dist(a, i[6]),
+             dist(a, i[7])]) for i in df_cliques2.vectores_gorro]
+
+    else:
+        print('laregatis')
+        exit()
+
+    return(df_cliques1, df_cliques2)

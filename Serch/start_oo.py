@@ -19,6 +19,8 @@ import datetime
 # multiprocessing
 import multiprocessing
 from functools import partial
+# filtro distancia
+from scipy.spatial import distance
 
 
 timenow = datetime.datetime.now()
@@ -28,8 +30,8 @@ timenow = datetime.datetime.now()
 
 # assert( len(sys.argv) > 1)
 # lectura de archivo
-file1 = '1xxa.pdb'  # sys.argv[1]
-file2 = '1tig.pdb'  # sys.argv[2]
+file1 = 'pdbs/1xxa.pdb'  # sys.argv[1]
+file2 = 'pdbs/1tig.pdb'  # sys.argv[2]
 
 # numero de cliques, preguntar en el software para generalizarlo...
 num_cliques = 3
@@ -78,17 +80,17 @@ def get_df_distancias(ref):
     df_da = pd.DataFrame(index=index, columns=index, data=distancias)
     return(df_da, index)
 
-
+# devuelve tabla e indices de el dataframe de distancias entre atomos de la misma proteina con dth < 10A
 df_distancias1, index1 = get_df_distancias(pdb11)
 df_distancias2, index2 = get_df_distancias(pdb22)
 
-# se generan cliques, tte devuleve dataframe con cliques de 3 y la lista de cliques sin partir
+# se generan cliques, te devuleve dataframe con cliques de 3 y la lista de cliques maximales
 df_cliques1, cliques1 = fc.gen_3_cliques(df_distancias1, dth=10, k=num_cliques)
 print('**'*50)
 df_cliques2, cliques2 = fc.gen_3_cliques(df_distancias2, dth=10, k=num_cliques)
 print('**'*50)
 
-
+# funcion para obtener las propiedades del residuo para los cliques agrupados
 def get_df_ca(list_of_residues):
     """Genera dataframe con la informacion necesaria para las siguientes funciones
     FALTA DOCUMENTAR ESTA COSA!!!!"""
@@ -137,15 +139,15 @@ df_cliques2 = fc.paste_SS(ss2, df_cliques2, num_cliques=num_cliques)
 # comparacion SSM #aqui se obtienen los candidatos posibles pasando el filtro de SS
 candidatos_ss = fc.compare_SS(df_cliques1,df_cliques2, num_cliques=num_cliques)
 
-# get coords of cliques
+# obtienes coordenadas de cada atomo de los cliques.
 df_cliques1 = fc.get_coords_clique(df_atoms1, df_cliques1, num_cliques)
 df_cliques2 = fc.get_coords_clique(df_atoms2, df_cliques2, num_cliques)
 
-# baricentro clique
+# calculo de baricentro baricentro clique
 df_cliques1 = fc.baricenter_clique(df_cliques1, num_cliques)
 df_cliques2 = fc.baricenter_clique(df_cliques2, num_cliques)
 
-# vectores gorro
+# calculo de vectores gorro
 df_cliques1 = fc.center_vectors(df_cliques1, num_cliques)
 df_cliques2 = fc.center_vectors(df_cliques2, num_cliques)
 
@@ -156,29 +158,31 @@ for i, j in enumerate(df_cliques1.columns):
 idx_rmsd1, idx_rmsd2 = 3*num_cliques, 4*num_cliques+3
 # print(list(range(idx_rmsd1,idx_rmsd2)))
 # se pasan a numpy arrays para mayor rapidez
-array_df_cliques1 = df_cliques1.values[:, range(idx_rmsd1, idx_rmsd2)] #del 9 al 15
+array_df_cliques1 = df_cliques1.values[:, range(idx_rmsd1, idx_rmsd2)] #del 9 al 15 columnas de interes
 array_df_cliques2 = df_cliques2.values[:, range(idx_rmsd1, idx_rmsd2)]
 
 # Filtro de distancia minima entre cliques
-from scipy.spatial import distance
-a = (0, 0, 0)
+df_cliques1, df_cliques2 = fc.get_distancia_promedio(num_cliques, df_cliques1, df_cliques2)
 
-df_cliques1['distancia_promedio'] = [np.mean([distance.euclidean(a, i[0]),
-                                              distance.euclidean(a, i[1]),
-                                              distance.euclidean(a, i[2])]) for i in df_cliques1.vectores_gorro]
-df_cliques2['distancia_promedio'] = [np.mean([distance.euclidean(a, i[0]),
-                                              distance.euclidean(a, i[1]),
-                                              distance.euclidean(a, i[2])]) for i in df_cliques2.vectores_gorro]
+array_dist_promedio1 = df_cliques1.values[:, -1]  # el ultimo valor de distancia.
+array_dist_promedio2 = df_cliques2.values[:, -1]
 
-array_dist_promedio1 = df_cliques1.values[:, 15]  # distancia_promedio
-array_dist_promedio2 = df_cliques2.values[:, 15]
+limite_distancia_minima = 0.45
+if num_cliques == 4:
+    limite_distancia_minima = 0.9
+if num_cliques == 5:
+    limite_distancia_minima = 1.8
+if num_cliques == 6:
+    limite_distancia_minima = 3.6
+if num_cliques == 7:
+    limite_distancia_minima = 4.5
+if num_cliques == 8:
+    limite_distancia_minima = 10.0
 
-# diff_distancia = [array_dist_promedio1[i] - array_dist_promedio2[j] for i, j in candidatos_ss]
-
+#filtro por distancia minima
 candidatos_filter_dist = [(i, j) for i, j in candidatos_ss if (
-        array_dist_promedio1[i] - array_dist_promedio2[j] >= -0.5) & (
-        array_dist_promedio1[i] - array_dist_promedio2[j] <= 0.5)]
-
+        array_dist_promedio1[i] - array_dist_promedio2[j] >= -limite_distancia_minima) & (
+        array_dist_promedio1[i] - array_dist_promedio2[j] <= limite_distancia_minima)]
 
 print('num candidatos filtro SS', len(candidatos_ss))
 print('num candidatos filtro distancia y ss', len(candidatos_filter_dist))
@@ -195,16 +199,14 @@ if num_cliques == 4:
     restriccion_rmsd = 0.30
 if num_cliques == 5:
     restriccion_rmsd = 0.60
+if num_cliques == 6:
+    restriccion_rmsd = 0.90
 if num_cliques == 7:
     restriccion_rmsd = 1.50
 if num_cliques == 8:
     restriccion_rmsd = 1.80
 
-# MANERA ANTIGUA DE OBTENER LOS CANDIDATOS
-# candidatos = [(i, j) for i, j in candidatos_ss if fc.calculate_rmsd_rot_trans(
-#     i, j, array_df_cliques1, array_df_cliques2, num_cliques) <= restriccion_rmsd]
-
-# MANERA NUEVA CON MULTIPROCESSING
+# calculo del RMSD
 long_candidatos_ss = len(candidatos_filter_dist)
 
 p = multiprocessing.Pool(multiprocessing.cpu_count()-1)
@@ -214,6 +216,8 @@ rmsd_1 = p.map(partial(fc.calculate_rmsd_rot_trans_m,
                     array_cliques2=array_df_cliques2,
                     num_cliques=num_cliques), candidatos_filter_dist
                      )
+p.close()
+p.join()
 
 f1 = pd.DataFrame(rmsd_1)
 f1 = f1[f1[0] <= restriccion_rmsd]
@@ -223,32 +227,3 @@ time = datetime.datetime.now()
 
 print('numero de candidatos:', len(candidatos))
 print('tiempo pasado:', time - timenow)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# # while ref1.current < ref1.seqlength:
-# # res = ref1.next()
-# # if res.chain == "A":
-# #     print(res)
-#     #net = pdbnet.Network("first")
-#     #net.set_nodes_on_frame(ref, mute=True)
-#     #net.set_arists_on_nodes()
-#     #line = "# frame: %-4s  Nodes: %-6s  Edges: %-10s"%(trj.current ,net.count_nodes() ,net.count_arists())
-#     #print line
-#     #outfile.write('%s\n# Edge   Distance[A]\n'%line)
-#     #net.write_arist_short(outfile, trj.current, short=True)
