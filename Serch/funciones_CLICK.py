@@ -661,55 +661,39 @@ def get_rot_vector(residuos, array_cliques1, array_cliques2, num_cliques):
 
     return(vector_rotado)
 
-def get_distancia_promedio(num_cliques,df_cliques1,df_cliques2):
+def get_distancia_promedio(num_cliques,df_cliques):
     a = (0, 0, 0)
     dist = distance.euclidean
     if num_cliques == 3:
-        df_cliques1['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2])]) for i in df_cliques1.vectores_gorro]
-        df_cliques2['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2])]) for i in df_cliques2.vectores_gorro]
+        df_cliques['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2])]) for i in df_cliques.vectores_gorro]
 
     elif num_cliques == 4:
-        df_cliques1['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3])]) for i in df_cliques1.vectores_gorro]
-        df_cliques2['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3])]) for i in df_cliques2.vectores_gorro]
+        df_cliques['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3])]) for i in df_cliques.vectores_gorro]
 
     elif num_cliques == 5:
-        df_cliques1['distancia_promedio'] = [np.mean(
+        df_cliques['distancia_promedio'] = [np.mean(
             [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4])]) for i in
-            df_cliques1.vectores_gorro]
-        df_cliques2['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4])]) for i in
-            df_cliques2.vectores_gorro]
+            df_cliques.vectores_gorro]
 
     elif num_cliques == 6:
-        df_cliques1['distancia_promedio'] = [np.mean(
+        df_cliques['distancia_promedio'] = [np.mean(
             [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5])]) for i in
-            df_cliques1.vectores_gorro]
-        df_cliques2['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5])]) for i in
-            df_cliques2.vectores_gorro]
+            df_cliques.vectores_gorro]
 
     elif num_cliques == 7:
-        df_cliques1['distancia_promedio'] = [np.mean(
+        df_cliques['distancia_promedio'] = [np.mean(
             [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5]), dist(a, i[6])])
-            for i in df_cliques1.vectores_gorro]
-        df_cliques2['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5]), dist(a, i[6])])
-            for i in df_cliques2.vectores_gorro]
+            for i in df_cliques.vectores_gorro]
 
     elif num_cliques == 8:
-        df_cliques1['distancia_promedio'] = [np.mean(
+        df_cliques['distancia_promedio'] = [np.mean(
             [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5]), dist(a, i[6]),
-             dist(a, i[7])]) for i in df_cliques1.vectores_gorro]
-        df_cliques2['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5]), dist(a, i[6]),
-             dist(a, i[7])]) for i in df_cliques2.vectores_gorro]
+             dist(a, i[7])]) for i in df_cliques.vectores_gorro]
 
     else:
-        print('laregatis')
+        print('No soportamos ese numero de cliques')
         exit()
 
-    return(df_cliques1, df_cliques2)
+    return(df_cliques)

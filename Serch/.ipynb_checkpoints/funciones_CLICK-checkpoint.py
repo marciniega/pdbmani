@@ -2,41 +2,32 @@
 # coding: utf-8
 
 
-#libreria de analisis de datos y una caracterizacion para su facil lectura.
+# libreria de analisis de datos y una caracterizacion para su facil lectura.
 import pandas as pd
 pd.set_option('display.float_format', lambda x: '%.5f' % x)
 pd.set_option('max_rows', 100)
 pd.set_option('max_columns', 40)
 pd.set_option('display.max_colwidth', -1)
-#libreria de generacion de rede y cliques
+# libreria de generacion de rede y cliques
 import networkx as nx,community
 
-#libreria de visualizacion de datos y un formato dado
-import matplotlib.pyplot as plt
-plt.style.use('ggplot')
-font = {'family' : 'sans',
-        'weight' : 'bold',
-        'size'   : 20}
-plt.rc('font', **font)
-plt.rcParams['xtick.labelsize'] = 16
-plt.rcParams['axes.labelsize'] = 18
-plt.rcParams['ytick.labelsize'] = 16
-plt.rcParams[u'figure.figsize'] = (16,8)
+# libreria para calcular la distancia minima del filtro
+from scipy.spatial import distance
 
-#mas librerias que voy obteniendo
+# mas librerias que voy obteniendo
 import biopandas.pdb as bp
 biop = bp.PandasPdb() #libreria de lectura de pdbs
 
-#libreria de calculo de distancia euclidiana
+# libreria de calculo de distancia euclidiana
 from scipy.spatial.distance import pdist, squareform
 
-#libreria de mate
+# libreria de mate
 import numpy as np
 
-#libreria de iteraciones
+# libreria de iteraciones
 import itertools as it
 
-#Libreria de MA para RMSD
+# Libreria de MA para RMSD
 import sys
 sys.path.append('math_tricks/')
 import math_vect_tools as mvt
@@ -52,7 +43,7 @@ import DSSPData as dd
 # path1 = '1xxa.pdb'
 # path2 = '1tig.pdb'
 
-#funcion de lectura con biopandas
+# funcion de lectura con biopandas
 def read_biopdb(path):
     """Extrae las cordenadas de los atomos de C_alfa y los acomoda en un vector
     devuelve un dataframe con las coordenadas y el numero de residuo"""
@@ -81,14 +72,14 @@ def distancia_entre_atomos(df_atoms):
     df_da: Dataframe como una matriz de adyacencias donde el valor es la distancia"""
     df_atoms_ca = df_atoms[df_atoms.atom_name == 'CA']
     distancias = []
-    #se calcula la distancia euclidiana entre cada atomo de carbon alfalfa
+    # se calcula la distancia euclidiana entre cada atomo de carbon alfalfa
     for v,i in zip(df_atoms_ca.vector_coordenadas,df_atoms_ca.atom_number):
         distancia_un_atomo = []
         for av,j in zip(df_atoms_ca.vector_coordenadas,df_atoms_ca.atom_number):
             distancia = pdist(np.array([v,av]), metric='euclidean').item()
             distancia_un_atomo.append(distancia)
         distancias.append(distancia_un_atomo)
-    #se genera la matriz de adyacencias para la red
+    # se genera la matriz de adyacencias para la red
     df_distancias = pd.DataFrame(index=df_atoms_ca.atom_number,
                          columns=df_atoms_ca.atom_number,
                          data=distancias)
@@ -100,11 +91,11 @@ def gen_3_cliques(df_distancias, dth = 10, k=3):
     a dth y forma los k-cliques que elijas 
     valores por default:
     dth=10, k=3"""
-    #red de distancias completa
+    # red de distancias completa
     red = nx.from_pandas_adjacency(df_distancias)
 #     print("red antes de filtros:",nx.info(red))
 
-    #filtro de distancias
+    # filtro de distancias
     edgesstrong = [(u,v) for (u,v,d) in red.edges(data=True) if d["weight"] <= dth]
 
     red = nx.Graph(edgesstrong)
@@ -468,131 +459,7 @@ def center_vectors(df_cliques, num_cliques):
 def calculate_rmsd_rot_trans_m(residuos, array_cliques1, array_cliques2, num_cliques):
     
     res1, res2 = residuos
-    matriz_R = matrix_R(res1, res2)
-    matriz_rotacion = rotation_matrix(matriz_R)
-    idx_vectores_gorro = num_cliques +2
-    vector_rotado = rotation_vectors(array_cliques1[:, idx_vectores_gorro][res1], matriz_rotacion) #antes 14 #vectores gorro
-    vector_rotado_trasladado_a_clique2 = vector_rotado + np.array(array_cliques2[:, 1][res2], dtype=np.float64)  # xrot + baricentro a mover #antes 10
-    rmsd_final = rmsd_between_cliques(vector_rotado_trasladado_a_clique2, np.array(
-        array_cliques2[:, 0][res2], dtype=np.float64)) #antes 9 #PROBABLE CAMBIAR
-    # clique rotado y trasladado vs clique coordenadas
-    restriccion_rmsd = 0.15
-    if num_cliques == 4:
-        restriccion_rmsd = 0.30
-    if num_cliques == 5:
-        restriccion_rmsd = 0.60
-    if num_cliques == 7:
-        restriccion_rmsd = 1.50
-    if num_cliques == 8:
-        restriccion_rmsd = 1.80
-        
-    if rmsd_final <= restriccion_rmsd:    
-        return(rmsd_final,(res1,res2))
-    
-    return(rmsd_final,(res1,res2))
 
-def R_ij(i, j, a1=0, a2=0):
-        """Recuerda que 0-->1,1-->2,2-->2 en los indices de R
-        a1,a2 corresponden a que atomo quieren que se compare
-        """
-
-        # SE QUITA DICCIONARIO PARA MAYOR VELOCIDAD (2018/10/24).
-        # se genera un diccionario para asignar los valores como en el articulo
-        # y no tener equivocaciones
-        # dict_convencion = {1: 0, 2: 1, 3: 2}
-        #
-        # i = dict_convencion.get(i)
-        # j = dict_convencion.get(j)
-
-        # values = []
-        # append = values.append
-        # for k in [2, 3, 4]:  # 8,9,10 corresponde a la columna de vec_gorro_0,_1,_2 #antes 11,12,13
-        #     # REVISAR VEC_GORRO
-        #     atom_value1 = array_cliques1[:, k][a1][i]
-        #     atom_value2 = array_cliques2[:, k][a2][j]
-        #     append(atom_value1 * atom_value2)
-        #
-        # valor = sum(values)
-
-        idx_vec_gorro1, idx_vec_gorro2 = 2, 2 + num_cliques
-        valor = sum( # VECTORES GORRO AGARRARLOS!!!
-            [array_cliques1[:, k][a1][i] * array_cliques2[:, k][a2][j] for k in range(idx_vec_gorro1, idx_vec_gorro2)])
-        return (valor)
-
-    def matrix_R(i, j):
-        # CAMBIO (2018/10/24) se dejo de implementar el diccionario de R_ij y se cambiaron los indices
-        # para regresar al calculo del carticulo sumar 1 a los numeros de la matriz R
-        """cliques a comparar: i,j
-        desde aqui se itera sobre cada i y hay que variar los vectores
-        coordenada
-        Regresa la matriz gigante (matriz simetrica del articulo)"""
-        # primer renglon
-        R11R22R33 = (R_ij(0, 0, a1=i, a2=j) + R_ij(1, 1, a1=i, a2=j) + R_ij(2, 2, a1=i, a2=j))
-        R23_R32 = (R_ij(1, 2, a1=i, a2=j) - R_ij(2, 1, a1=i, a2=j))
-        R31_R13 = (R_ij(2, 0, a1=i, a2=j) - R_ij(0, 2, a1=i, a2=j))
-        R12_R21 = (R_ij(0, 1, a1=i, a2=j) - R_ij(1, 0, a1=i, a2=j))
-        # segundo renglon
-        R11_R22_R33 = (R_ij(0, 0, a1=i, a2=j) - R_ij(1, 1, a1=i, a2=j) - R_ij(2, 2, a1=i, a2=j))
-        R12R21 = (R_ij(0, 1, a1=i, a2=j) + R_ij(1, 0, a1=i, a2=j))
-        R13R31 = (R_ij(0, 2, a1=i, a2=j) + R_ij(2, 0, a1=i, a2=j))
-        # tercer renglon
-        _R11R22_R33 = (-R_ij(0, 0, a1=i, a2=j) + R_ij(1, 1, a1=i, a2=j) - R_ij(2, 2, a1=i, a2=j))
-        R23R32 = (R_ij(1, 2, a1=i, a2=j) + R_ij(2, 1, a1=0, a2=0))
-        # cuarto renglon
-        _R11_R22R33 = (-R_ij(0, 0, a1=i, a2=j) - R_ij(1, 1, a1=i, a2=j) + R_ij(2, 2, a1=i, a2=j))
-
-        matriz_R = [
-            [R11R22R33, R23_R32, R31_R13, R12_R21],
-            [R23_R32, R11_R22_R33, R12R21, R13R31],
-            [R31_R13, R12R21, _R11R22_R33, R23R32],
-            [R12_R21, R13R31, R23R32, _R11_R22R33]
-        ]
-        return (matriz_R)
-
-    def rotation_matrix(matriz_R):
-        """utilizando la funcion giant_matrix, fijando los valores de i,j
-        se calcula la matriz de rotacion con los eigenvectores y eigenvalores
-        arroja una matriz de rotacion que depende de la matriz gigante
-        """
-        eignvalues, eigenvectors = np.linalg.eig(matriz_R)
-        q = eigenvectors[:, np.argmax(eignvalues)]
-        q0, q1, q2, q3 = q[0], q[1], q[2], q[3]
-        # matriz de rotacion con eigenvectores
-        matriz_rotacion = np.array([
-            [(q0 ** 2 + q1 ** 2 - q2 ** 2 - q3 ** 2), 2 * (q1 * q2 - q0 * q3), 2 * (q1 * q3 + q0 * q2)],
-            [2 * (q1 * q2 + q0 * q3), (q0 ** 2 - q1 ** 2 + q2 ** 2 - q3 ** 2), 2 * (q2 * q3 - q0 * q1)],
-            [2 * (q1 * q3 - q0 * q2), 2 * (q2 * q3 + q0 * q1), (q0 ** 2 - q1 ** 2 - q2 ** 2 + q3 ** 2)]
-        ], dtype=np.float64)
-        return (matriz_rotacion)
-
-    def rotation_vectors(vector_gorro, matriz_rotacion):
-        """obtencion de vector rotado,
-        utilizando la matriz de rotacion
-        y los vectores gorro a rotar y trasladar"""
-        # multiplicacion de matrices de cada vector rotado
-        # coord_rotado_trasladado = []
-        # append = coord_rotado_trasladado.append
-        # matmul = np.matmul
-        # for i in vector_gorro:
-        #     append(matmul(matriz_rotacion, i.reshape(3, 1)).T[0])
-
-        coord_rotado_trasladado = [np.matmul(
-            matriz_rotacion, i.reshape(3, 1)).T[0] for i in vector_gorro]
-        return (coord_rotado_trasladado)
-
-    def rmsd_between_cliques(clique_trasladado_rotado, atom_to_compare):
-        """Calculo de rmsd entre cliques tomando el atomo rotado y trasladado
-        y el atomo a comparar, por el momento solo imprime el resultado"""
-        # primer RMSD entre atomos
-        p12 = np.sum((np.array(
-            atom_to_compare, dtype=np.float64) - clique_trasladado_rotado) ** 2, 1)
-        rmsd_i = lambda i: np.sqrt(i) / 3
-        rmsd_final = rmsd_i(p12).mean()
-
-        return(rmsd_final)
-
-def calculate_rmsd_rot_trans(res1, res2, array_cliques1, array_cliques2, num_cliques):
-    
     def R_ij(i, j, a1=0, a2=0):
         """Recuerda que 0-->1,1-->2,2-->2 en los indices de R
         a1,a2 corresponden a que atomo quieren que se compare
@@ -617,7 +484,7 @@ def calculate_rmsd_rot_trans(res1, res2, array_cliques1, array_cliques2, num_cli
         # valor = sum(values)
 
         idx_vec_gorro1, idx_vec_gorro2 = 2, 2 + num_cliques
-        valor = sum( # VECTORES GORRO AGARRARLOS!!!
+        valor = sum(  # VECTORES GORRO AGARRARLOS!!!
             [array_cliques1[:, k][a1][i] * array_cliques2[:, k][a2][j] for k in range(idx_vec_gorro1, idx_vec_gorro2)])
         return (valor)
 
@@ -691,16 +558,142 @@ def calculate_rmsd_rot_trans(res1, res2, array_cliques1, array_cliques2, num_cli
         rmsd_i = lambda i: np.sqrt(i) / 3
         rmsd_final = rmsd_i(p12).mean()
 
-        return(rmsd_final)
+        return (rmsd_final)
 
     matriz_R = matrix_R(res1, res2)
     matriz_rotacion = rotation_matrix(matriz_R)
-    idx_vectores_gorro = num_cliques +2
-    vector_rotado = rotation_vectors(array_cliques1[:, idx_vectores_gorro][res1], matriz_rotacion) #antes 14 #vectores gorro
+    idx_vectores_gorro = num_cliques + 2
+    vector_rotado = rotation_vectors(array_cliques1[:, idx_vectores_gorro][res1], matriz_rotacion) # antes 14 #vectores gorro
     vector_rotado_trasladado_a_clique2 = vector_rotado + np.array(array_cliques2[:, 1][res2], dtype=np.float64)  # xrot + baricentro a mover #antes 10
     rmsd_final = rmsd_between_cliques(vector_rotado_trasladado_a_clique2, np.array(
-        array_cliques2[:, 0][res2], dtype=np.float64)) #antes 9 #PROBABLE CAMBIAR
+        array_cliques2[:, 0][res2], dtype=np.float64)) # antes 9 #PROBABLE CAMBIAR
     # clique rotado y trasladado vs clique coordenadas
+
+    restriccion_rmsd = 0.15
+    if num_cliques == 4:
+        restriccion_rmsd = 0.30
+    if num_cliques == 5:
+        restriccion_rmsd = 0.60
+    if num_cliques == 7:
+        restriccion_rmsd = 1.50
+    if num_cliques == 8:
+        restriccion_rmsd = 1.80
+    if rmsd_final <= restriccion_rmsd:    
+        return(rmsd_final,(res1,res2))
     
-    
-    return(rmsd_final)
+    return(rmsd_final,(res1,res2))
+
+
+## reorganizacion de funciones
+
+def get_rot_vector(residuos, array_cliques1, array_cliques2, num_cliques):
+
+    res1, res2 = residuos
+
+    def R_ij(i, j, a1=0, a2=0):
+        """Recuerda que 0-->1,1-->2,2-->2 en los indices de R
+        a1,a2 corresponden a que atomo quieren que se compare
+        """
+        idx_vec_gorro1, idx_vec_gorro2 = 2, 2 + num_cliques
+        valor = sum(  # VECTORES GORRO AGARRARLOS!!!
+            [array_cliques1[:, k][a1][i] * array_cliques2[:, k][a2][j] for k in range(idx_vec_gorro1, idx_vec_gorro2)])
+        return (valor)
+
+    def matrix_R(i, j):
+        # CAMBIO (2018/10/24) se dejo de implementar el diccionario de R_ij y se cambiaron los indices
+        # para regresar al calculo del carticulo sumar 1 a los numeros de la matriz R
+        """cliques a comparar: i,j
+        desde aqui se itera sobre cada i y hay que variar los vectores
+        coordenada
+        Regresa la matriz gigante (matriz simetrica del articulo)"""
+        # primer renglon
+        R11R22R33 = (R_ij(0, 0, a1=i, a2=j) + R_ij(1, 1, a1=i, a2=j) + R_ij(2, 2, a1=i, a2=j))
+        R23_R32 = (R_ij(1, 2, a1=i, a2=j) - R_ij(2, 1, a1=i, a2=j))
+        R31_R13 = (R_ij(2, 0, a1=i, a2=j) - R_ij(0, 2, a1=i, a2=j))
+        R12_R21 = (R_ij(0, 1, a1=i, a2=j) - R_ij(1, 0, a1=i, a2=j))
+        # segundo renglon
+        R11_R22_R33 = (R_ij(0, 0, a1=i, a2=j) - R_ij(1, 1, a1=i, a2=j) - R_ij(2, 2, a1=i, a2=j))
+        R12R21 = (R_ij(0, 1, a1=i, a2=j) + R_ij(1, 0, a1=i, a2=j))
+        R13R31 = (R_ij(0, 2, a1=i, a2=j) + R_ij(2, 0, a1=i, a2=j))
+        # tercer renglon
+        _R11R22_R33 = (-R_ij(0, 0, a1=i, a2=j) + R_ij(1, 1, a1=i, a2=j) - R_ij(2, 2, a1=i, a2=j))
+        R23R32 = (R_ij(1, 2, a1=i, a2=j) + R_ij(2, 1, a1=0, a2=0))
+        # cuarto renglon
+        _R11_R22R33 = (-R_ij(0, 0, a1=i, a2=j) - R_ij(1, 1, a1=i, a2=j) + R_ij(2, 2, a1=i, a2=j))
+
+        matriz_R = [
+            [R11R22R33, R23_R32, R31_R13, R12_R21],
+            [R23_R32, R11_R22_R33, R12R21, R13R31],
+            [R31_R13, R12R21, _R11R22_R33, R23R32],
+            [R12_R21, R13R31, R23R32, _R11_R22R33]
+        ]
+        return (matriz_R)
+
+    def rotation_matrix(matriz_R):
+        """utilizando la funcion giant_matrix, fijando los valores de i,j
+        se calcula la matriz de rotacion con los eigenvectores y eigenvalores
+        arroja una matriz de rotacion que depende de la matriz gigante
+        """
+        eignvalues, eigenvectors = np.linalg.eig(matriz_R)
+        q = eigenvectors[:, np.argmax(eignvalues)]
+        q0, q1, q2, q3 = q[0], q[1], q[2], q[3]
+        # matriz de rotacion con eigenvectores
+        matriz_rotacion = np.array([
+            [(q0 ** 2 + q1 ** 2 - q2 ** 2 - q3 ** 2), 2 * (q1 * q2 - q0 * q3), 2 * (q1 * q3 + q0 * q2)],
+            [2 * (q1 * q2 + q0 * q3), (q0 ** 2 - q1 ** 2 + q2 ** 2 - q3 ** 2), 2 * (q2 * q3 - q0 * q1)],
+            [2 * (q1 * q3 - q0 * q2), 2 * (q2 * q3 + q0 * q1), (q0 ** 2 - q1 ** 2 - q2 ** 2 + q3 ** 2)]
+        ], dtype=np.float64)
+        return (matriz_rotacion)
+
+    def rotation_vectors(vector_gorro, matriz_rotacion):
+        """obtencion de vector rotado,
+        utilizando la matriz de rotacion
+        y los vectores gorro a rotar y trasladar"""
+        coord_rotado_trasladado = [np.matmul(
+            matriz_rotacion, i.reshape(3, 1)).T[0] for i in vector_gorro]
+
+        return (coord_rotado_trasladado)
+
+    matriz_R = matrix_R(res1, res2)
+    matriz_rotacion = rotation_matrix(matriz_R)
+    idx_vectores_gorro = num_cliques + 2
+    vector_rotado = rotation_vectors(array_cliques1[:, idx_vectores_gorro][res1], matriz_rotacion)
+
+    return(vector_rotado)
+
+def get_distancia_promedio(num_cliques,df_cliques):
+    a = (0, 0, 0)
+    dist = distance.euclidean
+    if num_cliques == 3:
+        df_cliques['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2])]) for i in df_cliques.vectores_gorro]
+
+    elif num_cliques == 4:
+        df_cliques['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3])]) for i in df_cliques.vectores_gorro]
+
+    elif num_cliques == 5:
+        df_cliques['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4])]) for i in
+            df_cliques.vectores_gorro]
+
+    elif num_cliques == 6:
+        df_cliques['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5])]) for i in
+            df_cliques.vectores_gorro]
+
+    elif num_cliques == 7:
+        df_cliques['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5]), dist(a, i[6])])
+            for i in df_cliques.vectores_gorro]
+
+    elif num_cliques == 8:
+        df_cliques['distancia_promedio'] = [np.mean(
+            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5]), dist(a, i[6]),
+             dist(a, i[7])]) for i in df_cliques.vectores_gorro]
+
+    else:
+        print('No soportamos ese numero de cliques')
+        exit()
+
+    return(df_cliques)

@@ -34,7 +34,7 @@ file1 = 'pdbs/1xxa.pdb'  # sys.argv[1]
 file2 = 'pdbs/1tig.pdb'  # sys.argv[2]
 
 # numero de cliques, preguntar en el software para generalizarlo...
-num_cliques = 3
+num_cliques = 4
 
 # outfile = open('hh_%s.txt'%infile.split('.')[0],'w')
 
@@ -161,8 +161,9 @@ idx_rmsd1, idx_rmsd2 = 3*num_cliques, 4*num_cliques+3
 array_df_cliques1 = df_cliques1.values[:, range(idx_rmsd1, idx_rmsd2)] #del 9 al 15 columnas de interes
 array_df_cliques2 = df_cliques2.values[:, range(idx_rmsd1, idx_rmsd2)]
 
-# Filtro de distancia minima entre cliques
-df_cliques1, df_cliques2 = fc.get_distancia_promedio(num_cliques, df_cliques1, df_cliques2)
+# Se genera columna del calculo de distancia promedio para posteriormente filtrar por distancia promedio minima (dpm)
+df_cliques1 = fc.get_distancia_promedio(num_cliques, df_cliques1)
+df_cliques2 = fc.get_distancia_promedio(num_cliques, df_cliques2)
 
 array_dist_promedio1 = df_cliques1.values[:, -1]  # el ultimo valor de distancia.
 array_dist_promedio2 = df_cliques2.values[:, -1]
@@ -177,7 +178,7 @@ if num_cliques == 6:
 if num_cliques == 7:
     limite_distancia_minima = 4.5
 if num_cliques == 8:
-    limite_distancia_minima = 10.0
+    limite_distancia_minima = 8.0
 
 #filtro por distancia minima
 candidatos_filter_dist = [(i, j) for i, j in candidatos_ss if (
