@@ -6,7 +6,6 @@ sys.path.append('math_tricks/')
 from math_vect_tools import *
 from operations import *
 import subprocess as sp
-import DSSPData as dd
 import pandas as pd
 #                                     #                            #
 
@@ -160,7 +159,7 @@ class PdbStruct(object):
       def ResetResIter( self , start = 0):
           self.current = start
 
-      def AddPdbData(self,pdb_name, use_dssp = False):
+      def AddPdbData(self,pdb_name):
           """ Reads a pdb file and stores its information """
           if type(pdb_name) is str:
              data_pdb = open('%s'%pdb_name,'r').readlines()
@@ -207,25 +206,30 @@ class PdbStruct(object):
           self.chains = chains_in_data
 
 
-      def Get_SS(self,file):
-          sp.run(['dssp', '-i', file, '-o', 'output.log'])
-          # parseo el dssp file
-          dd_ob = dd.DSSPData()
-          dssp_file_name = open('output.log')
-          dd_ob.parseDSSP('output.log')
-          # obtengo la estructura y la guardo, posible no es necesario los residuos
-          # solo el numero de atomo que le pego arbitrariamente REVISAR si esta bien
-          ss = [i[2] for i in dd_ob.struct]
-          ss = pd.DataFrame([i for i in zip(ss, dd_ob.resnum, dd_ob.getChainType())])
-          ss.columns = ['pre_ss', 'residue_number', 'chain']
-          ss = ss[ss.chain == 'A']
-          ss = ss[ss.residue_number != ''].reset_index(drop=True)
-          ss['structure'] = np.where(ss.pre_ss.isin(['B', 'E']), 'B',
-                                     np.where(ss.pre_ss.isin(['G', 'H', 'I']), 'H',
-                                              'C'))
-          ss.residue_number = ss.residue_number.astype(int)
+      def Set_SS(self,dssp_file=False):
+          dic_ss = { ' ':'C', 'B':'B', 'E':'B',
+                     'G':'H', 'H':'H', 'I':'H',
+                     'T':'C', 'S':'C', 'C':'C'}
 
-          return(ss)
+          if not dssp_file:
+             temp_name = '%s_temp.pdb'%self.name
+             self.WriteToFile(temp_name)
+             sp.run(['dssp', '-i', temp_name , '-o', temp_name+'.dssp'])
+
+          data = open(temp_name+'.dssp').readlines()
+          flag = False
+          for line in data:
+              line = line.split('\n')[0]
+              if 'X-CA   Y-CA   Z-CA' in line:
+                 flag = True
+                 continue
+              if flag:
+                 resi = int(line.split()[1])
+                 chain = line.split()[2]
+                 ss = line[16:17]
+                 res = GetRes(resi)
+                 if res.chain == chain:
+                    setattr(res,'ss',dic_ss[ss])
 
       def PrintPdbInfo(self):
           """ Print information regarding the number of residues and frame"""
