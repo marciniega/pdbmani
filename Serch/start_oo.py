@@ -34,13 +34,13 @@ file1 = 'pdbs/1xxa.pdb'  # sys.argv[1]
 file2 = 'pdbs/1tig.pdb'  # sys.argv[2]
 
 # numero de cliques, preguntar en el software para generalizarlo...
-num_cliques = 4
+num_cliques = 3
 
 # outfile = open('hh_%s.txt'%infile.split('.')[0],'w')
 
 # se define la estructura
-pdb1 = rpt.PdbStruct("first")
-pdb2 = rpt.PdbStruct("second")
+pdb1 = rpt.PdbStruct(file1)
+pdb2 = rpt.PdbStruct(file2)
 
 # se lee el pdb y se agrega al objeto
 pdb1.AddPdbData("%s" % file1)
@@ -50,14 +50,11 @@ pdb2.AddPdbData("%s" % file2)
 pdb11 = pdb1.GetResChain()
 pdb22 = pdb2.GetResChain()
 
-ss1 = pdb1.Get_SS(file1)
-ss2 = pdb1.Get_SS(file2)
+pdb1.Set_SS()
+pdb2.Set_SS()
 
-# se crea atributo a cada residuo
-for i, j in zip(pdb11, ss1.structure.values):
-    setattr(i, 'structure', j)
-for i, j in zip(pdb22, ss2.structure.values):
-    setattr(i, 'structure', j)
+ss1 = fc.create_ss_table(pdb11)
+ss2 = fc.create_ss_table(pdb22)
 
 
 def get_df_distancias(ref):
@@ -79,6 +76,7 @@ def get_df_distancias(ref):
     # se genera la matriz de adyacencias para la red
     df_da = pd.DataFrame(index=index, columns=index, data=distancias)
     return(df_da, index)
+
 
 # devuelve tabla e indices de el dataframe de distancias entre atomos de la misma proteina con dth < 10A
 df_distancias1, index1 = get_df_distancias(pdb11)
@@ -123,16 +121,7 @@ def get_df_ca(list_of_residues):
 df_atoms1 = get_df_ca(pdb11)
 df_atoms2 = get_df_ca(pdb22)
 
-# se obtiene la estructura secundaria utilizando dssp
-# ss1 = fc.mini_dssp(file1, index1)
-# print('**'*50)
-# ss2 = fc.mini_dssp(file2, index2)
-# ya no por que se obtiene arriba desde read_pdb_tools.py
-
-# se le pega la estructura secundaria al dataframe de los cliques
-# esto va a cambiar por que lo tiene que obtener del objeto residuo
-# ya se crea en ss1 y no cuesta reevaluar si es mejor desde el residuo
-# checar que es mas rapido si desde residuo o desde dataframe ss
+# se genera la columna de ss a la tabla de los cliques
 df_cliques1 = fc.paste_SS(ss1, df_cliques1, num_cliques=num_cliques)
 df_cliques2 = fc.paste_SS(ss2, df_cliques2, num_cliques=num_cliques)
 
@@ -158,7 +147,7 @@ for i, j in enumerate(df_cliques1.columns):
 idx_rmsd1, idx_rmsd2 = 3*num_cliques, 4*num_cliques+3
 # print(list(range(idx_rmsd1,idx_rmsd2)))
 # se pasan a numpy arrays para mayor rapidez
-array_df_cliques1 = df_cliques1.values[:, range(idx_rmsd1, idx_rmsd2)] #del 9 al 15 columnas de interes
+array_df_cliques1 = df_cliques1.values[:, range(idx_rmsd1, idx_rmsd2)]  # del 9 al 15 columnas de interes
 array_df_cliques2 = df_cliques2.values[:, range(idx_rmsd1, idx_rmsd2)]
 
 # Se genera columna del calculo de distancia promedio para posteriormente filtrar por distancia promedio minima (dpm)

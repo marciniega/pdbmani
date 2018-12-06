@@ -32,10 +32,11 @@ class Residue(object):
       """Store residue info
               Rememer that the Atom Class is accessed through Residue.
               Atoms are defined as attributes of the Residue."""
-      def __init__(self, resi, resn, chain, atomnames=None, atoms=None):
+      def __init__(self, resi, resn, chain, ss=None, atomnames=None, atoms=None):
           self.resi = int(resi)
           self.resn = resn
           self.chain = chain
+          self.ss = ss
           if atomnames is None:
              self.atomnames = []
           if atoms is None:
@@ -206,31 +207,6 @@ class PdbStruct(object):
           self.chains = chains_in_data
 
 
-      def Set_SS(self,dssp_file=False):
-          dic_ss = { ' ':'C', 'B':'B', 'E':'B',
-                     'G':'H', 'H':'H', 'I':'H',
-                     'T':'C', 'S':'C', 'C':'C'}
-
-          if not dssp_file:
-             temp_name = '%s_temp.pdb'%self.name
-             self.WriteToFile(temp_name)
-             sp.run(['dssp', '-i', temp_name , '-o', temp_name+'.dssp'])
-
-          data = open(temp_name+'.dssp').readlines()
-          flag = False
-          for line in data:
-              line = line.split('\n')[0]
-              if 'X-CA   Y-CA   Z-CA' in line:
-                 flag = True
-                 continue
-              if flag:
-                 resi = int(line.split()[1])
-                 chain = line.split()[2]
-                 ss = line[16:17]
-                 res = GetRes(resi)
-                 if res.chain == chain:
-                    setattr(res,'ss',dic_ss[ss])
-
       def PrintPdbInfo(self):
           """ Print information regarding the number of residues and frame"""
           print ("Number of residues and frame: %s    %s"%(self.seqlength, self.timefrm))
@@ -348,6 +324,35 @@ class PdbStruct(object):
               self.GetRes(index).UpDateValue('rfact',new_data[c])
               c += 1
 
+      def Set_SS(self,dssp_file=False):
+          dic_ss = {' ': 'C', 'B': 'B', 'E': 'B',
+                    'G': 'H', 'H': 'H', 'I': 'H',
+                    'T': 'C', 'S': 'C', 'C': 'C'}
+          if not dssp_file:
+             temp_name = '%s' % self.name
+             # self.WriteToFile(temp_name)
+             sp.run(['dssp', '-i', temp_name, '-o', temp_name[:4]+'.dssp'])
+
+          data = open(temp_name[:4]+'.dssp').readlines()
+          flag = False
+
+          for line in data:
+              line = line.split('\n')[0]
+              if 'X-CA   Y-CA   Z-CA' in line:
+                 flag = True
+                 continue
+              if flag:
+                 try:
+                    resi = int(line.split()[1])
+                 except ValueError:
+                    continue
+                 chain = line.split()[2]
+                 ss = line[16:17]
+                 res = self.GetRes(resi)
+                 if res.chain == chain:
+                      setattr(res, 'ss', dic_ss[ss])
+
+
       def RenameResidues(self, list_of_new_names):
           """ This just change the name, thus atom types remain."""
           if len(self.pdbdata) == len(list_of_new_names):
@@ -356,7 +361,7 @@ class PdbStruct(object):
              raise SystemExit("The give list does not have the same size as the sequence")
           c = 0
           for res in self.pdbdata:
-              res.UpDateName('resn',list_of_new_names[c])
+              res.UpDateName('resn', list_of_new_names[c])
               c += 1
 
       def WriteToFile(self,file_out_name=None,flag_trj=False):

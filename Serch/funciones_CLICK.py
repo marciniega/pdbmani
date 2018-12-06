@@ -1,7 +1,6 @@
 
 # coding: utf-8
 
-
 # libreria de analisis de datos y una caracterizacion para su facil lectura.
 import pandas as pd
 pd.set_option('display.float_format', lambda x: '%.5f' % x)
@@ -11,15 +10,8 @@ pd.set_option('display.max_colwidth', -1)
 # libreria de generacion de rede y cliques
 import networkx as nx,community
 
-# libreria para calcular la distancia minima del filtro
-from scipy.spatial import distance
-
-# mas librerias que voy obteniendo
-import biopandas.pdb as bp
-biop = bp.PandasPdb() #libreria de lectura de pdbs
-
 # libreria de calculo de distancia euclidiana
-from scipy.spatial.distance import pdist, squareform
+from scipy.spatial.distance import pdist, squareform,euclidean
 
 # libreria de mate
 import numpy as np
@@ -35,13 +27,6 @@ import math_vect_tools as mvt
 #libreria para correr dssp desde bash
 import subprocess as sp
 
-#libreria para Parsear DSSP FIles
-import DSSPData as dd
-
-
-# Aqui se cambiaria por los archivos a leer pdbs sin modificar
-# path1 = '1xxa.pdb'
-# path2 = '1tig.pdb'
 
 # funcion de lectura con biopandas
 def read_biopdb(path):
@@ -61,9 +46,6 @@ def read_biopdb(path):
 
     df_atoms['vector_coordenadas'] = columna_vector
     return (df_atoms)
-
-
-# In[8]:
 
 
 # se calcula la distancia entre cada par de nodos.
@@ -119,31 +101,46 @@ def gen_3_cliques(df_distancias, dth = 10, k=3):
     return(df_cliques, cliques_completos)
 
 
-def mini_dssp(path,index):
-    # ejecuto dssp desde bash y guardo archivo como output.log
-    sp.run(['dssp','-i',path,'-o','output.log'])
-    # parseo el dssp file
-    dd_ob = dd.DSSPData()
-    dssp_file_name = open('output.log')
-    dd_ob.parseDSSP( 'output.log' )
-    # obtengo la estructura y la guardo, posible no es necesario los residuos
-    # solo el numero de atomo que le pego arbitrariamente REVISAR si esta bien
-    ss = [i[2] for i in dd_ob.struct ]
-    ss = pd.DataFrame([i for i in zip(ss,dd_ob.resnum,dd_ob.getChainType())])
-    ss.columns = ['pre_ss','residue_number','chain']
-    ss = ss[ss.chain == 'A']
-    ss = ss[ss.residue_number != ''].reset_index(drop=True)
-    ss['atom_number'] = index
-    # catalogo  Yo tomo B y E como betas, G H I como alfa y lo demás como coil
-    # B - betas
-    # H - alfas
-    ss['structure'] = np.where(ss.pre_ss.isin(['B','E']),'B',
-                               np.where(ss.pre_ss.isin(['G','H','I']),'H',
-                                        'C'))
-    # checks
-    print(ss.structure.value_counts(normalize = True) * 100)
-    print(path)
-    return(ss)
+def create_ss_table(list_residues,chain_code = 'A'):
+    ss_list = []
+    num_resi_list = []
+    chain_list = []
+    for i in list_residues:
+        ss_list.append(i.ss)
+        num_resi_list.append(i.resi)
+        chain_list.append(i.chain)
+
+    ss = pd.DataFrame()
+    ss['structure'] = ss_list
+    ss['residue_number'] = num_resi_list
+    ss['chain'] = chain_list
+    return ss
+
+# def mini_dssp(path,index):
+#     # ejecuto dssp desde bash y guardo archivo como output.log
+#     sp.run(['dssp','-i',path,'-o','output.log'])
+#     # parseo el dssp file
+#     dd_ob = dd.DSSPData()
+#     dssp_file_name = open('output.log')
+#     dd_ob.parseDSSP( 'output.log' )
+#     # obtengo la estructura y la guardo, posible no es necesario los residuos
+#     # solo el numero de atomo que le pego arbitrariamente REVISAR si esta bien
+#     ss = [i[2] for i in dd_ob.struct ]
+#     ss = pd.DataFrame([i for i in zip(ss,dd_ob.resnum,dd_ob.getChainType())])
+#     ss.columns = ['pre_ss','residue_number','chain']
+#     ss = ss[ss.chain == 'A']
+#     ss = ss[ss.residue_number != ''].reset_index(drop=True)
+#     ss['atom_number'] = index
+#     # catalogo  Yo tomo B y E como betas, G H I como alfa y lo demás como coil
+#     # B - betas
+#     # H - alfas
+#     ss['structure'] = np.where(ss.pre_ss.isin(['B','E']),'B',
+#                                np.where(ss.pre_ss.isin(['G','H','I']),'H',
+#                                         'C'))
+#     # checks
+#     print(ss.structure.value_counts(normalize = True) * 100)
+#     ss['residue_number'] = ss.residue_number.astype(int)
+#     return(ss)
 
 
 # funcion para obtener las coordenadas del clique
@@ -279,118 +276,87 @@ def get_coords_clique(df_atoms_ca, df_cliques, num_cliques):
 
     return(df_cliques)
 
-
-# funcion de calculo de baricentro
 def baricenter_clique(df_cliques, num_cliques):
-    """se calcula el baricentro de cada clique 
-    siguiendo la formula de arriba.
-    df_lc: Dataframe con los cliques y coordenadas
-    regresa
-    df_lc:Dataframe con el baricentro de ese clique"""
+    """se calcula el baricentro de cada clique
+        siguiendo la formula puntos promedios.
+        df_cliques: Dataframe con los cliques y coordenadas
+        num_cliques:numero de cliques
+        x_barra = la suma de los x_i / numero de elementos en clique
+        y_barra = la suma de los y_i / numero de elementos en clique
+        z_barra = la suma de los z_i / numero de elementos en clique"""
 
-    coord_center = []
-    for i in range(df_cliques.shape[0]):
-        # se extrae las coordenadas de los atomos
-        A = df_cliques.coord_clique_0[i]
-        B = df_cliques.coord_clique_1[i]
-        C = df_cliques.coord_clique_2[i]
+    coord_center = []  # se guardan los valores del baricentro
+    for i in range(df_cliques.shape[0]): # se recorre la tabla por indice
+        data = [df_cliques.iloc[i, j] for j in range(2*num_cliques, 3*num_cliques)]
+        # para cada registro se calcula el punto medio de cada vector
+        coord_center.append(np.mean(data, axis=0)) # se apila el punto medio
 
-        # X,Y,Z del baricentro, promediando por numero de cliques
-        x1 = (A[0] + B[0] + C[0]) / num_cliques
-        y1 = (A[1] + B[1] + C[1]) / num_cliques
-        z1 = (A[2] + B[2] + C[2]) / num_cliques
-        if num_cliques >= 4:
-            D = df_cliques.coord_clique_3[i]
-            x1 = (A[0] + B[0] + C[0] + D[0]) / num_cliques
-            y1 = (A[1] + B[1] + C[1] + D[1]) / num_cliques
-            z1 = (A[2] + B[2] + C[2] + D[2]) / num_cliques
-        if num_cliques >= 5:
-            E = df_cliques.coord_clique_4[i]
-            x1 = (A[0] + B[0] + C[0] + D[0] + E[0]) / num_cliques
-            y1 = (A[1] + B[1] + C[1] + D[1] + E[1]) / num_cliques
-            z1 = (A[2] + B[2] + C[2] + D[2] + E[2]) / num_cliques
-        if num_cliques >= 6:
-            F = df_cliques.coord_clique_5[i]
-            x1 = (A[0] + B[0] + C[0] + D[0] + E[0] + F[0]) / num_cliques
-            y1 = (A[1] + B[1] + C[1] + D[1] + E[1] + F[1]) / num_cliques
-            z1 = (A[2] + B[2] + C[2] + D[2] + E[2] + F[2]) / num_cliques
-        if num_cliques >= 7:
-            G = df_cliques.coord_clique_6[i]
-            x1 = (A[0] + B[0] + C[0] + D[0] + E[0] + F[0] + G[0]) / num_cliques
-            y1 = (A[1] + B[1] + C[1] + D[1] + E[1] + F[1] + G[1]) / num_cliques
-            z1 = (A[2] + B[2] + C[2] + D[2] + E[2] + F[2] + G[2]) / num_cliques
-        # se calcula el punto promedio
-
-        # se apila para pegarlo en una sola fila correspondiente al clique
-        coord_center.append(np.array([x1, y1, z1]))
-
-    #generacion de la columna
-    df_cliques['baricentro_clique'] = coord_center
+    df_cliques['baricentro_clique'] = coord_center  # se genera la columna
     return(df_cliques)
 
 
 def center_vectors(df_cliques, num_cliques):
-    """Calculo de los vectores gorro que van del baricentro 
-    a la coordenada del atomo
-    df_lc: Dataframe con baricentro y coordenadas de cada clique
-    regresa
-    df_lc:Dataframe con vectores gorro en otra columna"""
-    vec0 = []
+    """se calcula los nuevos vectores gorro o centricos de cada clique
+            como:
+            x_gorro = x_i - x_barra
+            y_gorro = y_i - y_barra
+            z_gorro = z_i - z_barra.
+            df_cliques: Dataframe con los cliques y coordenadas
+            num_cliques:numero de cliques"""
+    vec0 = []   # aqui se guardaran los valores de los vectores que se les resta el baricentro
     vec1 = []
     vec2 = []
     vec3 = []
     vec4 = []
     vec5 = []
     vec6 = []
-    vectores_centricos = []
-    for i, val in enumerate(df_cliques.baricentro_clique):
-        # extraccion de coordenadas de cada atomo
-        A = df_cliques.coord_clique_0[i]
-        B = df_cliques.coord_clique_1[i]
-        C = df_cliques.coord_clique_2[i]
+    vectores_centricos = [] # aqui guardaremos todos los vectores, en lugar de tenerlos por separado
+    for i, val in enumerate(df_cliques.baricentro_clique.values):
+        # se recorre la tabla por indice y valor del baricentro
+        data = [df_cliques.iloc[i, j] for j in range(2*num_cliques, 3*num_cliques)]
+        # se extrae las columnas de las coordenadas de los cliques
+        for n, k in enumerate(data):
+            vectors = (k - val)  # se le resta el baricentro a cada coordenada de clique
 
-        # calculo de vectores DEL CENTRO AL PUNTO COORDENADA
-        vec_a = list(A - val)
-        vec_b = list(B - val)
-        vec_c = list(C - val)
-    # SE APILAN PARA QUE ESTEN EN EL MISMO CLIQUE CORRESPONDIENTE A CADA UNO.
-        vec0.append(vec_a)
-        vec1.append(vec_b)
-        vec2.append(vec_c)
+            if n == 0:  # como va iterando sobre cada elemento del clique
+                a_0 = vectors  # se guarda el vector creado de la resta
+                vec0.append(vectors)  # se apila en su respectiva lista para generar la columna
+            if n == 1:
+                a_1 = vectors
+                vec1.append(vectors)
+            if n == 2:
+                a_2 = vectors
+                vec2.append(vectors)
+            if n == 3:
+                a_3 = vectors
+                vec3.append(vectors)
+            if n == 4:
+                a_4 = vectors
+                vec4.append(vectors)
+            if n == 5:
+                a_5 = vectors
+                vec5.append(vectors)
+            if n == 6:
+                a_6 = vectors
+                vec6.append(vectors)
 
         if num_cliques == 3:
-            vectores_centricos.append(np.array([vec_a, vec_b, vec_c]))
+            # al final de la iteracion se apilan todos los vectores creados en una columna que contiene todos
+            vectores_centricos.append(np.array([a_0, a_1, a_2]))
 
-        if num_cliques >= 4:
-            D = df_cliques.coord_clique_3[i]
-            vec_d = list(D - val)
-            vec3.append(vec_d)
-            if num_cliques == 4:
-                vectores_centricos.append(np.array([vec_a, vec_b, vec_c, vec_d]))
+        if num_cliques == 4:
+            vectores_centricos.append(np.array([a_0, a_1, a_2, a_3]))
 
-        if num_cliques >= 5:
-            E = df_cliques.coord_clique_4[i]
-            vec_e = list(E - val)
-            vec4.append(vec_e)
-            if num_cliques == 5:
-                vectores_centricos.append(np.array([vec_a, vec_b, vec_c, vec_d, vec_e]))
+        if num_cliques == 5:
+            vectores_centricos.append(np.array([a_0, a_1, a_2, a_3, a_4]))
 
-        if num_cliques >= 6:
-            F = df_cliques.coord_clique_5[i]
-            vec_f = list(F - val)
-            vec5.append(vec_f)
-            if num_cliques == 6:
-                vectores_centricos.append(np.array([vec_a, vec_b, vec_c, vec_d, vec_e, vec_f]))
+        if num_cliques == 6:
+            vectores_centricos.append(np.array([a_0, a_1, a_2, a_3, a_4, a_5]))
 
-        if num_cliques >= 7:
-            G = df_cliques.coord_clique_6[i]
-            vec_g = list(G - val)
-            vec6.append(vec_g)
-            if num_cliques == 7:
-                vectores_centricos.append(np.array([vec_a, vec_b, vec_c, vec_d, vec_e, vec_f, vec_g]))
+        if num_cliques == 7:
+            vectores_centricos.append(np.array([a_0, a_1, a_2, a_3, a_4, a_5, a_6]))
 
-    # se generan la columna de cada vector correspondiente a cada atomo
-    df_cliques['vec_gorro_0'] = vec0
+    df_cliques['vec_gorro_0'] = vec0  #  se crea la columna correspondiente
     df_cliques['vec_gorro_1'] = vec1
     df_cliques['vec_gorro_2'] = vec2
 
@@ -404,56 +370,7 @@ def center_vectors(df_cliques, num_cliques):
         df_cliques['vec_gorro_6'] = vec6
 
     df_cliques['vectores_gorro'] = vectores_centricos
-    return(df_cliques)
-
-
-# baricentro de vectores gorro, todos estan en el origen.
-# def baricenter_vectores_gorro(df_cliques, num_cliques):
-#     """se calcula el baricentro de cada clique
-#     siguiendo la formula de arriba.
-#     df_lc: Dataframe con los cliques y coordenadas
-#     regresa
-#     df_lc:Dataframe con el baricentro de ese clique"""
-#
-#     coord_center = []
-#     for i in range(df_cliques.shape[0]):
-#         # se extrae las coordenadas de los atomos
-#         A = df_cliques.vec_gorro_0[i]
-#         B = df_cliques.vec_gorro_1[i]
-#         C = df_cliques.vec_gorro_2[i]
-#
-#         # X,Y,Z del baricentro, promediando por numero de cliques
-#         x1 = (A[0] + B[0] + C[0]) / num_cliques
-#         y1 = (A[1] + B[1] + C[1]) / num_cliques
-#         z1 = (A[2] + B[2] + C[2]) / num_cliques
-#         if num_cliques >= 4:
-#             D = df_cliques.vec_gorro_3[i]
-#             x1 = (A[0] + B[0] + C[0] + D[0]) / num_cliques
-#             y1 = (A[1] + B[1] + C[1] + D[1]) / num_cliques
-#             z1 = (A[2] + B[2] + C[2] + D[2]) / num_cliques
-#         if num_cliques >= 5:
-#             E = df_cliques.vec_gorro_4[i]
-#             x1 = (A[0] + B[0] + C[0] + D[0] + E[0]) / num_cliques
-#             y1 = (A[1] + B[1] + C[1] + D[1] + E[1]) / num_cliques
-#             z1 = (A[2] + B[2] + C[2] + D[2] + E[2]) / num_cliques
-#         if num_cliques >= 6:
-#             F = df_cliques.vec_gorro_5[i]
-#             x1 = (A[0] + B[0] + C[0] + D[0] + E[0] + F[0]) / num_cliques
-#             y1 = (A[1] + B[1] + C[1] + D[1] + E[1] + F[1]) / num_cliques
-#             z1 = (A[2] + B[2] + C[2] + D[2] + E[2] + F[2]) / num_cliques
-#         if num_cliques >= 7:
-#             G = df_cliques.vec_gorro_6[i]
-#             x1 = (A[0] + B[0] + C[0] + D[0] + E[0] + F[0] + G[0]) / num_cliques
-#             y1 = (A[1] + B[1] + C[1] + D[1] + E[1] + F[1] + G[1]) / num_cliques
-#             z1 = (A[2] + B[2] + C[2] + D[2] + E[2] + F[2] + G[2]) / num_cliques
-#         # se calcula el punto promedio
-#
-#         # se apila para pegarlo en una sola fila correspondiente al clique
-#         coord_center.append(np.array([x1, y1, z1]))
-#
-#     #generacion de la columna
-#     df_cliques['baricentro_vectores_gorro'] = coord_center
-#     return(df_cliques)
+    return df_cliques
 
 
 def calculate_rmsd_rot_trans_m(residuos, array_cliques1, array_cliques2, num_cliques):
@@ -574,6 +491,8 @@ def calculate_rmsd_rot_trans_m(residuos, array_cliques1, array_cliques2, num_cli
         restriccion_rmsd = 0.30
     if num_cliques == 5:
         restriccion_rmsd = 0.60
+    if num_cliques == 6:
+        restriccion_rmsd = 0.90
     if num_cliques == 7:
         restriccion_rmsd = 1.50
     if num_cliques == 8:
@@ -584,7 +503,18 @@ def calculate_rmsd_rot_trans_m(residuos, array_cliques1, array_cliques2, num_cli
     return(rmsd_final,(res1,res2))
 
 
-## reorganizacion de funciones
+def get_distancia_promedio(num_cliques, df_cliques):
+    """Calculo de distancia promedio sobre cada vector gorro"""
+    a = (0, 0, 0)
+    df_cliques['distancia_promedio'] = [np.mean([euclidean(a, j) for j in i]) for i in df_cliques.vectores_gorro]
+    return df_cliques
+
+
+
+# reorganizacion de funciones
+
+# las funciones de abajo son para graficar, y replican funciones que utiliza CLICK
+
 
 def get_rot_vector(residuos, array_cliques1, array_cliques2, num_cliques):
 
@@ -659,41 +589,4 @@ def get_rot_vector(residuos, array_cliques1, array_cliques2, num_cliques):
     idx_vectores_gorro = num_cliques + 2
     vector_rotado = rotation_vectors(array_cliques1[:, idx_vectores_gorro][res1], matriz_rotacion)
 
-    return(vector_rotado)
-
-def get_distancia_promedio(num_cliques,df_cliques):
-    a = (0, 0, 0)
-    dist = distance.euclidean
-    if num_cliques == 3:
-        df_cliques['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2])]) for i in df_cliques.vectores_gorro]
-
-    elif num_cliques == 4:
-        df_cliques['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3])]) for i in df_cliques.vectores_gorro]
-
-    elif num_cliques == 5:
-        df_cliques['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4])]) for i in
-            df_cliques.vectores_gorro]
-
-    elif num_cliques == 6:
-        df_cliques['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5])]) for i in
-            df_cliques.vectores_gorro]
-
-    elif num_cliques == 7:
-        df_cliques['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5]), dist(a, i[6])])
-            for i in df_cliques.vectores_gorro]
-
-    elif num_cliques == 8:
-        df_cliques['distancia_promedio'] = [np.mean(
-            [dist(a, i[0]), dist(a, i[1]), dist(a, i[2]), dist(a, i[3]), dist(a, i[4]), dist(a, i[5]), dist(a, i[6]),
-             dist(a, i[7])]) for i in df_cliques.vectores_gorro]
-
-    else:
-        print('No soportamos ese numero de cliques')
-        exit()
-
-    return(df_cliques)
+    return vector_rotado
