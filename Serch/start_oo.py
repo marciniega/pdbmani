@@ -88,7 +88,7 @@ df_cliques1, cliques1 = fc.gen_3_cliques(df_distancias1, file1[5:9], dth=10, k=n
 print('**'*50)
 df_cliques2, cliques2 = fc.gen_3_cliques(df_distancias2, file2[5:9], dth=10, k=number_elements_clique)
 print('**'*50)
-exit()
+# exit()
 
 # funcion para obtener las propiedades del residuo para los cliques agrupados
 def get_df_ca(list_of_residues):
@@ -303,7 +303,7 @@ def iter_rmsd(new_df_cliques1,new_df_cliques2,number_elements_clique):
     return(new_df_cliques1, new_df_cliques2, number_elements_clique)
 
 
-for k in range(3):
+for k in range(5):
     new_df_cliques1, new_df_cliques2, number_elements_clique = iter_rmsd(
         new_df_cliques1, new_df_cliques2, number_elements_clique)
 

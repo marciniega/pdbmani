@@ -68,7 +68,7 @@ def distancia_entre_atomos(df_atoms):
     return(df_distancias)
 
 
-def gen_3_cliques(df_distancias, nombre, dth = 10, k=3 ):
+def gen_3_cliques(df_distancias, nombre, dth=10, k=3 ):
     """Genera n-cliques de dataframe de distancias, tomando en cuenta los enlaces menores o iguales
     a dth y forma los k-cliques que elijas 
     valores por default:
