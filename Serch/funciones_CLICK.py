@@ -29,23 +29,23 @@ import subprocess as sp
 
 
 # funcion de lectura con biopandas
-def read_biopdb(path):
-    """Extrae las cordenadas de los atomos de C_alfa y los acomoda en un vector
-    devuelve un dataframe con las coordenadas y el numero de residuo"""
-    df = biop.read_pdb(path)
-    df_all_atoms = df.df['ATOM']
-    #OJO AQUI ESTA ADECUADO AL PDB   para elegir solo un frame en trj_0 y trj_0_A [:1805]
-    df_atoms = df_all_atoms[[
-        'atom_number', 'atom_name', 'residue_name', 'residue_number',
-        'x_coord', 'y_coord', 'z_coord'
-    ]]
-    columna_vector = []
-    for i in zip(df_atoms.x_coord.tolist(), df_atoms.y_coord.tolist(),
-                 df_atoms.z_coord.tolist()):
-        columna_vector.append(np.array(i))
-
-    df_atoms['vector_coordenadas'] = columna_vector
-    return (df_atoms)
+# def read_biopdb(path):
+#     """Extrae las cordenadas de los atomos de C_alfa y los acomoda en un vector
+#     devuelve un dataframe con las coordenadas y el numero de residuo"""
+#     df = biop.read_pdb(path)
+#     df_all_atoms = df.df['ATOM']
+#     #OJO AQUI ESTA ADECUADO AL PDB   para elegir solo un frame en trj_0 y trj_0_A [:1805]
+#     df_atoms = df_all_atoms[[
+#         'atom_number', 'atom_name', 'residue_name', 'residue_number',
+#         'x_coord', 'y_coord', 'z_coord'
+#     ]]
+#     columna_vector = []
+#     for i in zip(df_atoms.x_coord.tolist(), df_atoms.y_coord.tolist(),
+#                  df_atoms.z_coord.tolist()):
+#         columna_vector.append(np.array(i))
+#
+#     df_atoms['vector_coordenadas'] = columna_vector
+#     return (df_atoms)
 
 
 # se calcula la distancia entre cada par de nodos.
@@ -68,7 +68,7 @@ def distancia_entre_atomos(df_atoms):
     return(df_distancias)
 
 
-def gen_3_cliques(df_distancias, dth = 10, k=3):
+def gen_3_cliques(df_distancias, nombre, dth = 10, k=3 ):
     """Genera n-cliques de dataframe de distancias, tomando en cuenta los enlaces menores o iguales
     a dth y forma los k-cliques que elijas 
     valores por default:
@@ -90,15 +90,22 @@ def gen_3_cliques(df_distancias, dth = 10, k=3):
 
     lista_cliques = []
     for i,v in enumerate(cliques_completos):
-        a = list(it.combinations(v,k))
+        a = list(it.combinations(v, k))
         for j in a:
             if set(j) not in lista_cliques:
                 #recuerda que para comparar elementos utiliza set, y apilalos como set
                 lista_cliques.append(set(j))
 
     df_cliques = pd.DataFrame(lista_cliques)
-    print("numero de %s-cliques posibles:" % (k), df_cliques.shape[0])
-    return(df_cliques, cliques_completos)
+    print("numero de %s-cliques posibles:" % k, df_cliques.shape[0])
+
+    df_maximal_clique = pd.DataFrame(cliques_completos, dtype=int)
+    df_maximal_clique['numero_elementos'] = df_maximal_clique.count(1)
+    df_maximal_clique.sort_values('numero_elementos', inplace=True)
+
+    nx.write_gexf(red,nombre+'.gexf')
+
+    return(df_cliques, df_maximal_clique)
 
 
 def create_ss_table(list_residues,chain_code = 'A'):
@@ -115,32 +122,6 @@ def create_ss_table(list_residues,chain_code = 'A'):
     ss['residue_number'] = num_resi_list
     ss['chain'] = chain_list
     return ss
-
-# def mini_dssp(path,index):
-#     # ejecuto dssp desde bash y guardo archivo como output.log
-#     sp.run(['dssp','-i',path,'-o','output.log'])
-#     # parseo el dssp file
-#     dd_ob = dd.DSSPData()
-#     dssp_file_name = open('output.log')
-#     dd_ob.parseDSSP( 'output.log' )
-#     # obtengo la estructura y la guardo, posible no es necesario los residuos
-#     # solo el numero de atomo que le pego arbitrariamente REVISAR si esta bien
-#     ss = [i[2] for i in dd_ob.struct ]
-#     ss = pd.DataFrame([i for i in zip(ss,dd_ob.resnum,dd_ob.getChainType())])
-#     ss.columns = ['pre_ss','residue_number','chain']
-#     ss = ss[ss.chain == 'A']
-#     ss = ss[ss.residue_number != ''].reset_index(drop=True)
-#     ss['atom_number'] = index
-#     # catalogo  Yo tomo B y E como betas, G H I como alfa y lo demás como coil
-#     # B - betas
-#     # H - alfas
-#     ss['structure'] = np.where(ss.pre_ss.isin(['B','E']),'B',
-#                                np.where(ss.pre_ss.isin(['G','H','I']),'H',
-#                                         'C'))
-#     # checks
-#     print(ss.structure.value_counts(normalize = True) * 100)
-#     ss['residue_number'] = ss.residue_number.astype(int)
-#     return(ss)
 
 
 # funcion para obtener las coordenadas del clique
@@ -508,6 +489,32 @@ def get_distancia_promedio(num_cliques, df_cliques):
     a = (0, 0, 0)
     df_cliques['distancia_promedio'] = [np.mean([euclidean(a, j) for j in i]) for i in df_cliques.vectores_gorro]
     return df_cliques
+
+
+# Funcion para obtener la siguiente iteracion de candidatos.
+def add_element_clique(df_cliques, col_candidatos, cliques, candidatos_df, number_elements_clique):
+    print('numero de elementos del clique:', number_elements_clique)
+    cliques_maximales = cliques[cliques.numero_elementos >= number_elements_clique].drop('numero_elementos',1).values
+    set_candidatos = [df_cliques.iloc[i, range(number_elements_clique)].values for i in candidatos_df[col_candidatos].unique()]
+    print(cliques_maximales.shape)
+    #conjunto de candidatos unicos
+    lista_residuos = []  # aqui se guardara la lista de numero de residuo
+    for candidato in set_candidatos:  # este va a cambiar cada iteracion
+        for clique_maximal in cliques_maximales:
+            clique_maximal = [i for i in clique_maximal if str(i) != 'nan']
+            if set(candidato).issubset(clique_maximal):       # si esta en un clique maximal
+                no_estan_en_clique = set(clique_maximal).difference(set(candidato))
+                # obten los elementos que no estan en ese clique que si estan en el clique maximal
+                for nuevo_elemento in no_estan_en_clique:
+                    candidato_nuevo = candidato.copy()
+                    # se genera una copia para no borrar el orginal
+                    candidato_nuevo = np.append(candidato_nuevo,nuevo_elemento)
+                    # se apila un elemento de los que no estan
+                    if set(candidato_nuevo) not in lista_residuos:
+                        lista_residuos.append(set(candidato_nuevo))
+                        # si no esta en la lista pasa
+    print('numero de elementos del clique ahora:', number_elements_clique+1)
+    return(pd.DataFrame(lista_residuos))
 
 
 

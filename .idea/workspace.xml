@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="44495990-b5c4-43a4-abc8-83a4cdf6893b" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/Serch/CLICK_RMSD_oo.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/CLICK_RMSD_oo.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/funciones_CLICK.py" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/funciones_CLICK.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/start_oo.py" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/start_oo.py" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/pdbmani$start_oo.coverage" NAME="start_oo Coverage Results" MODIFIED="1545415816305" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Serch" />
+  </component>
+  <component name="FileEditorManager">
+    <splitter split-orientation="horizontal" split-proportion="0.5410886">
+      <split-first>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/Serch/start_oo.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="196">
+                  <caret line="90" column="6" lean-forward="true" selection-start-line="90" selection-start-column="6" selection-end-line="90" selection-end-column="6" />
+                  <folding>
+                    <element signature="e#49#67#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-first>
+      <split-second>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/Serch/read_pdb_tools.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="6318">
+                  <caret line="354" selection-start-line="354" selection-end-line="354" />
+                  <folding>
+                    <element signature="e#0#18#0" expanded="true" />
+                    <marker date="1544118618032" expanded="true" signature="7926:7932" ph="..." />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/Serch/funciones_CLICK.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-90">
+                  <caret line="70" column="54" selection-start-line="70" selection-start-column="54" selection-end-line="70" selection-end-column="54" />
+                  <folding>
+                    <marker date="1545415691033" expanded="true" signature="6026:6348" ph="..." />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-second>
+    </splitter>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>basestring</find>
+      <find>next</find>
+      <find>atom</find>
+      <find>chain</find>
+      <find>infile</find>
+      <find>GetAtom</find>
+      <find>pd</find>
+      <find>get</find>
+      <find>Get_ss</find>
+      <find>get_SS</find>
+      <find>gET_</find>
+      <find>np.array</find>
+      <find>matriz_coordenadas</find>
+      <find>it.</find>
+      <find>Get_SS</find>
+      <find>dihedral</find>
+      <find>GetRes</find>
+      <find>Set_SS</find>
+      <find>Residue</find>
+      <find>bp</find>
+      <find>mvt</find>
+      <find>sp</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/Serch/read_pdb_tools.py" />
+        <option value="$PROJECT_DIR$/Serch/funciones_CLICK.py" />
+        <option value="$PROJECT_DIR$/Serch/start_oo.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="67" />
+    <option name="y" value="25" />
+    <option name="width" value="1717" />
+    <option name="height" value="982" />
+  </component>
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings module-name="pdbmani" is-module-sdk="true">
+        <option name="myUseModuleSdk" value="true" />
+        <option name="myModuleName" value="pdbmani" />
+      </console-settings>
+    </option>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="start_oo" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="pdbmani" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Serch" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Serch/start_oo.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.start_oo" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="44495990-b5c4-43a4-abc8-83a4cdf6893b" name="Default Changelist" comment="" />
+      <created>1539632010830</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1539632010830</updated>
+      <workItem from="1542908852473" duration="3140000" />
+      <workItem from="1542935809378" duration="2493000" />
+      <workItem from="1543081210125" duration="320000" />
+      <workItem from="1543270815423" duration="2035000" />
+      <workItem from="1543342363013" duration="6499000" />
+      <workItem from="1543439762105" duration="6224000" />
+      <workItem from="1543957603907" duration="9225000" />
+      <workItem from="1544034358324" duration="1383000" />
+      <workItem from="1544050261162" duration="31153000" />
+      <workItem from="1545412947321" duration="606000" />
+      <workItem from="1545415417082" duration="999000" />
+    </task>
+    <task id="LOCAL-00001" summary="utilizando el codigo de read_pdb_tools se extrae la matriz de distancias y se genera un dataframe del cual se puede utilizar las funciones ya creadas.&#10;&#10;Las funciones generadas para CLICK estan en funciones_CLICK.py y se importan para trabajar con ellas.&#10;&#10;Se adapta el mini_DSSP para poder seguir trabajando">
+      <created>1539710251934</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1539710251934</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Se generan algunas funciones para obtener los dataframes principales y se dispones a seguir bajando el tiempod el calculo del RMSD en el for o en la rotacion y traslacion">
+      <created>1539731673075</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1539731673075</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Reoordenamiento de las funciones_click para que se pueda ejecutar correctamente el algoritmo y pruebas para calcular los candidatos del rmsd">
+      <created>1539811152182</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1539811152183</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Aplicando el filtro de estructura secundaria se reduce el tiempo de ejecucion a 5 minutos y al final de la primera iteracion se obtienen 7000 candidatos. &#10;&#10;Hace falta limpiar las estrucutras de datos y como se generan ya sea desde pandas o desde el objeto residuo.&#10;&#10;Se cambiaron los nombres de algunas variables para tener mayor entendimiento del codigo.">
+      <created>1539905405977</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1539905405977</updated>
+    </task>
+    <task id="LOCAL-00005" summary="funciones_CLICK.py&#10;Se ordena codigo, quitando codigo comentado o codigo no necesario y se implementan listas por comprension para mayor rapidez al momento de crear estas listas. &#10;&#10;Se quita diccionario en la funcion R_ij por que consume tiempo computacional la reasignacion y se reajustan los indices en la funcion matriz_R, se indican el tipo de dato en los arrays.&#10;&#10;start_oo.py&#10;se cambian la generacion de listas por listas por comprension.&#10;&#10;CLICK_calculate_SSM.ipynb&#10;se implemento cython pero sin generar una ganancia notable.&#10;&#10;REVISAR QUE LA ROTACION Y TRASLACION NO ESTE DESCUADRADA POR EL CAMBIO EN EL CODIGO">
+      <created>1540826849684</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1540826849684</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Se cambia el codigo para que funcione indicando el numero de cliques.">
+      <created>1540867101067</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1540867101067</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Se indica la restricciones de valor de rmsd por numero de cliques para obtener candidatos acertados.">
+      <created>1540941779696</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1540941779696</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Se genera un analisis de RMSD para encontrar el filtro adecuado, prueba de distintos multiprocesos y se encuentra adecuado con solo uno.">
+      <created>1543368378538</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1543368378538</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Se obtiene un rango de diferencia de distancia promedio minima entre vectores gorro para filtrar los candidatos reduciendo el numero en al menos 50%, con la implementacion de la parelelizacion del calculo, el actual software tarda 18 segundos aplicando los primeros filtros (estructura secundaria y diferencia de distancia promedio minima) y 15 segundos ejecutando el calculo del RMSD.">
+      <created>1543449935114</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1543449935114</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Se ordena el codigo de start_oo ya que se obtiene el rango para el filtro de distancia promedio minima entre cliques...&#10;Comienza la implementacion del codigo de prueba para agregar un nuevo elemento al clique y volver a calcular la ss y el rmsd pasando por el filtro de dpm&#10;Se ordena la carpeta por los codigos de desarrollo y los experimentos donde se implemento la solucion de cada paso del software&#10;Se guardan los pdbs que se utilizaron para generar el dpm siguiendo que son parecidos por el archivo cluster95.txt descargado de pdbs&#10;se genera nueva funcion en funciones_CLICK que te crea la columna distancia promedio de ambos cliques">
+      <created>1543961696456</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1543961696456</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Se genera el jupyter de prueba donde se consigue agregar hasta 7 cliques de corrido, obteniendo los candidatos finales con 7 elementos en 4 minutos. pasando por todos los filtros previos y el calculo del RMSD.&#10;&#10;Se reordenan algunas funciones para no tener codigo redundante.">
+      <created>1543975701922</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1543975701922</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Se cambian las funciones de varios if y se modifica el codigo a algo mas reducido.&#10;Se genera la tabla ss desde la lectura del pdb">
+      <created>1544131467092</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1544131467092</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="64077000" />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="-2" width="1920" height="1082" extended-state="6" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" weight="0.19147758" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32972974" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4941302" weight="0.32738718" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.4997233" weight="0.39979014" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.4997233" weight="0.32972974" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="8" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5058698" side_tool="true" weight="0.32738718" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.49734747" weight="0.32769555" />
+      <window_info anchor="bottom" id="Python Console" order="12" sideWeight="0.4969563" weight="0.32738718" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="SciView" order="3" />
+      <window_info anchor="right" id="Database" order="4" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="utilizando el codigo de read_pdb_tools se extrae la matriz de distancias y se genera un dataframe del cual se puede utilizar las funciones ya creadas.&#10;&#10;Las funciones generadas para CLICK estan en funciones_CLICK.py y se importan para trabajar con ellas.&#10;&#10;Se adapta el mini_DSSP para poder seguir trabajando" />
+    <MESSAGE value="Se generan algunas funciones para obtener los dataframes principales y se dispones a seguir bajando el tiempod el calculo del RMSD en el for o en la rotacion y traslacion" />
+    <MESSAGE value="Reoordenamiento de las funciones_click para que se pueda ejecutar correctamente el algoritmo y pruebas para calcular los candidatos del rmsd" />
+    <MESSAGE value="Aplicando el filtro de estructura secundaria se reduce el tiempo de ejecucion a 5 minutos y al final de la primera iteracion se obtienen 7000 candidatos. &#10;&#10;Hace falta limpiar las estrucutras de datos y como se generan ya sea desde pandas o desde el objeto residuo.&#10;&#10;Se cambiaron los nombres de algunas variables para tener mayor entendimiento del codigo." />
+    <MESSAGE value="funciones_CLICK.py&#10;Se ordena codigo, quitando codigo comentado o codigo no necesario y se implementan listas por comprension para mayor rapidez al momento de crear estas listas. &#10;&#10;Se quita diccionario en la funcion R_ij por que consume tiempo computacional la reasignacion y se reajustan los indices en la funcion matriz_R, se indican el tipo de dato en los arrays.&#10;&#10;start_oo.py&#10;se cambian la generacion de listas por listas por comprension.&#10;&#10;CLICK_calculate_SSM.ipynb&#10;se implemento cython pero sin generar una ganancia notable.&#10;&#10;REVISAR QUE LA ROTACION Y TRASLACION NO ESTE DESCUADRADA POR EL CAMBIO EN EL CODIGO" />
+    <MESSAGE value="Se cambia el codigo para que funcione indicando el numero de cliques." />
+    <MESSAGE value="Se indica la restricciones de valor de rmsd por numero de cliques para obtener candidatos acertados." />
+    <MESSAGE value="Se genera un analisis de RMSD para encontrar el filtro adecuado, prueba de distintos multiprocesos y se encuentra adecuado con solo uno." />
+    <MESSAGE value="Se obtiene un rango de diferencia de distancia promedio minima entre vectores gorro para filtrar los candidatos reduciendo el numero en al menos 50%, con la implementacion de la parelelizacion del calculo, el actual software tarda 18 segundos aplicando los primeros filtros (estructura secundaria y diferencia de distancia promedio minima) y 15 segundos ejecutando el calculo del RMSD." />
+    <MESSAGE value="Se ordena el codigo de start_oo ya que se obtiene el rango para el filtro de distancia promedio minima entre cliques...&#10;Comienza la implementacion del codigo de prueba para agregar un nuevo elemento al clique y volver a calcular la ss y el rmsd pasando por el filtro de dpm&#10;Se ordena la carpeta por los codigos de desarrollo y los experimentos donde se implemento la solucion de cada paso del software&#10;Se guardan los pdbs que se utilizaron para generar el dpm siguiendo que son parecidos por el archivo cluster95.txt descargado de pdbs&#10;se genera nueva funcion en funciones_CLICK que te crea la columna distancia promedio de ambos cliques" />
+    <MESSAGE value="Se genera el jupyter de prueba donde se consigue agregar hasta 7 cliques de corrido, obteniendo los candidatos finales con 7 elementos en 4 minutos. pasando por todos los filtros previos y el calculo del RMSD.&#10;&#10;Se reordenan algunas funciones para no tener codigo redundante." />
+    <MESSAGE value="Se cambian las funciones de varios if y se modifica el codigo a algo mas reducido.&#10;Se genera la tabla ss desde la lectura del pdb" />
+    <option name="LAST_COMMIT_MESSAGE" value="Se cambian las funciones de varios if y se modifica el codigo a algo mas reducido.&#10;Se genera la tabla ss desde la lectura del pdb" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/Serch/CLICK_calculate_SSM.ipynb" />
+    <entry file="file://$PROJECT_DIR$/Serch/tabla_distancias.csv" />
+    <entry file="file://$PROJECT_DIR$/Serch/math_tricks/math_axuliar_funct.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Serch/math_tricks/math_vect_tools.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1066" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../anaconda3/lib/python3.7/codecs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="227">
+          <caret line="323" selection-start-line="323" selection-end-line="323" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Serch/read_pdb_tools.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6318">
+          <caret line="354" selection-start-line="354" selection-end-line="354" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <marker date="1544118618032" expanded="true" signature="7926:7932" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Serch/funciones_CLICK.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-90">
+          <caret line="70" column="54" selection-start-line="70" selection-start-column="54" selection-end-line="70" selection-end-column="54" />
+          <folding>
+            <marker date="1545415691033" expanded="true" signature="6026:6348" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Serch/start_oo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="196">
+          <caret line="90" column="6" lean-forward="true" selection-start-line="90" selection-start-column="6" selection-end-line="90" selection-end-column="6" />
+          <folding>
+            <element signature="e#49#67#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ScopeChooserConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>
