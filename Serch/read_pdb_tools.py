@@ -6,7 +6,6 @@ sys.path.append('math_tricks/')
 from math_vect_tools import *
 from operations import *
 import subprocess as sp
-import pandas as pd
 #                                     #                            #
 
 class Atom(object):
