@@ -31,8 +31,8 @@ timenow = datetime.datetime.now()
 
 # assert( len(sys.argv) > 1)
 # lectura de archivo
-file1 = 'pdbs/1xxa.pdb'  # sys.argv[1]
-file2 = 'pdbs/1tig.pdb'  # sys.argv[2]
+file1 = 'pdbs/1xxa_prueba.pdb'  # sys.argv[1]
+file2 = 'pdbs/1xxa.pdb'  # sys.argv[2]
 
 # numero de cliques, preguntar en el software para generalizarlo...
 number_elements_clique = 3
@@ -56,8 +56,7 @@ pdb2.Set_SS()
 
 ss1 = fc.create_ss_table(pdb11)
 ss2 = fc.create_ss_table(pdb22)
-# print(pdb11[0].)
-# exit()
+
 def get_df_distancias(ref):
     """Funcion para obtener el dataframe de distancias de cada proteina"""
     # se generan listas con coordenadas y numero de atomo
@@ -159,12 +158,6 @@ candidatos_ss = fc.compare_SS(df_cliques1, df_cliques2, num_cliques=number_eleme
 df_cliques1 = fc.get_coords_clique(df_atoms1, df_cliques1, number_elements_clique)
 df_cliques2 = fc.get_coords_clique(df_atoms2, df_cliques2, number_elements_clique)
 
-# print(df_cliques1.dtypes)
-# print([i.dtype for i in df_atoms1.vector.iloc[0]])
-# print([i.dtype for i in df_cliques1.matriz_coordenadas.iloc[0]])
-# print(df_atoms1.vector.values[0])
-
-
 # calculo de baricentro baricentro clique
 df_cliques1 = fc.baricenter_clique(df_cliques1, number_elements_clique)
 df_cliques2 = fc.baricenter_clique(df_cliques2, number_elements_clique)
@@ -172,9 +165,6 @@ df_cliques2 = fc.baricenter_clique(df_cliques2, number_elements_clique)
 # calculo de vectores gorro
 df_cliques1 = fc.center_vectors(df_cliques1, number_elements_clique)
 df_cliques2 = fc.center_vectors(df_cliques2, number_elements_clique)
-
-# for i, j in enumerate(df_cliques1.columns):
-#     print(i, j)
 
 # para obtener el vector de columna de interes sin importar el numero de cliques.
 idx_rmsd1, idx_rmsd2 = 3 * number_elements_clique, 4 * number_elements_clique + 3
@@ -302,9 +292,6 @@ def iter_rmsd(new_df_cliques1,new_df_cliques2,number_elements_clique):
             array_dist_promedio1[i] - array_dist_promedio2[j] >= -limite_distancia_minima) & (
                                       array_dist_promedio1[i] - array_dist_promedio2[j] <= limite_distancia_minima)]
 
-    # print('num candidatos filtro SS', len(candidatos_ss))
-    # print('num candidatos filtro distancia y ss', len(candidatos_filter_dist))
-
     p = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
     restriccion_rmsd = 0.15
     if number_elements_clique == 4:
@@ -365,45 +352,81 @@ new_df_cliques2.to_pickle('clique2.pkl')
 df_atoms1.to_pickle('clique1_df_atributos.pkl')
 df_atoms2.to_pickle('clique2_df_atributos.pkl')
 
-pd.DataFrame(rmsd).to_pickle('rmsd_picke.pkl')
+pd.DataFrame(rmsd).reset_index(drop=True).to_pickle('rmsd_picke.pkl')
 pd.DataFrame(candidatos).to_csv("candidatos.csv", index=False)
 
-rmsd.reset_index(drop=True)
+rmsd.reset_index(drop=True, inplace=True)
 
 lista_vectores_gorro = []
-for i,bari in enumerate(new_df_cliques1.baricentro_clique.values):
+for i, bari in enumerate(new_df_cliques1.baricentro_clique.values):
     lista_pre_vectores = []
-#     if i < 5:
     for coord in df_atoms1.vector.values:
-#             print(bari,coord)
         lista_pre_vectores.append(coord - bari)
-#             print('aa'*20)
+
     lista_vectores_gorro.append(lista_pre_vectores)
 
 vectores_gorro_proteina_1 = pd.DataFrame(lista_vectores_gorro)
 
 lista_vectores_gorro = []
-for i,bari in enumerate(new_df_cliques2.baricentro_clique.values):
+for i, bari in enumerate(new_df_cliques2.baricentro_clique.values):
     lista_pre_vectores = []
-#     if i < 5:
     for coord in df_atoms2.vector.values:
-#             print(bari,coord)
         lista_pre_vectores.append(coord - bari)
-#             print('aa'*20)
+
     lista_vectores_gorro.append(lista_pre_vectores)
 
 vectores_gorro_proteina_2 = pd.DataFrame(lista_vectores_gorro)
 # se obtiene la matriz de rotacion del menor rmsd
 # se aplica a todos los vectores gorro de la proteina 1 que ya se le quito el baricentro del candidato 1
-matriz_rotacion = rmsd.iloc[rmsd.rmsd.idxmin()].matriz_rotacion
-vector_gorro = vectores_gorro_proteina_1.iloc[130].values
-#se obtienen coordendas rotadas
+# para cada candidato
+candidato = []
+protein_to_compare = [i for i in df_atoms2.vector.values]
+
+for idx in range(rmsd.shape[0]):
+    # tomas la matriz de rotacion y se la aplicas a los vectores gorro correspondientes
+    matriz_rotacion = rmsd.iloc[idx].matriz_rotacion
+
+    vector_gorro = vectores_gorro_proteina_1.iloc[rmsd.iloc[idx].candidato_clique_1].values
+
+    coord_vectores_rotados = [np.matmul(matriz_rotacion, i.reshape(3, 1)).T[0] for i in vector_gorro]
+
+    baricentro_proteina_2 = new_df_cliques2.iloc[rmsd.iloc[idx].candidato_clique_2].baricentro_clique
+
+    protein_trasladado_rotado = coord_vectores_rotados + baricentro_proteina_2  # nuevas coordendas proteina 1
+    # RMSD
+    p12 = np.sum((protein_to_compare - protein_trasladado_rotado) ** 2, 1)
+    rmsd_i = lambda i: np.sqrt(i) / 3
+    candidato.append([np.where(rmsd_i(p12) <= 0.05, 1, 0).mean(), idx])
+
+df_so = pd.DataFrame(candidato, columns=['SO', 'index'])
+print(df_so.idxmax())
+print(df_so.max())
+numero = int(input("escribe el numero de idx"))
+    # df_so[df_so.SO == df_so.SO.quantile(0.95)].index[np.random.randint(df_so[df_so.SO == df_so.SO.quantile(0.95)].shape[0])]
+
+idx = numero
+matriz_rotacion = rmsd.iloc[idx].matriz_rotacion
+
+vector_gorro = vectores_gorro_proteina_1.iloc[rmsd.iloc[idx].candidato_clique_1].values
+
 coord_vectores_rotados = [np.matmul(matriz_rotacion, i.reshape(3, 1)).T[0] for i in vector_gorro]
 
-# las coordenadas anteriores se le suma el baricentro del candidato seleccionado de la proteina 2
-baricentro_proteina_2 = new_df_cliques2.iloc[rmsd.iloc[rmsd.rmsd.idxmin()].candidato_clique_2].baricentro_clique
-vector_rotado_trasladado_a_clique2 = coord_vectores_rotados + baricentro_proteina_2 #nuevas coordendas proteina 1
+baricentro_proteina_2 = new_df_cliques2.iloc[rmsd.iloc[idx].candidato_clique_2].baricentro_clique
 
+protein_trasladado_rotado = coord_vectores_rotados + baricentro_proteina_2  # nuevas coordendas proteina 1
+
+new_df_atom1 = pd.concat([df_atoms1,pd.DataFrame(protein_trasladado_rotado, columns=['x','y','z'])],1)
+new_df_atom1['new_vector'] = [
+    [new_df_atom1.iloc[i]['x'], new_df_atom1.iloc[i]['y'], new_df_atom1.iloc[i]['z']] for i in range(new_df_atom1.shape[0])]
+
+for i in pdb11:
+    mask = np.where(i.resi == new_df_atom1.residue_number, True, False)
+    for j in new_df_atom1[mask].atom_name:
+        mask_2 = np.where(new_df_atom1[mask].atom_name == j, True, False)
+        i.GetAtom(j).UpDateValue('coord', new_df_atom1[mask][mask_2].new_vector.values[0])
+
+pdb1.pdbdata = pdb11
+pdb1.WriteToFile()
 
 time_bueno = datetime.datetime.now()
 print('iteraciones completas:', time_bueno - timenow_bueno)
