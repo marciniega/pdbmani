@@ -31,7 +31,7 @@ class Residue(object):
       """Store residue info
               Rememer that the Atom Class is accessed through Residue.
               Atoms are defined as attributes of the Residue."""
-      def __init__(self, resi, resn, chain, ss=None, atomnames=None, atoms=None):
+      def __init__(self, resi, resn, chain, ss=None, atomnames=None, atoms=None, ngb=None):
           self.resi = int(resi)
           self.resn = resn
           self.chain = chain
@@ -40,6 +40,8 @@ class Residue(object):
              self.atomnames = []
           if atoms is None:
              self.atoms = []
+          if ngb is None:
+              self.ngb = []
 
       def __iter__(self):
           return self
@@ -288,6 +290,25 @@ class PdbStruct(object):
               data.append(atom_pos)
           return np.array(data)
 
+      def GetNeighbors(self):
+          "To do avoid running over the whole res list files"
+          vec_position = self.GetResChain()
+          for res_i in vec_position:
+              atom_i = res_i.GetAtom('CA').coord
+              ngb_temp_i = []
+
+              for res_j in vec_position:
+
+                  # if res_j.resi > res_i.resi:
+                      atom_j = res_j.GetAtom('CA').coord
+                      dist = distance(atom_i, atom_j)
+
+                      if dist < 10 and not dist == 0:
+                          ngb_temp_i.append(res_j.resi)
+
+              setattr(res_i, "ngb", ngb_temp_i)
+
+
       def GetDiheMain(self):
           data = []
           for index in [ int(i.resi) for i in self.pdbdata ][1:-1]:
@@ -375,6 +396,8 @@ class PdbStruct(object):
              out_data.write("MODEL\n")
           if file_out_name is None and not flag_trj:
              file_out_name = self.name
+             out_data = open('%s.pdb'%file_out_name,'w')
+          if type(file_out_name) == str:
              out_data = open('%s.pdb'%file_out_name,'w')
           out_data.write("REMARK %s writen by me. \n"%self.name)
           #for index in [ int(i.resi) for i in self.pdbdata ][1:-1]:

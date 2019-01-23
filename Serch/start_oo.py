@@ -31,8 +31,8 @@ timenow = datetime.datetime.now()
 
 # assert( len(sys.argv) > 1)
 # lectura de archivo
-file1 = 'pdbs/1xxa_prueba.pdb'  # sys.argv[1]
-file2 = 'pdbs/1xxa.pdb'  # sys.argv[2]
+file1 = 'pdbs/1xxa.pdb'  # sys.argv[1]
+file2 = 'pdbs/1tig.pdb'  # sys.argv[2]
 
 # numero de cliques, preguntar en el software para generalizarlo...
 number_elements_clique = 3
@@ -47,9 +47,18 @@ pdb2 = rpt.PdbStruct(file2)
 pdb1.AddPdbData("%s" % file1)
 pdb2.AddPdbData("%s" % file2)
 
+pdb1.GetNeighbors()
+pdb2.GetNeighbors()
+
 # se obtienen los residuos que perteneces a la cadena de interes por default chain = 'A'
 pdb11 = pdb1.GetResChain()
 pdb22 = pdb2.GetResChain()
+
+# Poner un condicional que siempre agarre a la proteina mas chica y la rote y traslade a la mas grande
+# if len(pdb11)
+# print(len(pdb11))
+# print(len(pdb22))
+# exit()
 
 pdb1.Set_SS()
 pdb2.Set_SS()
@@ -89,8 +98,8 @@ df_cliques2, cliques2 = fc.gen_3_cliques(df_distancias2, file2[5:9], dth=10, k=n
 print('**'*50)
 
 # se agrega filtro de residuos que pertenecen a cliques de 7 elementos
-mc1_7 = cliques1[cliques1.numero_elementos == 7].drop('numero_elementos',1)
-mc2_7 = cliques2[cliques2.numero_elementos == 7].drop('numero_elementos',1)
+mc1_7 = cliques1[cliques1.numero_elementos == 7].drop('numero_elementos', 1)
+mc2_7 = cliques2[cliques2.numero_elementos == 7].drop('numero_elementos', 1)
 
 residuos_unicos_1 = []
 for i in [list(mc1_7[i].unique()) for i in mc1_7.dropna(1).columns]:
@@ -124,6 +133,7 @@ def get_df_ca(list_of_residues):
     residue_name = []
     residue_number = []
     coord = []
+    res_ngb = []
     for res in list_of_residues:
         for atom in res.atoms:
             atom_number.append(atom.atom_number)
@@ -131,14 +141,16 @@ def get_df_ca(list_of_residues):
             residue_name.append(res.resn)
             residue_number.append(res.resi)
             coord.append(atom.coord)
+            res_ngb.append(res.ngb)
 
     df_atoms = pd.DataFrame(columns=['atom_number', 'atom_name', 'residue_name',
-                                   'residue_number', 'vector'])
+                                   'residue_number', 'vector', 'ngb'])
     df_atoms.atom_number = atom_number
     df_atoms.atom_name = atom_name
     df_atoms.residue_name = residue_name
     df_atoms.residue_number = residue_number
     df_atoms.vector = coord
+    df_atoms.ngb = res_ngb
 
     return(df_atoms)
 
@@ -270,7 +282,6 @@ def iter_rmsd(new_df_cliques1,new_df_cliques2,number_elements_clique):
     idx_rmsd1, idx_rmsd2 = 3 * number_elements_clique, 4 * number_elements_clique + 3
     array_df_cliques1 = df_cliques1.values[:, range(idx_rmsd1, idx_rmsd2)]  # del 9 al 15
     array_df_cliques2 = df_cliques2.values[:, range(idx_rmsd1, idx_rmsd2)]
-    # print(len(candidatos_ss))
     df_cliques1 = fc.get_distancia_promedio(number_elements_clique, df_cliques1)
     df_cliques2 = fc.get_distancia_promedio(number_elements_clique, df_cliques2)
     array_dist_promedio1 = df_cliques1.values[:, -1]  # el ultimo valor de distancia.
@@ -313,7 +324,7 @@ def iter_rmsd(new_df_cliques1,new_df_cliques2,number_elements_clique):
     p.close()
     p.join()
 
-    f1 = pd.DataFrame(rmsd_1, columns=['rmsd','candidatos','matriz_rotacion'])
+    f1 = pd.DataFrame(rmsd_1, columns=['rmsd', 'candidatos', 'matriz_rotacion'])
     f1 = f1[f1.rmsd <= restriccion_rmsd]
     f1['candidato_clique_1'] = f1.candidatos.str.get(0)
     f1['candidato_clique_2'] = f1.candidatos.str.get(1)
@@ -334,44 +345,27 @@ for k in range(4):
     new_df_cliques1, new_df_cliques2, number_elements_clique, candidatos, rmsd = iter_rmsd(
         new_df_cliques1, new_df_cliques2, number_elements_clique)
 
-
-
-
-# Una ves que agrega el 8tavo candidato corre lo siguiente
-# def alineacion(new_df_cliques1,new_df_cliques2, candidatos, df_atoms1,df_atoms2,number_elements_clique = 8):
-# rmsd = None
-
-# new_df_cliques1 = fc.get_coords_clique(df_atoms1, new_df_cliques1, number_elements_clique)
-# new_df_cliques2 = fc.get_coords_clique(df_atoms2, new_df_cliques2, number_elements_clique)
-#
-# new_df_cliques1 = fc.baricenter_clique(new_df_cliques1, number_elements_clique)
-# new_df_cliques2 = fc.baricenter_clique(new_df_cliques2, number_elements_clique)
-
+# cosas de prueba guardando objetos con datos
 new_df_cliques1.to_pickle('clique1.pkl')
 new_df_cliques2.to_pickle('clique2.pkl')
 df_atoms1.to_pickle('clique1_df_atributos.pkl')
 df_atoms2.to_pickle('clique2_df_atributos.pkl')
-
 pd.DataFrame(rmsd).reset_index(drop=True).to_pickle('rmsd_picke.pkl')
 pd.DataFrame(candidatos).to_csv("candidatos.csv", index=False)
 
 rmsd.reset_index(drop=True, inplace=True)
 
 lista_vectores_gorro = []
-for i, bari in enumerate(new_df_cliques1.baricentro_clique.values):
-    lista_pre_vectores = []
-    for coord in df_atoms1.vector.values:
-        lista_pre_vectores.append(coord - bari)
+for bari in new_df_cliques1.baricentro_clique.values:
+    lista_pre_vectores = [coord - bari for coord in df_atoms1[df_atoms1.atom_name == 'CA'].vector.values]
 
     lista_vectores_gorro.append(lista_pre_vectores)
 
 vectores_gorro_proteina_1 = pd.DataFrame(lista_vectores_gorro)
 
 lista_vectores_gorro = []
-for i, bari in enumerate(new_df_cliques2.baricentro_clique.values):
-    lista_pre_vectores = []
-    for coord in df_atoms2.vector.values:
-        lista_pre_vectores.append(coord - bari)
+for bari in new_df_cliques2.baricentro_clique.values:
+    lista_pre_vectores = [coord - bari for coord in df_atoms2[df_atoms2.atom_name == 'CA'].vector.values]
 
     lista_vectores_gorro.append(lista_pre_vectores)
 
@@ -380,42 +374,142 @@ vectores_gorro_proteina_2 = pd.DataFrame(lista_vectores_gorro)
 # se aplica a todos los vectores gorro de la proteina 1 que ya se le quito el baricentro del candidato 1
 # para cada candidato
 candidato = []
-protein_to_compare = [i for i in df_atoms2.vector.values]
+protein_to_compare = np.array([i for i in df_atoms2[df_atoms2.atom_name == 'CA'].vector.values])
 
-for idx in range(rmsd.shape[0]):
-    # tomas la matriz de rotacion y se la aplicas a los vectores gorro correspondientes
-    matriz_rotacion = rmsd.iloc[idx].matriz_rotacion
+df_rmsd = rmsd.values
+df_new_df_clique1 = new_df_cliques1.values
+df_new_df_clique2 = new_df_cliques2.values
+df_vectores_gorro_proteina_1 = vectores_gorro_proteina_1.values
+df_vectores_gorro_proteina_2 = vectores_gorro_proteina_2.values
+atomos_vector_2 = df_atoms2[df_atoms2.atom_name == 'CA'].vector.values
 
-    vector_gorro = vectores_gorro_proteina_1.iloc[rmsd.iloc[idx].candidato_clique_1].values
+atoms1 = df_atoms1[df_atoms1.atom_name == 'CA'].atom_number.values
+atoms2 = df_atoms2[df_atoms2.atom_name == 'CA'].atom_number.values
+number_of_residues = df_atoms1[df_atoms1.atom_name == 'CA'].shape[0]
 
+
+def align_residues(idx, so):
+    df_rmsd = rmsd.values
+    df_new_df_clique1 = new_df_cliques1.values
+    df_new_df_clique2 = new_df_cliques2.values
+    df_vectores_gorro_proteina_1 = vectores_gorro_proteina_1.values
+
+    atoms1 = df_atoms1[df_atoms1.atom_name == 'CA'].atom_number.values
+    atoms2 = df_atoms2[df_atoms2.atom_name == 'CA'].atom_number.values
+    number_of_residues = df_atoms1[df_atoms1.atom_name == 'CA'].shape[0]
+
+    protein_to_compare = np.array([i for i in df_atoms2[df_atoms2.atom_name == 'CA'].vector.values])
+
+    clique_in_protein_1 = df_rmsd[idx, 3]  # se extrae la info de los candidatos
+    clique_in_protein_2 = df_rmsd[idx, 4]
+
+    # se obtienen el numero de residuo de los candidatos
+    los_del_clique_1 = df_new_df_clique1[clique_in_protein_1, [0, 1, 2, 3, 4, 5, 6]]
+    los_del_clique_2 = df_new_df_clique2[clique_in_protein_2, [0, 1, 2, 3, 4, 5, 6]]
+
+    matriz_rotacion = df_rmsd[idx, 2]  # se obtiene la matriz de rotacion de los cliques candidatos
+
+    # se obtienen los vectores gorro de la proteina a rotar y trasladar
+    vector_gorro = df_vectores_gorro_proteina_1[clique_in_protein_1]
+    # se aplica la rotacion a vectores gorro
     coord_vectores_rotados = [np.matmul(matriz_rotacion, i.reshape(3, 1)).T[0] for i in vector_gorro]
-
-    baricentro_proteina_2 = new_df_cliques2.iloc[rmsd.iloc[idx].candidato_clique_2].baricentro_clique
-
+    # se obtiene el baricentro de la proteina 2
+    baricentro_proteina_2 = df_new_df_clique2[clique_in_protein_2, 22]
+    # se suma el baricentro a vectores rotados de la proteina 1
     protein_trasladado_rotado = coord_vectores_rotados + baricentro_proteina_2  # nuevas coordendas proteina 1
-    # RMSD
-    p12 = np.sum((protein_to_compare - protein_trasladado_rotado) ** 2, 1)
-    rmsd_i = lambda i: np.sqrt(i) / 3
-    candidato.append([np.where(rmsd_i(p12) <= 0.05, 1, 0).mean(), idx])
+    # se quitan residuos que pertenezcan al clique candidato para calcular la distancia y emparejar al mejor.
+    protein_trasladado_rotado_sin_clique = np.delete(protein_trasladado_rotado, los_del_clique_1, 0)
+    protein_to_compare_sin_clique = np.delete(protein_to_compare, los_del_clique_2, 0)
+    # numeros de atomos
+    atom_numbers1 = np.delete(atoms1, los_del_clique_1, 0)
+    atom_numbers2 = np.delete(atoms2, los_del_clique_2, 0)
 
-df_so = pd.DataFrame(candidato, columns=['SO', 'index'])
-print(df_so.idxmax())
-print(df_so.max())
-numero = int(input("escribe el numero de idx"))
-    # df_so[df_so.SO == df_so.SO.quantile(0.95)].index[np.random.randint(df_so[df_so.SO == df_so.SO.quantile(0.95)].shape[0])]
+    residuos_match = []  # aqui se guardan las parejas de residuos
 
-idx = numero
-matriz_rotacion = rmsd.iloc[idx].matriz_rotacion
+    # se itera por cada residuo ya rotado y trasladado
 
-vector_gorro = vectores_gorro_proteina_1.iloc[rmsd.iloc[idx].candidato_clique_1].values
+    for residuo_not_in_clique, res_1 in zip(protein_trasladado_rotado_sin_clique, atom_numbers1):
+        for residuo, res_2 in zip(protein_to_compare_sin_clique, atom_numbers2):
+            distancia = pdist(np.array([residuo_not_in_clique, residuo]), metric='euclidean').item()
+            if distancia < 3.5:
+                residuos_match.append([distancia, (res_1, res_2)])
+
+    df = pd.DataFrame(residuos_match, columns=['distancia', 'candigatos'])
+    df = df.sort_values('distancia')
+    df['cand1'] = df.candigatos.str[0]
+    df['cand2'] = df.candigatos.str[1]
+
+    c1 = []
+    c2 = []
+    cand_n = []
+    for i in df.values:
+        if (i[2] in c1) or (i[3] in c2) or (i[0] > 3.5):
+            continue
+        else:
+            c1.append(i[2])
+            c2.append(i[3])
+            cand_n.append(i)
+
+    so_temp = len(cand_n) / number_of_residues
+
+    return idx, so_temp
+
+timenow_bueno = datetime.datetime.now()
+
+id_so = 0
+so = 0.0
+print(len(df_rmsd))
+for i in np.arange(len(df_rmsd))[:1001]:
+    id_temp, so_temp = (align_residues(i, so))
+    if so <= so_temp:
+        so = so_temp
+        id_so = id_temp
+        print(id_so, so)
+    if so == 1:
+        break
+
+print('ya termine de alinear')
+print(id_so,so)
+print('imprimiendo pdbs')
+
+# p = multiprocessing.Pool(multiprocessing.cpu_count()-1)
+#
+# id_so = p.map(partial(align_residues, so=so), np.arange(len(df_rmsd))[:500])
+#
+# p.close()
+# p.join()
+#
+# print(id_so)
+
+# alineacion final
+
+lista_vectores_gorro = []
+for bari in new_df_cliques1.baricentro_clique.values:
+    lista_pre_vectores = [coord - bari for coord in df_atoms1.vector.values]
+
+    lista_vectores_gorro.append(lista_pre_vectores)
+
+vectores_gorro_proteina_1 = pd.DataFrame(lista_vectores_gorro)
+
+lista_vectores_gorro = []
+for bari in new_df_cliques2.baricentro_clique.values:
+    lista_pre_vectores = [coord - bari for coord in df_atoms2.vector.values]
+
+    lista_vectores_gorro.append(lista_pre_vectores)
+
+vectores_gorro_proteina_2 = pd.DataFrame(lista_vectores_gorro)
+
+matriz_rotacion = rmsd.iloc[id_so].matriz_rotacion
+
+vector_gorro = vectores_gorro_proteina_1.iloc[rmsd.iloc[id_so].candidato_clique_1].values
 
 coord_vectores_rotados = [np.matmul(matriz_rotacion, i.reshape(3, 1)).T[0] for i in vector_gorro]
 
-baricentro_proteina_2 = new_df_cliques2.iloc[rmsd.iloc[idx].candidato_clique_2].baricentro_clique
+baricentro_proteina_2 = new_df_cliques2.iloc[rmsd.iloc[id_so].candidato_clique_2].baricentro_clique
 
 protein_trasladado_rotado = coord_vectores_rotados + baricentro_proteina_2  # nuevas coordendas proteina 1
 
-new_df_atom1 = pd.concat([df_atoms1,pd.DataFrame(protein_trasladado_rotado, columns=['x','y','z'])],1)
+new_df_atom1 = pd.concat([df_atoms1, pd.DataFrame(protein_trasladado_rotado, columns=['x', 'y', 'z'])], 1)
 new_df_atom1['new_vector'] = [
     [new_df_atom1.iloc[i]['x'], new_df_atom1.iloc[i]['y'], new_df_atom1.iloc[i]['z']] for i in range(new_df_atom1.shape[0])]
 
@@ -426,7 +520,50 @@ for i in pdb11:
         i.GetAtom(j).UpDateValue('coord', new_df_atom1[mask][mask_2].new_vector.values[0])
 
 pdb1.pdbdata = pdb11
-pdb1.WriteToFile()
+pdb1.WriteToFile(file_out_name='1xxa_el_bueno.pdb')
+
+
+id_so = 7
+
+lista_vectores_gorro = []
+for bari in new_df_cliques1.baricentro_clique.values:
+    lista_pre_vectores = [coord - bari for coord in df_atoms1.vector.values]
+
+    lista_vectores_gorro.append(lista_pre_vectores)
+
+vectores_gorro_proteina_1 = pd.DataFrame(lista_vectores_gorro)
+
+lista_vectores_gorro = []
+for bari in new_df_cliques2.baricentro_clique.values:
+    lista_pre_vectores = [coord - bari for coord in df_atoms2.vector.values]
+
+    lista_vectores_gorro.append(lista_pre_vectores)
+
+vectores_gorro_proteina_2 = pd.DataFrame(lista_vectores_gorro)
+
+matriz_rotacion = rmsd.iloc[id_so].matriz_rotacion
+
+vector_gorro = vectores_gorro_proteina_1.iloc[rmsd.iloc[id_so].candidato_clique_1].values
+
+coord_vectores_rotados = [np.matmul(matriz_rotacion, i.reshape(3, 1)).T[0] for i in vector_gorro]
+
+baricentro_proteina_2 = new_df_cliques2.iloc[rmsd.iloc[id_so].candidato_clique_2].baricentro_clique
+
+protein_trasladado_rotado = coord_vectores_rotados + baricentro_proteina_2  # nuevas coordendas proteina 1
+
+new_df_atom1 = pd.concat([df_atoms1, pd.DataFrame(protein_trasladado_rotado, columns=['x', 'y', 'z'])], 1)
+new_df_atom1['new_vector'] = [
+    [new_df_atom1.iloc[i]['x'], new_df_atom1.iloc[i]['y'], new_df_atom1.iloc[i]['z']] for i in range(new_df_atom1.shape[0])]
+
+for i in pdb11:
+    mask = np.where(i.resi == new_df_atom1.residue_number, True, False)
+    for j in new_df_atom1[mask].atom_name:
+        mask_2 = np.where(new_df_atom1[mask].atom_name == j, True, False)
+        i.GetAtom(j).UpDateValue('coord', new_df_atom1[mask][mask_2].new_vector.values[0])
+
+pdb1.pdbdata = pdb11
+pdb1.WriteToFile(file_out_name='1xxa_7_id')
+
 
 time_bueno = datetime.datetime.now()
 print('iteraciones completas:', time_bueno - timenow_bueno)
