@@ -5,18 +5,47 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Serch/1tig.gexf" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/1tig.gexf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Serch/1xxa.gexf" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/1xxa.gexf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Analisis_para_alineacion.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Expermientos/Analisis_para_alineacion.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Analsis_distancia_minima.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Expermientos/Analsis_distancia_minima.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Serch/candidatos.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/candidatos.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Serch/clique1.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/clique1.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/.ipynb_checkpoints/Alineacion_final-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/Alineacion_final-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/.ipynb_checkpoints/Alineacion_funcionando_con_proteinas_iguales-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/Alineacion_funcionando_con_proteinas_iguales-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/.ipynb_checkpoints/Analisis_para_alineacion-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/Analisis_para_alineacion-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/.ipynb_checkpoints/Analsis_distancia_minima-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/Analsis_distancia_minima-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/.ipynb_checkpoints/CLICK_RMSD_filters_analytics-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/CLICK_RMSD_filters_analytics-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/.ipynb_checkpoints/CLICK_calculate_SSM-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/CLICK_calculate_SSM-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/.ipynb_checkpoints/CLICK_calculate_rmsd-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/CLICK_calculate_rmsd-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/.ipynb_checkpoints/CLICK_multiprocess-checkpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/CLICK_multiprocess-checkpoint.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/.ipynb_checkpoints/CLICK_oo_add_element_to_clique_n-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/CLICK_oo_add_element_to_clique_n-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/.ipynb_checkpoints/CLICK_rotacion_traslacion-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/CLICK_rotacion_traslacion-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/.ipynb_checkpoints/distribucion_rmsd-checkpoint.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/distribucion_rmsd-checkpoint.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/.ipynb_checkpoints/ramachandran-checkpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/ramachandran-checkpoint.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/.ipynb_checkpoints/ss-checkpoint.jpeg" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/ss-checkpoint.jpeg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/1tig.xyz" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/1tig.xyz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/1xxa_rot_tras.xyz" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/1xxa_rot_tras.xyz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Alineacion_final.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Alineacion_final.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Alineacion_funcionando_con_proteinas_iguales.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Alineacion_funcionando_con_proteinas_iguales.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Analisis_para_alineacion.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Analisis_para_alineacion.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Analsis_distancia_minima.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Analsis_distancia_minima.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/CLICK_RMSD_filters_analytics.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/CLICK_RMSD_filters_analytics.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/CLICK_calculate_SSM.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/CLICK_calculate_SSM.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/CLICK_calculate_rmsd.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/CLICK_calculate_rmsd.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/CLICK_multiprocess.py" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/CLICK_multiprocess.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/CLICK_oo_add_element_to_clique_n.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/CLICK_oo_add_element_to_clique_n.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/CLICK_rotacion_traslacion.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/CLICK_rotacion_traslacion.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Redes/.ipynb_checkpoints/Error de generacion de cliques-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Redes/.ipynb_checkpoints/Error de generacion de cliques-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Redes/.ipynb_checkpoints/Red_cancer-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Redes/.ipynb_checkpoints/Red_cancer-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Redes/Error de generacion de cliques.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Redes/Error de generacion de cliques.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Redes/Red_cancer.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Redes/Red_cancer.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Redes/red_adyacencias.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Redes/red_adyacencias.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Redes/red_dinamica_prueba.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Redes/red_dinamica_prueba.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Redes/red_nueva.gexf" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Redes/red_nueva.gexf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/Redes/red_nueva_A.gexf" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Redes/red_nueva_A.gexf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/distribucion_rmsd.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/distribucion_rmsd.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/ramachandran.py" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/ramachandran.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Expermientos/ss.jpeg" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/ss.jpeg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Serch/clique1_df_atributos.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/clique1_df_atributos.pkl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Serch/clique2.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/clique2.pkl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Serch/clique2_df_atributos.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/clique2_df_atributos.pkl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Serch/funciones_CLICK.py" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/funciones_CLICK.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Serch/pdbs.dssp" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/pdbs.dssp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Serch/pdbs/1xxa_prueba.pdb.pdb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Serch/read_pdb_tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/read_pdb_tools.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Serch/rmsd_picke.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/rmsd_picke.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/pdbs/1xxa_el_bueno.pdb.pdb" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Serch/start_oo.py" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/start_oo.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -27,7 +56,7 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/pdbmani$masprueba.coverage" NAME="masprueba Coverage Results" MODIFIED="1548264366205" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Serch" />
-    <SUITE FILE_PATH="coverage/pdbmani$start_oo.coverage" NAME="start_oo Coverage Results" MODIFIED="1548265431876" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Serch" />
+    <SUITE FILE_PATH="coverage/pdbmani$start_oo.coverage" NAME="start_oo Coverage Results" MODIFIED="1548782771612" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Serch" />
     <SUITE FILE_PATH="coverage/pdbmani$prueba_ngb.coverage" NAME="prueba_ngb Coverage Results" MODIFIED="1548181141158" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Serch" />
   </component>
   <component name="DatabaseView">
@@ -44,15 +73,18 @@
     <expand />
     <select />
   </component>
+  <component name="FavoritesManager">
+    <favorites_list name="pdbmani" />
+  </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.66643107">
+    <splitter split-orientation="horizontal" split-proportion="0.57308435">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/Serch/start_oo.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="7632">
-                  <caret line="469" selection-start-line="469" selection-end-line="469" />
+                <state relative-caret-position="342">
+                  <caret line="34" column="42" selection-start-line="34" selection-start-column="42" selection-end-line="34" selection-end-column="42" />
                   <folding>
                     <element signature="e#49#67#0" expanded="true" />
                   </folding>
@@ -60,14 +92,28 @@
               </provider>
             </entry>
           </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/Serch/1tig_clean.pdb">
+              <provider selected="true" editor-type-id="text-editor" />
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/Serch/1xxa_clean.pdb">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="8226">
+                  <caret line="457" column="14" selection-start-line="457" selection-start-column="13" selection-end-line="457" selection-end-column="14" />
+                </state>
+              </provider>
+            </entry>
+          </file>
         </leaf>
       </split-first>
       <split-second>
-        <leaf>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/Serch/read_pdb_tools.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="143">
+                <state relative-caret-position="7092">
                   <caret line="397" column="38" selection-start-line="397" selection-start-column="38" selection-end-line="397" selection-end-column="38" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
@@ -80,10 +126,10 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/Serch/funciones_CLICK.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1062">
-                  <caret line="382" column="55" selection-start-line="382" selection-start-column="41" selection-end-line="382" selection-end-column="55" />
+                <state relative-caret-position="291">
+                  <caret line="448" column="17" selection-start-line="448" selection-start-column="17" selection-end-line="448" selection-end-column="17" />
                   <folding>
-                    <marker date="1548170316590" expanded="true" signature="5912:6234" ph="..." />
+                    <marker date="1548288476187" expanded="true" signature="5912:6234" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -136,19 +182,19 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/Serch/eso.gexf" />
-        <option value="$PROJECT_DIR$/Serch/funciones_CLICK.py" />
         <option value="$PROJECT_DIR$/Serch/prueba_ngb.pyi" />
         <option value="$PROJECT_DIR$/Serch/prueba_ngb.py" />
         <option value="$PROJECT_DIR$/Serch/read_pdb_tools.py" />
         <option value="$PROJECT_DIR$/Serch/masprueba.py" />
+        <option value="$PROJECT_DIR$/Serch/funciones_CLICK.py" />
         <option value="$PROJECT_DIR$/Serch/start_oo.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="156" />
+    <option name="x" value="-480" />
     <option name="width" value="1717" />
-    <option name="height" value="987" />
+    <option name="height" value="992" />
   </component>
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="1" id="Add" />
@@ -169,12 +215,13 @@
             <path>
               <item name="pdbmani" type="b2602c69:ProjectViewProjectNode" />
               <item name="pdbmani" type="462c0819:PsiDirectoryNode" />
-              <item name="math_tricks" type="462c0819:PsiDirectoryNode" />
+              <item name="Serch" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pdbmani" type="b2602c69:ProjectViewProjectNode" />
               <item name="pdbmani" type="462c0819:PsiDirectoryNode" />
               <item name="Serch" type="462c0819:PsiDirectoryNode" />
+              <item name="Experimentos" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -287,6 +334,9 @@
       </list>
     </recent_temporary>
   </component>
+  <component name="StructureViewFactory">
+    <option name="ACTIVE_ACTIONS" value=",ALPHA_COMPARATOR" />
+  </component>
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -316,7 +366,9 @@
       <workItem from="1547654482428" duration="9550000" />
       <workItem from="1547834693881" duration="2580000" />
       <workItem from="1548094112790" duration="10266000" />
-      <workItem from="1548116269418" duration="35595000" />
+      <workItem from="1548116269418" duration="60764000" />
+      <workItem from="1548695034267" duration="601000" />
+      <workItem from="1548782405960" duration="964000" />
     </task>
     <task id="LOCAL-00001" summary="utilizando el codigo de read_pdb_tools se extrae la matriz de distancias y se genera un dataframe del cual se puede utilizar las funciones ya creadas.&#10;&#10;Las funciones generadas para CLICK estan en funciones_CLICK.py y se importan para trabajar con ellas.&#10;&#10;Se adapta el mini_DSSP para poder seguir trabajando">
       <created>1539710251934</created>
@@ -420,7 +472,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="184969000" />
+    <option name="totallyTimeSpent" value="211703000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -434,12 +486,12 @@
   <component name="ToolWindowManager">
     <frame x="0" y="-2" width="1920" height="1082" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.23212379" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4963274" visible="true" weight="0.17502668" />
+      <window_info id="Structure" order="1" sideWeight="0.5036726" side_tool="true" visible="true" weight="0.17502668" />
+      <window_info id="Favorites" order="2" sideWeight="0.50052464" side_tool="true" weight="0.081109926" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32948583" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49251944" visible="true" weight="0.34207764" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49251944" weight="0.31689402" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.4997233" weight="0.39979014" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -447,14 +499,14 @@
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50748056" side_tool="true" weight="0.37995338" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50748056" side_tool="true" weight="0.3798531" />
       <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.49734747" weight="0.32769555" />
       <window_info anchor="bottom" id="Python Console" order="12" sideWeight="0.4969563" weight="0.32738718" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="right" id="SciView" order="3" />
-      <window_info anchor="right" id="Database" order="4" />
+      <window_info anchor="right" id="SciView" order="3" weight="0.32977587" />
+      <window_info anchor="right" id="Database" order="4" weight="0.32977587" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -494,7 +546,7 @@
     <entry file="file://$PROJECT_DIR$/../anaconda3/lib/python3.7/codecs.py" />
     <entry file="file://$PROJECT_DIR$/../anaconda3/lib/python3.7/site-packages/pandas/core/indexing.py" />
     <entry file="file://$PROJECT_DIR$/Serch/rmsd.csv" />
-    <entry file="file://$PROJECT_DIR$/Serch/Expermientos/1tig.xyz">
+    <entry file="file://$PROJECT_DIR$/Serch/Experimentos/1tig.xyz">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/Serch/pdbs/1c9l.pdb">
@@ -515,16 +567,7 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Serch/pdbs/1xxa.pdb.pdb" />
-    <entry file="file://$PROJECT_DIR$/Serch/pdbs/1xxa_prueba.pdb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="1" column="65" selection-start-line="1" selection-start-column="31" selection-end-line="1" selection-end-column="65" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Serch/pdbs/1xxa_prueba.pdb.pdb">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/Serch/pdbs/1xxa_prueba.pdb.pdb" />
     <entry file="file://$PROJECT_DIR$/Serch/operations.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="378">
@@ -554,13 +597,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Serch/prueba_ngb.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="486">
-          <caret line="27" column="21" selection-start-line="27" selection-start-column="21" selection-end-line="27" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/Serch/prueba_ngb.py" />
     <entry file="file://$PROJECT_DIR$/Serch/pdbs/algo.data.pdb">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -571,9 +608,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Serch/pdbs/1xxa_prueba.pdb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="18">
+          <caret line="1" column="65" selection-start-line="1" selection-start-column="31" selection-end-line="1" selection-end-column="65" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Serch/1tig_clean.pdb">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Serch/1xxa_clean.pdb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8226">
+          <caret line="457" column="14" selection-start-line="457" selection-start-column="13" selection-end-line="457" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Serch/read_pdb_tools.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="143">
+        <state relative-caret-position="7092">
           <caret line="397" column="38" selection-start-line="397" selection-start-column="38" selection-end-line="397" selection-end-column="38" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
@@ -582,22 +636,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Serch/start_oo.py">
+    <entry file="file://$PROJECT_DIR$/Serch/funciones_CLICK.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7632">
-          <caret line="469" selection-start-line="469" selection-end-line="469" />
+        <state relative-caret-position="291">
+          <caret line="448" column="17" selection-start-line="448" selection-start-column="17" selection-end-line="448" selection-end-column="17" />
           <folding>
-            <element signature="e#49#67#0" expanded="true" />
+            <marker date="1548288476187" expanded="true" signature="5912:6234" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Serch/funciones_CLICK.py">
+    <entry file="file://$PROJECT_DIR$/Serch/start_oo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1062">
-          <caret line="382" column="55" selection-start-line="382" selection-start-column="41" selection-end-line="382" selection-end-column="55" />
+        <state relative-caret-position="342">
+          <caret line="34" column="42" selection-start-line="34" selection-start-column="42" selection-end-line="34" selection-end-column="42" />
           <folding>
-            <marker date="1548170316590" expanded="true" signature="5912:6234" ph="..." />
+            <element signature="e#49#67#0" expanded="true" />
           </folding>
         </state>
       </provider>

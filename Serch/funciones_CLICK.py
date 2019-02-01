@@ -385,7 +385,7 @@ def calculate_rmsd_rot_trans_m(residuos, array_cliques1, array_cliques2, num_cli
     res1, res2 = residuos
 
     def R_ij(i, j, a1=0, a2=0):
-        """Recuerda que 0-->1,1-->2,2-->2 en los indices de R
+        """Recuerda que 0-->1,1-->2,2-->3 en los indices de R
         a1,a2 corresponden a que atomo quieren que se compare
         """
         idx_vec_gorro1, idx_vec_gorro2 = 2, 2 + num_cliques
