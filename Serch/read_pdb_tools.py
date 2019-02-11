@@ -344,16 +344,16 @@ class PdbStruct(object):
               self.GetRes(index).UpDateValue('rfact',new_data[c])
               c += 1
 
-      def Set_SS(self,dssp_file=False):
+      def Set_SS(self, dssp_file=False):
           dic_ss = {' ': 'C', 'B': 'B', 'E': 'B',
                     'G': 'H', 'H': 'H', 'I': 'H',
                     'T': 'C', 'S': 'C', 'C': 'C'}
           if not dssp_file:
              temp_name = '%s' % self.name
              # self.WriteToFile(temp_name)
-             sp.run(['dssp', '-i', temp_name, '-o', temp_name[:4]+'.dssp'])
+             sp.run(['dssp', '-i', temp_name, '-o', temp_name[:-4]+'.dssp'])
 
-          data = open(temp_name[:4]+'.dssp').readlines()
+          data = open(temp_name[:-4]+'.dssp').readlines()
           flag = False
 
           for line in data:

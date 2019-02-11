@@ -64,7 +64,7 @@ def distancia_entre_atomos(df_atoms):
     return(df_distancias)
 
 
-def gen_3_cliques(df_distancias, nombre, dth=10, k=3):
+def gen_3_cliques(df_distancias, nombre=False, dth=10, k=3):
     """Genera n-cliques de dataframe de distancias, tomando en cuenta los enlaces menores o iguales
     a dth y forma los k-cliques que elijas 
     valores por default:
@@ -85,7 +85,7 @@ def gen_3_cliques(df_distancias, nombre, dth=10, k=3):
 #     print(n_cliques)
 
     lista_cliques = []
-    for i,v in enumerate(cliques_completos):
+    for i, v in enumerate(cliques_completos):
         a = list(it.combinations(v, k))
         for j in a:
             if set(j) not in lista_cliques:
@@ -99,7 +99,9 @@ def gen_3_cliques(df_distancias, nombre, dth=10, k=3):
     df_maximal_clique['numero_elementos'] = df_maximal_clique.count(1)
     df_maximal_clique.sort_values('numero_elementos', inplace=True)
 
-    nx.write_gexf(red, nombre+'.gexf')
+    if nombre:
+        print('guardando red en: %s' % nombre)
+        nx.write_gexf(red, nombre+'.gexf')
 
     return(df_cliques, df_maximal_clique)
 

@@ -6,7 +6,7 @@ import sys
 # herramientas para leer pdbs
 import read_pdb_tools as rpt
 # calculo de distancia
-from scipy.spatial.distance import pdist, squareform
+from scipy.spatial.distance import pdist
 # libreria de tablas
 import pandas as pd
 # funciones de click generadas en pandas
@@ -29,15 +29,12 @@ timenow = datetime.datetime.now()
 # sys.path.append("../math_tricks/")
 # import math_vect_tools as mymath
 
-# assert( len(sys.argv) > 1)
 # lectura de archivo
-file2 = '1xxa_clean.pdb'  # sys.argv[1]
-file1 = 'Experimentos/1xxaclean_a_1tig.pdb'  # sys.argv[2]
+file1 = 'pdbs/1tig_clean.pdb'  # sys.argv[1]
+file2 = 'pdbs/1xxa_clean.pdb'  # sys.argv[2]
 
-# numero de cliques, preguntar en el software para generalizarlo...
+# numero de cliques, preguntar en el software para generalizarlo INPUT...
 number_elements_clique = 3
-
-# outfile = open('hh_%s.txt'%infile.split('.')[0],'w')
 
 # se define la estructura
 pdb1 = rpt.PdbStruct(file1)
@@ -47,6 +44,7 @@ pdb2 = rpt.PdbStruct(file2)
 pdb1.AddPdbData("%s" % file1)
 pdb2.AddPdbData("%s" % file2)
 
+# Se calculan sus vecinos mas cercanos
 pdb1.GetNeighbors()
 pdb2.GetNeighbors()
 
@@ -54,11 +52,32 @@ pdb2.GetNeighbors()
 pdb11 = pdb1.GetResChain()
 pdb22 = pdb2.GetResChain()
 
-# Poner un condicional que siempre agarre a la proteina mas chica y la rote y traslade a la mas grande
-# if len(pdb11)
-# print(len(pdb11))
-# print(len(pdb22))
-# exit()
+# Siempre la proteina 1 es el que se rota y traslada para embonar en la proteina 2
+if len(pdb22) < len(pdb11):
+
+    import copy
+    pdb1_temp = copy.copy(pdb1)
+    pdb2_temp = copy.copy(pdb2)
+
+    pdb11_temp = copy.copy(pdb11)
+    pdb22_temp = copy.copy(pdb22)
+
+    pdb1 = pdb2_temp
+    pdb2 = pdb1_temp
+
+    pdb11 = pdb22_temp
+    pdb22 = pdb11_temp
+
+    del [pdb1_temp]
+    del [pdb2_temp]
+    del [pdb11_temp]
+    del [pdb22_temp]
+
+    print("Intercambio de nombre ya que la proteina 1 es mas grande que la 2")
+    print(pdb1.name, len(pdb11))
+    print(pdb2.name, len(pdb22))
+    print("No te preocupes ya quedo :)")
+
 
 pdb1.Set_SS()
 pdb2.Set_SS()
@@ -66,36 +85,34 @@ pdb2.Set_SS()
 ss1 = fc.create_ss_table(pdb11)
 ss2 = fc.create_ss_table(pdb22)
 
+
 def get_df_distancias(ref):
-    """Funcion para obtener el dataframe de distancias de cada proteina"""
+    """Funcion para obtener el dataframe de distancias de cada residuo
+    Dudas en codigo pueden revisar fc.distancia_entre_atomos en ese se basa
+    esta funcion, la diferencia es que se crea con el objeto residuo"""
     # se generan listas con coordenadas y numero de atomo
     coord = [res.GetAtom('CA').coord for res in ref]
-    index = [res.resi for res in ref]
+    lista_residuos = [res.resi for res in ref]
 
     # calcula distancia y regresa dataframe
-    distancias = []
-    # se calcula la distancia euclidiana entre cada atomo de carbon alfalfa
-    for v in coord:
-        distancia_un_atomo = []
-        for av in coord:
-            distancia = pdist(np.array([v, av]), metric='euclidean').item()
-            distancia_un_atomo.append(distancia)
-        distancias.append(distancia_un_atomo)
+    distancias = [ [pdist(np.array([v, av]), metric='euclidean').item() for av in coord] for v in coord]
 
     # se genera la matriz de adyacencias para la red
-    df_da = pd.DataFrame(index=index, columns=index, data=distancias)
-    return(df_da, index)
+    df_da = pd.DataFrame(index=lista_residuos, columns=lista_residuos, data=distancias)
+    return(df_da, lista_residuos)
 
 
 # devuelve tabla e indices de el dataframe de distancias entre atomos de la misma proteina con dth < 10A
-df_distancias1, index1 = get_df_distancias(pdb11)
-df_distancias2, index2 = get_df_distancias(pdb22)
+df_distancias1, lista_residuos_1 = get_df_distancias(pdb11)
+df_distancias2, lista_residuos2 = get_df_distancias(pdb22)
 
-# se generan cliques, te devuleve dataframe con cliques de 3 y la lista de cliques maximales
-df_cliques1, cliques1 = fc.gen_3_cliques(df_distancias1, file1[5:9], dth=10, k=number_elements_clique)
+# se generan cliques, te devuleve dataframe con cliques de k(numero_de_cliques) y la lista de cliques maximales
+df_cliques1, cliques1 = fc.gen_3_cliques(df_distancias1, file1[:-4], dth=10, k=number_elements_clique)
 print('**'*50)
-df_cliques2, cliques2 = fc.gen_3_cliques(df_distancias2, file2[5:9], dth=10, k=number_elements_clique)
+df_cliques2, cliques2 = fc.gen_3_cliques(df_distancias2, file2[:-4], dth=10, k=number_elements_clique)
 print('**'*50)
+
+# REVISAR DONDE GUARDA EL GEXF Y COLOCARLO EN LA CARPETA Grafos
 
 # se agrega filtro de residuos que pertenecen a cliques de 7 elementos
 mc1_7 = cliques1[cliques1.numero_elementos == 7].drop('numero_elementos', 1)
@@ -114,6 +131,7 @@ for i in [list(mc2_7[i].unique()) for i in mc2_7.dropna(1).columns]:
 residuos_unicos_1 = set(residuos_unicos_1)
 residuos_unicos_2 = set(residuos_unicos_2)
 
+
 for i in df_cliques1.columns:
     mask = np.where(df_cliques1[i].isin(residuos_unicos_1), True, False)
     df_cliques1 = df_cliques1[mask].reset_index(drop=True)
@@ -121,7 +139,7 @@ for i in df_cliques1.columns:
 for i in df_cliques2.columns:
     mask = np.where(df_cliques2[i].isin(residuos_unicos_2), True, False)
     df_cliques2 = df_cliques2[mask].reset_index(drop=True)
-
+# acaba filtro de cliques con 7 elementos
 
 # funcion para obtener las propiedades del residuo para los cliques agrupados
 def get_df_ca(list_of_residues):
@@ -211,6 +229,7 @@ candidatos_filter_dist = [(i, j) for i, j in candidatos_ss if (
 
 print('num candidatos filtro SS', len(candidatos_ss))
 print('num candidatos filtro distancia y ss', len(candidatos_filter_dist))
+#Termina filtro distancia minima
 
 # calculo del RMSD
 
@@ -262,6 +281,7 @@ number_elements_clique = number_elements_clique + 1
 
 
 def iter_rmsd(new_df_cliques1,new_df_cliques2,number_elements_clique):
+    # filtro residuos de 7 unicos
     for i in new_df_cliques1.columns:
         mask = np.where(new_df_cliques1[i].isin(residuos_unicos_1), True, False)
         new_df_cliques1 = new_df_cliques1[mask].reset_index(drop=True)
@@ -270,9 +290,12 @@ def iter_rmsd(new_df_cliques1,new_df_cliques2,number_elements_clique):
         mask = np.where(new_df_cliques2[i].isin(residuos_unicos_2), True, False)
         new_df_cliques2 = new_df_cliques2[mask].reset_index(drop=True)
 
+    # filtro estructura secundaria
     new_df_cliques1 = fc.paste_SS(ss1, new_df_cliques1, num_cliques=number_elements_clique)
     new_df_cliques2 = fc.paste_SS(ss2, new_df_cliques2, num_cliques=number_elements_clique)
     candidatos_ss = fc.compare_SS(new_df_cliques1, new_df_cliques2, num_cliques=number_elements_clique)
+
+    # rotando y trasladando
     df_cliques1 = fc.get_coords_clique(df_atoms1, new_df_cliques1, number_elements_clique)
     df_cliques2 = fc.get_coords_clique(df_atoms2, new_df_cliques2, number_elements_clique)
     df_cliques1 = fc.baricenter_clique(df_cliques1, number_elements_clique)
@@ -282,6 +305,8 @@ def iter_rmsd(new_df_cliques1,new_df_cliques2,number_elements_clique):
     idx_rmsd1, idx_rmsd2 = 3 * number_elements_clique, 4 * number_elements_clique + 3
     array_df_cliques1 = df_cliques1.values[:, range(idx_rmsd1, idx_rmsd2)]  # del 9 al 15
     array_df_cliques2 = df_cliques2.values[:, range(idx_rmsd1, idx_rmsd2)]
+
+    # filtro de distancia minima
     df_cliques1 = fc.get_distancia_promedio(number_elements_clique, df_cliques1)
     df_cliques2 = fc.get_distancia_promedio(number_elements_clique, df_cliques2)
     array_dist_promedio1 = df_cliques1.values[:, -1]  # el ultimo valor de distancia.
@@ -303,6 +328,7 @@ def iter_rmsd(new_df_cliques1,new_df_cliques2,number_elements_clique):
             array_dist_promedio1[i] - array_dist_promedio2[j] >= -limite_distancia_minima) & (
                                       array_dist_promedio1[i] - array_dist_promedio2[j] <= limite_distancia_minima)]
 
+    #filtro por restriccion de RMSD despues de ajuste 3D
     p = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
     restriccion_rmsd = 0.15
     if number_elements_clique == 4:
@@ -324,26 +350,31 @@ def iter_rmsd(new_df_cliques1,new_df_cliques2,number_elements_clique):
     p.close()
     p.join()
 
-    f1 = pd.DataFrame(rmsd_1, columns=['rmsd', 'candidatos', 'matriz_rotacion'])
-    f1 = f1[f1.rmsd <= restriccion_rmsd]
-    f1['candidato_clique_1'] = f1.candidatos.str.get(0)
-    f1['candidato_clique_2'] = f1.candidatos.str.get(1)
-    candidatos = f1.candidatos.values
+    df_candidatos = pd.DataFrame(rmsd_1, columns=['rmsd', 'candidatos', 'matriz_rotacion'])
+    df_candidatos = df_candidatos[df_candidatos.rmsd <= restriccion_rmsd]
+    df_candidatos['candidato_clique_1'] = df_candidatos.candidatos.str.get(0)
+    df_candidatos['candidato_clique_2'] = df_candidatos.candidatos.str.get(1)
+    candidatos = df_candidatos.candidatos.values
     time = datetime.datetime.now()
 
     print('numero de candidatos:', len(candidatos))
     print('tiempo pasado:', time - timenow)
 
+    # Se agrega un nuevo elemento a los cliques.
     if number_elements_clique < 7:
-        new_df_cliques1 = fc.add_element_clique(df_cliques1, 'candidato_clique_1', cliques1, f1, number_elements_clique)
-        new_df_cliques2 = fc.add_element_clique(df_cliques2, 'candidato_clique_2', cliques2, f1, number_elements_clique)
+        new_df_cliques1 = fc.add_element_clique(df_cliques1, 'candidato_clique_1', cliques1, df_candidatos, number_elements_clique)
+        new_df_cliques2 = fc.add_element_clique(df_cliques2, 'candidato_clique_2', cliques2, df_candidatos, number_elements_clique)
         number_elements_clique = number_elements_clique + 1
-    return(new_df_cliques1, new_df_cliques2, number_elements_clique,candidatos,f1)
+
+    return(new_df_cliques1, new_df_cliques2, number_elements_clique, candidatos,df_candidatos)
 
 
+# Si se empieza en 3-cliques solo itera 4 veces.
 for k in range(4):
     new_df_cliques1, new_df_cliques2, number_elements_clique, candidatos, rmsd = iter_rmsd(
         new_df_cliques1, new_df_cliques2, number_elements_clique)
+
+
 
 # cosas de prueba guardando objetos con datos
 

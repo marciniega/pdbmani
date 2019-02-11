@@ -124,9 +124,9 @@ df_atoms1 = get_df_ca(pdb11)
 df_atoms2 = get_df_ca(pdb22)
 
 # se obtiene la estructura secundaria utilizando dssp
-# ss1 = fc.mini_dssp(file1, index1)
+# ss1 = fc.mini_dssp(file1, lista_residuos_1)
 # print('**'*50)
-# ss2 = fc.mini_dssp(file2, index2)
+# ss2 = fc.mini_dssp(file2, lista_residuos2)
 # ya no por que se obtiene arriba desde read_pdb_tools.py
 
 # se le pega la estructura secundaria al dataframe de los cliques
