@@ -396,10 +396,10 @@ class PdbStruct(object):
              out_data.write("MODEL\n")
           if file_out_name is None and not flag_trj:
              file_out_name = self.name
-             out_data = open('%s.pdb'%file_out_name,'w')
+             out_data = open('%s.pdb'%file_out_name, 'w')
           if type(file_out_name) == str:
-             out_data = open('%s.pdb'%file_out_name,'w')
-          out_data.write("REMARK %s writen by me. \n"%self.name)
+             out_data = open('%s.pdb'%file_out_name, 'w')
+          out_data.write("REMARK %s writen by me. \n" % self.name)
           #for index in [ int(i.resi) for i in self.pdbdata ][1:-1]:
           for index in [ int(i.resi) for i in self.pdbdata ]:
               res = self.GetRes(index)

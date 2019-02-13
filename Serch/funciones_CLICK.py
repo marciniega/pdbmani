@@ -1,4 +1,3 @@
-
 # coding: utf-8
 
 # libreria de analisis de datos y una caracterizacion para su facil lectura.
@@ -24,24 +23,26 @@ import sys
 sys.path.append('math_tricks/')
 import math_vect_tools as mvt
 
+
+
 # funcion de lectura con biopandas
-# def read_biopdb(path):
-#     """Extrae las cordenadas de los atomos de C_alfa y los acomoda en un vector
-#     devuelve un dataframe con las coordenadas y el numero de residuo"""
-#     df = biop.read_pdb(path)
-#     df_all_atoms = df.df['ATOM']
-#     #OJO AQUI ESTA ADECUADO AL PDB   para elegir solo un frame en trj_0 y trj_0_A [:1805]
-#     df_atoms = df_all_atoms[[
-#         'atom_number', 'atom_name', 'residue_name', 'residue_number',
-#         'x_coord', 'y_coord', 'z_coord'
-#     ]]
-#     columna_vector = []
-#     for i in zip(df_atoms.x_coord.tolist(), df_atoms.y_coord.tolist(),
-#                  df_atoms.z_coord.tolist()):
-#         columna_vector.append(np.array(i))
-#
-#     df_atoms['vector_coordenadas'] = columna_vector
-#     return (df_atoms)
+def read_biopdb(path):
+    """Extrae las cordenadas de los atomos de C_alfa y los acomoda en un vector
+    devuelve un dataframe con las coordenadas y el numero de residuo"""
+    # import biopandas as biop #NECESARIO INSTALAR PARA GENERAR ESTO
+    # df = biop.read_pdb(path)
+    df = pd.DataFrame() #Eliminar esta linea y dejar la de arriba si quieren utilizar esto.
+    df_all_atoms = df.df['ATOM']
+
+    df_atoms = df_all_atoms[[
+        'atom_number', 'atom_name', 'residue_name', 'residue_number',
+        'x_coord', 'y_coord', 'z_coord'
+    ]]
+    columna_vector = [np.array(i) for i in zip(df_atoms.x_coord.tolist(), df_atoms.y_coord.tolist(),
+                 df_atoms.z_coord.tolist())]
+
+    df_atoms['vector_coordenadas'] = columna_vector
+    return (df_atoms)
 
 
 # se calcula la distancia entre cada par de nodos.
@@ -51,9 +52,9 @@ def distancia_entre_atomos(df_atoms):
     df_atoms_ca = df_atoms[df_atoms.atom_name == 'CA']
     distancias = []
     # se calcula la distancia euclidiana entre cada atomo de carbon alfalfa
-    for v,i in zip(df_atoms_ca.vector_coordenadas,df_atoms_ca.atom_number):
+    for v, i in zip(df_atoms_ca.vector_coordenadas,df_atoms_ca.atom_number):
         distancia_un_atomo = []
-        for av,j in zip(df_atoms_ca.vector_coordenadas,df_atoms_ca.atom_number):
+        for av, j in zip(df_atoms_ca.vector_coordenadas,df_atoms_ca.atom_number):
             distancia = pdist(np.array([v,av]), metric='euclidean').item()
             distancia_un_atomo.append(distancia)
         distancias.append(distancia_un_atomo)
@@ -102,7 +103,6 @@ def gen_3_cliques(df_distancias, nombre=False, dth=10, k=3):
     if nombre:
         print('guardando red en: %s' % nombre)
         nx.write_gexf(red, nombre+'.gexf')
-
     return(df_cliques, df_maximal_clique)
 
 
@@ -152,8 +152,7 @@ def paste_SS(ss, df_cliques, num_cliques=3):
         c8 = [ss[ss.residue_number == df_cliques.iloc[i, 7]].structure.values[0] for i in df_cliques.index]
         df_cliques['ss_7'] = c8
 
-
-    #columna con coordenadas del clique
+    # columna con coordenadas del clique
     return(df_cliques)
 
 
@@ -195,7 +194,7 @@ def SSM(ss1,ss2):
     return(score_ss)
 
 
-#funcion para obtener las coordenadas del clique
+# funcion para obtener las coordenadas del clique
 def get_coords_clique(df_atoms_ca, df_cliques, num_cliques):
     """df_ca:DataFrame con coordenadas de carbonos alfa,
     df_lc:Dataframe con cliques, si coincide el numero del atomo
@@ -231,7 +230,7 @@ def get_coords_clique(df_atoms_ca, df_cliques, num_cliques):
 
         df_cliques['coord_clique_4'] = c4
         if num_cliques == 5:
-            df_cliques['matriz_coordenadas'] = [[c0[i], c1[i], c2[i], c3[i],c4[i]] for i in df_cliques.index]
+            df_cliques['matriz_coordenadas'] = [[c0[i], c1[i], c2[i], c3[i], c4[i]] for i in df_cliques.index]
 
     if num_cliques >= 6:
         c5 = [np.array(df_atoms_ca[df_atoms_ca.atom_number == df_cliques.iloc[i, 5]].vector.values[0]) for i in
@@ -260,6 +259,7 @@ def get_coords_clique(df_atoms_ca, df_cliques, num_cliques):
                                                 df_cliques.index]
 
     return(df_cliques)
+
 
 def baricenter_clique(df_cliques, num_cliques):
     """se calcula el baricentro de cada clique
@@ -361,7 +361,7 @@ def center_vectors(df_cliques, num_cliques):
             vectores_centricos.append(np.array([a_0, a_1, a_2, a_3, a_4, a_5, a_6]))
 
         if num_cliques == 8:
-            vectores_centricos.append(np.array([a_0, a_1, a_2, a_3, a_4, a_5, a_6,a_7]))
+            vectores_centricos.append(np.array([a_0, a_1, a_2, a_3, a_4, a_5, a_6, a_7]))
 
     df_cliques['vec_gorro_0'] = vec0  # se crea la columna correspondiente
     df_cliques['vec_gorro_1'] = vec1
@@ -425,30 +425,30 @@ def calculate_rmsd_rot_trans_m(residuos, array_cliques1, array_cliques2, num_cli
         ]
         return (matriz_R)
 
-    def rotation_matrix(matriz_R):
-        """utilizando la funcion giant_matrix, fijando los valores de i,j
-        se calcula la matriz de rotacion con los eigenvectores y eigenvalores
-        arroja una matriz de rotacion que depende de la matriz gigante
-        """
-        eignvalues, eigenvectors = np.linalg.eig(matriz_R)
-        q = eigenvectors[:, np.argmax(eignvalues)]
-        q0, q1, q2, q3 = q[0], q[1], q[2], q[3]
-        # matriz de rotacion con eigenvectores
-        matriz_rotacion = np.array([
-            [(q0 ** 2 + q1 ** 2 - q2 ** 2 - q3 ** 2), 2 * (q1 * q2 - q0 * q3), 2 * (q1 * q3 + q0 * q2)],
-            [2 * (q1 * q2 + q0 * q3), (q0 ** 2 - q1 ** 2 + q2 ** 2 - q3 ** 2), 2 * (q2 * q3 - q0 * q1)],
-            [2 * (q1 * q3 - q0 * q2), 2 * (q2 * q3 + q0 * q1), (q0 ** 2 - q1 ** 2 - q2 ** 2 + q3 ** 2)]
-        ], dtype=np.float64)
-        return (matriz_rotacion)
-
-    def rotation_vectors(vector_gorro, matriz_rotacion):
-        """obtencion de vector rotado,
-        utilizando la matriz de rotacion
-        y los vectores gorro a rotar y trasladar"""
-
-        coord_rotado = [np.matmul(
-            matriz_rotacion, i.reshape(3, 1)).T[0] for i in vector_gorro]
-        return (coord_rotado)
+    # def rotation_matrix(matriz_R):
+    #     """utilizando la funcion giant_matrix, fijando los valores de i,j
+    #     se calcula la matriz de rotacion con los eigenvectores y eigenvalores
+    #     arroja una matriz de rotacion que depende de la matriz gigante
+    #     """
+    #     eignvalues, eigenvectors = np.linalg.eig(matriz_R)
+    #     q = eigenvectors[:, np.argmax(eignvalues)]
+    #     q0, q1, q2, q3 = q[0], q[1], q[2], q[3]
+    #     # matriz de rotacion con eigenvectores
+    #     matriz_rotacion = np.array([
+    #         [(q0 ** 2 + q1 ** 2 - q2 ** 2 - q3 ** 2), 2 * (q1 * q2 - q0 * q3), 2 * (q1 * q3 + q0 * q2)],
+    #         [2 * (q1 * q2 + q0 * q3), (q0 ** 2 - q1 ** 2 + q2 ** 2 - q3 ** 2), 2 * (q2 * q3 - q0 * q1)],
+    #         [2 * (q1 * q3 - q0 * q2), 2 * (q2 * q3 + q0 * q1), (q0 ** 2 - q1 ** 2 - q2 ** 2 + q3 ** 2)]
+    #     ], dtype=np.float64)
+    #     return (matriz_rotacion)
+    #
+    # def rotation_vectors(vector_gorro, matriz_rotacion):
+    #     """obtencion de vector rotado,
+    #     utilizando la matriz de rotacion
+    #     y los vectores gorro a rotar y trasladar"""
+    #
+    #     coord_rotado = [np.matmul(
+    #         matriz_rotacion, i.reshape(3, 1)).T[0] for i in vector_gorro]
+    #     return (coord_rotado)
 
     def rmsd_between_cliques(clique_trasladado_rotado, atom_to_compare):
         """Calculo de rmsd entre cliques tomando el atomo rotado y trasladado
@@ -467,7 +467,7 @@ def calculate_rmsd_rot_trans_m(residuos, array_cliques1, array_cliques2, num_cli
     vector_rotado = rotation_vectors(array_cliques1[:, idx_vectores_gorro][res1], matriz_rotacion) # antes 14 #vectores gorro
     vector_rotado_trasladado_a_clique2 = vector_rotado + np.array(array_cliques2[:, 1][res2], dtype=np.float64)  # xrot + baricentro a mover #antes 10
     rmsd_final = rmsd_between_cliques(vector_rotado_trasladado_a_clique2, np.array(
-        array_cliques2[:, 0][res2], dtype=np.float64)) # antes 9 #PROBABLE CAMBIAR
+        array_cliques2[:, 0][res2], dtype=np.float64))  # antes 9 #PROBABLE CAMBIAR
     # clique rotado y trasladado vs clique coordenadas
 
     restriccion_rmsd = 0.15
@@ -496,10 +496,10 @@ def get_distancia_promedio(num_cliques, df_cliques):
 
 # Funcion para obtener la siguiente iteracion de candidatos.
 def add_element_clique(df_cliques, col_candidatos, cliques, candidatos_df, number_elements_clique):
-    print('numero de elementos del clique:', number_elements_clique)
-    cliques_maximales = cliques[cliques.numero_elementos >= number_elements_clique].drop('numero_elementos',1).values
-    set_candidatos = [df_cliques.iloc[i, range(number_elements_clique)].values for i in candidatos_df[col_candidatos].unique()]
-    print(cliques_maximales.shape)
+    cliques_maximales = cliques[
+        cliques.numero_elementos >= number_elements_clique].drop('numero_elementos', 1).values
+    set_candidatos = [df_cliques.iloc[i, range(
+        number_elements_clique)].values for i in candidatos_df[col_candidatos].unique()]
     #conjunto de candidatos unicos
     lista_residuos = []  # aqui se guardara la lista de numero de residuo
     for candidato in set_candidatos:  # este va a cambiar cada iteracion
@@ -511,17 +511,44 @@ def add_element_clique(df_cliques, col_candidatos, cliques, candidatos_df, numbe
                 for nuevo_elemento in no_estan_en_clique:
                     candidato_nuevo = candidato.copy()
                     # se genera una copia para no borrar el orginal
-                    candidato_nuevo = np.append(candidato_nuevo,nuevo_elemento)
+                    candidato_nuevo = np.append(candidato_nuevo, nuevo_elemento)
                     # se apila un elemento de los que no estan
                     if set(candidato_nuevo) not in lista_residuos:
                         lista_residuos.append(set(candidato_nuevo))
                         # si no esta en la lista pasa
-    print('numero de elementos del clique ahora:', number_elements_clique+1)
+
     return(pd.DataFrame(lista_residuos))
 
 
+# Funciones que se necesitaran siempre
+def rotation_matrix(matriz_R):
+    """utilizando la funcion giant_matrix, fijando los valores de i,j
+    se calcula la matriz de rotacion con los eigenvectores y eigenvalores
+    arroja una matriz de rotacion que depende de la matriz gigante
+    """
+    eignvalues, eigenvectors = np.linalg.eig(matriz_R)
+    q = eigenvectors[:, np.argmax(eignvalues)]
+    q0, q1, q2, q3 = q[0], q[1], q[2], q[3]
+    # matriz de rotacion con eigenvectores
+    matriz_rotacion = np.array([
+        [(q0 ** 2 + q1 ** 2 - q2 ** 2 - q3 ** 2), 2 * (q1 * q2 - q0 * q3), 2 * (q1 * q3 + q0 * q2)],
+        [2 * (q1 * q2 + q0 * q3), (q0 ** 2 - q1 ** 2 + q2 ** 2 - q3 ** 2), 2 * (q2 * q3 - q0 * q1)],
+        [2 * (q1 * q3 - q0 * q2), 2 * (q2 * q3 + q0 * q1), (q0 ** 2 - q1 ** 2 - q2 ** 2 + q3 ** 2)]
+    ], dtype=np.float64)
+    return (matriz_rotacion)
 
-# reorganizacion de funciones
+def rotation_vectors(vector_gorro, matriz_rotacion):
+    """obtencion de vector rotado,
+    utilizando la matriz de rotacion
+    y los vectores gorro a rotar y trasladar"""
+
+    coord_rotado = [np.matmul(
+        matriz_rotacion, coord.reshape(3, 1)).T[0] for coord in vector_gorro]
+    return (coord_rotado)
+
+
+
+
 
 # las funciones de abajo son para graficar, y replican funciones que utiliza CLICK
 
