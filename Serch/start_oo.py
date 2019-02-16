@@ -164,9 +164,6 @@ df_atoms1 = get_df_ca(pdb11)
 df_atoms2 = get_df_ca(pdb22)
 
 # calculo del RMSD y filtros
-# calculo del RMSD
-
-# calculo del RMSD
 
 time = datetime.datetime.now()
 print('tiempo generando red:', time - timenow)
@@ -226,7 +223,7 @@ def iter_rmsd(new_df_cliques1, new_df_cliques2, number_elements_clique):
     candidatos_filter_dist = [(candidato_1, candidato_2) for candidato_1, candidato_2 in candidatos_ss if (
             array_dist_promedio1[candidato_1] - array_dist_promedio2[candidato_2] >= -limite_distancia_minima) & (
                                       array_dist_promedio1[candidato_1] - array_dist_promedio2[
-                                  candidato_1] <= limite_distancia_minima)]
+                                  candidato_2] <= limite_distancia_minima)]
 
     # filtro por restriccion de RMSD despues de ajuste 3D
     p = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
@@ -320,6 +317,14 @@ vecs_center_2 = vecs2 - bari_2
 
 number_of_residues_final = df_atoms1[df_atoms1.atom_name == 'CA'].shape[0]
 
+new_df_cliques1.to_pickle('clique1.pkl')
+new_df_cliques2.to_pickle('clique2.pkl')
+df_atoms1.to_pickle('clique1_df_atributos.pkl')
+df_atoms2.to_pickle('clique2_df_atributos.pkl')
+# df_candidatos.to_pickle('df_alineados.pkl')
+# pd.DataFrame(parejas_clique).to_pickle('parejas.pkl')
+df_rmsd.to_pickle('df_rmsd.pkl')
+exit()
 
 def align_residues(idx, so):
 

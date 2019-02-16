@@ -106,7 +106,7 @@ def gen_3_cliques(df_distancias, nombre=False, dth=10, k=3):
     return(df_cliques, df_maximal_clique)
 
 
-def create_ss_table(list_residues, chain_code = 'A'):
+def create_ss_table(list_residues):
     ss_list = [i.ss for i in list_residues]
     num_resi_list = [i.resi for i in list_residues]
     chain_list = [i.chain for i in list_residues]
@@ -382,9 +382,9 @@ def center_vectors(df_cliques, num_cliques):
     return df_cliques
 
 
-def calculate_rmsd_rot_trans_m(residuos, array_cliques1, array_cliques2, num_cliques):
+def calculate_rmsd_rot_trans_m(cliques, array_cliques1, array_cliques2, num_cliques):
     
-    res1, res2 = residuos
+    res1, res2 = cliques
 
     def R_ij(i, j, a1=0, a2=0):
         """Recuerda que 0-->1,1-->2,2-->3 en los indices de R

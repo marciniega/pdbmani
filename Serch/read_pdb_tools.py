@@ -344,16 +344,19 @@ class PdbStruct(object):
               self.GetRes(index).UpDateValue('rfact',new_data[c])
               c += 1
 
-      def Set_SS(self, dssp_file=False):
+      def Set_SS(self, dssp_file=False, flag_tray=False):
           dic_ss = {' ': 'C', 'B': 'B', 'E': 'B',
                     'G': 'H', 'H': 'H', 'I': 'H',
                     'T': 'C', 'S': 'C', 'C': 'C'}
           if not dssp_file:
-             temp_name = '%s' % self.name
-             # self.WriteToFile(temp_name)
-             sp.run(['dssp', '-i', temp_name, '-o', temp_name[:-4]+'.dssp'])
+              if flag_tray:
+                temp_name = flag_tray
+              else:
+                temp_name = '%s' % self.name
+                # self.WriteToFile(temp_name)
+                sp.run(['dssp', '-i', temp_name, '-o', temp_name+'.dssp'])
 
-          data = open(temp_name[:-4]+'.dssp').readlines()
+          data = open(temp_name+'.dssp').readlines()
           flag = False
 
           for line in data:
@@ -366,11 +369,14 @@ class PdbStruct(object):
                     resi = int(line.split()[1])
                  except ValueError:
                     continue
-                 chain = line.split()[2]
+                 if flag_tray:
+                    chain = ''
+                 else:
+                    chain = line.split()[2]
                  ss = line[16:17]
                  res = self.GetRes(resi)
                  if res.chain == chain:
-                      setattr(res, 'ss', dic_ss[ss])
+                     setattr(res, 'ss', dic_ss[ss])
 
 
       def RenameResidues(self, list_of_new_names):
@@ -418,7 +424,10 @@ class PdbStruct(object):
                   line += "%6.2f"%atom.occup
                   line += "%6.2f"%atom.rfact
                   line += "         "
-                  line += "%3s"%atom.element
+                  if (atom.element == "O1-") or (atom.element == "N1+"):
+                      line += " %3s" % atom.element.replace("1", "")
+                  else:
+                      line += "%3s"%atom.element
                   out_data.write("%s\n"%line)
           if flag_trj:
              out_data.write("ENDMDL\n")

@@ -3,9 +3,20 @@
   <component name="ChangeListManager">
     <list default="true" id="44495990-b5c4-43a4-abc8-83a4cdf6893b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/Alineacion_final-checkpoint.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Serch/Experimentos/Alineacion_final.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Serch/Experimentos/Generacion_funcion_rot_trans.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Generacion_funcion_rot_trans.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/1xxa_2019-02-12 21:53:54.446845.pdb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/Check_Software_Completo-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/.ipynb_checkpoints/Check_Software_Completo-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Experimentos/1xxa_2019-02-12 21:44:55.840688.pdb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Experimentos/1xxa_2019-02-13 09:43:34.482857.pdb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Experimentos/1xxa_2019-02-13 09:51:58.686253.pdb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Experimentos/1xxa_2019-02-13 09:55:15.954890.pdb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Experimentos/1xxa_parejas_finales.pdb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Experimentos/Check_Software_Completo.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/Check_Software_Completo.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/Experimentos/pdbs/1xxaclean_a_1xxa.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/Experimentos/pdbs/1xxaclean_a_1xxa.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/ScriptdPruebas.py" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/ScriptdPruebas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/clique1.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/clique1.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/clique2.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/clique2.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/df_alineados.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/df_alineados.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Serch/df_rmsd.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/df_rmsd.pkl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Serch/funciones_CLICK.py" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/funciones_CLICK.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Serch/pdbs/1tig_clean.dssp" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/pdbs/1tig_clean.dssp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Serch/pdbs/1xxa_clean.dssp" beforeDir="false" afterPath="$PROJECT_DIR$/Serch/pdbs/1xxa_clean.dssp" afterDir="false" />
@@ -20,7 +31,8 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/pdbmani$masprueba.coverage" NAME="masprueba Coverage Results" MODIFIED="1548264366205" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Serch" />
-    <SUITE FILE_PATH="coverage/pdbmani$start_oo.coverage" NAME="start_oo Coverage Results" MODIFIED="1550081159420" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Serch" />
+    <SUITE FILE_PATH="coverage/pdbmani$start_oo.coverage" NAME="start_oo Coverage Results" MODIFIED="1550103846620" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Serch" />
+    <SUITE FILE_PATH="coverage/pdbmani$ScriptdPruebas.coverage" NAME="ScriptdPruebas Coverage Results" MODIFIED="1550181940020" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Serch" />
     <SUITE FILE_PATH="coverage/pdbmani$prueba_ngb.coverage" NAME="prueba_ngb Coverage Results" MODIFIED="1548181141158" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Serch" />
   </component>
   <component name="DatabaseView">
@@ -41,26 +53,17 @@
     <favorites_list name="pdbmani" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.6086142">
+    <splitter split-orientation="horizontal" split-proportion="0.65818995">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/Serch/start_oo.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-576">
-                  <caret line="473" column="51" selection-start-line="473" selection-start-column="51" selection-end-line="473" selection-end-column="51" />
+                <state relative-caret-position="501">
+                  <caret line="556" lean-forward="true" selection-start-line="556" selection-end-line="556" />
                   <folding>
                     <element signature="e#49#67#0" expanded="true" />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/Serch/Experimentos/1xxa_parejas_finales.pdb">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="3407">
-                  <caret line="447" column="78" lean-forward="true" selection-start-line="447" selection-start-column="78" selection-end-line="447" selection-end-column="78" />
                 </state>
               </provider>
             </entry>
@@ -72,11 +75,11 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/Serch/read_pdb_tools.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-4003">
-                  <caret line="62" column="33" selection-start-line="62" selection-start-column="33" selection-end-line="62" selection-end-column="33" />
+                <state relative-caret-position="375">
+                  <caret line="372" column="29" selection-start-line="372" selection-start-column="29" selection-end-line="372" selection-end-column="29" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
-                    <marker date="1550083393792" expanded="true" signature="7970:7976" ph="..." />
+                    <marker date="1550272606470" expanded="true" signature="7970:7976" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -85,11 +88,20 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/Serch/funciones_CLICK.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1872">
-                  <caret line="1" selection-start-line="1" selection-end-line="1" />
+                <state relative-caret-position="256">
+                  <caret line="112" selection-start-line="112" selection-end-line="112" />
                   <folding>
-                    <marker date="1550083275954" expanded="true" signature="5991:6313" ph="..." />
+                    <marker date="1550272803448" expanded="true" signature="5973:6295" ph="..." />
                   </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/get_md_hb_net.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="162">
+                  <caret line="10" column="20" selection-start-line="10" selection-end-line="10" selection-end-column="20" />
                 </state>
               </provider>
             </entry>
@@ -137,6 +149,7 @@
       <find>distance</find>
       <find>candidatos</find>
       <find>K</find>
+      <find>N1+</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -149,9 +162,10 @@
         <option value="$PROJECT_DIR$/Serch/prueba_ngb.pyi" />
         <option value="$PROJECT_DIR$/Serch/prueba_ngb.py" />
         <option value="$PROJECT_DIR$/Serch/masprueba.py" />
-        <option value="$PROJECT_DIR$/Serch/funciones_CLICK.py" />
+        <option value="$PROJECT_DIR$/Serch/ScriptdPruebas.py" />
         <option value="$PROJECT_DIR$/Serch/start_oo.py" />
         <option value="$PROJECT_DIR$/Serch/read_pdb_tools.py" />
+        <option value="$PROJECT_DIR$/Serch/funciones_CLICK.py" />
       </list>
     </option>
   </component>
@@ -168,7 +182,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -187,10 +200,18 @@
               <item name="Serch" type="462c0819:PsiDirectoryNode" />
               <item name="Experimentos" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="pdbmani" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pdbmani" type="462c0819:PsiDirectoryNode" />
+              <item name="Serch" type="462c0819:PsiDirectoryNode" />
+              <item name="Experimentos" type="462c0819:PsiDirectoryNode" />
+              <item name="pdbs" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -226,7 +247,29 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.start_oo">
+  <component name="RunManager" selected="Python.ScriptdPruebas">
+    <configuration name="ScriptdPruebas" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="pdbmani" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Serch" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Serch/ScriptdPruebas.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="masprueba" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="pdbmani" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -295,6 +338,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ScriptdPruebas" />
         <item itemvalue="Python.start_oo" />
         <item itemvalue="Python.masprueba" />
         <item itemvalue="Python.prueba_ngb" />
@@ -338,7 +382,8 @@
       <workItem from="1548782405960" duration="964000" />
       <workItem from="1549909582026" duration="76000" />
       <workItem from="1549909702402" duration="33581000" />
-      <workItem from="1550013699943" duration="19951000" />
+      <workItem from="1550013699943" duration="28807000" />
+      <workItem from="1550166870194" duration="13778000" />
     </task>
     <task id="LOCAL-00001" summary="utilizando el codigo de read_pdb_tools se extrae la matriz de distancias y se genera un dataframe del cual se puede utilizar las funciones ya creadas.&#10;&#10;Las funciones generadas para CLICK estan en funciones_CLICK.py y se importan para trabajar con ellas.&#10;&#10;Se adapta el mini_DSSP para poder seguir trabajando">
       <created>1539710251934</created>
@@ -442,7 +487,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="265311000" />
+    <option name="totallyTimeSpent" value="287945000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -455,14 +500,13 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="-2" width="1920" height="1082" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.87356323" visible="true" weight="0.14514408" />
-      <window_info id="Structure" order="1" sideWeight="0.12643678" side_tool="true" visible="true" weight="0.14514408" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.5822222" visible="true" weight="0.28655282" />
+      <window_info id="Structure" order="1" sideWeight="0.41777778" side_tool="true" visible="true" weight="0.28655282" />
       <window_info id="Favorites" order="2" sideWeight="0.50052464" side_tool="true" weight="0.081109926" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32948583" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49199572" visible="true" weight="0.36096537" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49199572" visible="true" weight="0.29171038" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.4997233" weight="0.39979014" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -579,47 +623,69 @@
     <entry file="file://$PROJECT_DIR$/Serch/Datos_pkl/clique1.pkl">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/Serch/Experimentos/1xxa_2019-02-12 21:29:12.090445.pdb">
+    <entry file="file://$PROJECT_DIR$/Serch/Experimentos/1xxa_2019-02-12 21:29:12.090445.pdb" />
+    <entry file="file://$PROJECT_DIR$/Serch/Experimentos/1xxa_parejas_finales.pdb" />
+    <entry file="file://$PROJECT_DIR$/Serch/1xxa_2019-02-12 21:53:54.446845.pdb" />
+    <entry file="file://$PROJECT_DIR$/Serch/pdbs/1xxa_clean.pdb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1800">
-          <caret line="100" column="78" lean-forward="true" selection-start-line="100" selection-start-column="74" selection-end-line="100" selection-end-column="78" />
+        <state relative-caret-position="198">
+          <caret line="11" column="80" lean-forward="true" selection-start-line="11" selection-start-column="80" selection-end-line="11" selection-end-column="80" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Serch/start_oo.py">
+    <entry file="file://$PROJECT_DIR$/Serch/Experimentos/pdbs/1xxaclean_a_1xxa.pdb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-576">
-          <caret line="473" column="51" selection-start-line="473" selection-start-column="51" selection-end-line="473" selection-end-column="51" />
-          <folding>
-            <element signature="e#49#67#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="420">
+          <caret line="270" column="78" selection-start-line="270" selection-start-column="75" selection-end-line="270" selection-end-column="78" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Serch/Experimentos/1xxa_parejas_finales.pdb">
+    <entry file="file://$PROJECT_DIR$/Serch/algo.data.pdb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3407">
-          <caret line="447" column="78" lean-forward="true" selection-start-line="447" selection-start-column="78" selection-end-line="447" selection-end-column="78" />
+        <state relative-caret-position="-9072" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Serch/ScriptdPruebas.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="5" column="20" selection-start-line="5" selection-start-column="20" selection-end-line="5" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/get_md_hb_net.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="162">
+          <caret line="10" column="20" selection-start-line="10" selection-end-line="10" selection-end-column="20" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Serch/read_pdb_tools.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-4003">
-          <caret line="62" column="33" selection-start-line="62" selection-start-column="33" selection-end-line="62" selection-end-column="33" />
+        <state relative-caret-position="375">
+          <caret line="372" column="29" selection-start-line="372" selection-start-column="29" selection-end-line="372" selection-end-column="29" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <marker date="1550083393792" expanded="true" signature="7970:7976" ph="..." />
+            <marker date="1550272606470" expanded="true" signature="7970:7976" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Serch/funciones_CLICK.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1872">
-          <caret line="1" selection-start-line="1" selection-end-line="1" />
+        <state relative-caret-position="256">
+          <caret line="112" selection-start-line="112" selection-end-line="112" />
           <folding>
-            <marker date="1550083275954" expanded="true" signature="5991:6313" ph="..." />
+            <marker date="1550272803448" expanded="true" signature="5973:6295" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Serch/start_oo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="501">
+          <caret line="556" lean-forward="true" selection-start-line="556" selection-end-line="556" />
+          <folding>
+            <element signature="e#49#67#0" expanded="true" />
           </folding>
         </state>
       </provider>
