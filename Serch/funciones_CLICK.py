@@ -64,6 +64,23 @@ def distancia_entre_atomos(df_atoms):
                          data=distancias)
     return(df_distancias)
 
+def gen_cliques(red, k=4): # k modificar a 7
+
+    cliques_completos = [clq for clq in nx.find_cliques(red) if len(clq) >= k]
+    print('numero de cliques maximos encontrados:', len(cliques_completos))
+    # print(cliques_completos_1)
+
+    lista_cliques = []
+    for v in (cliques_completos):
+        a = list(it.combinations(v, 3))
+        for j in a:
+            permutation_temp = it.permutations(j)
+            lista_cliques.append(set(permutation_temp))
+
+    lista_cliques = np.unique(lista_cliques)
+    # [y for x in list_of_lists for y in x]
+    return lista_cliques
+
 
 def gen_3_cliques(df_distancias, nombre=False, dth=10, k=3):
     """Genera n-cliques de dataframe de distancias, tomando en cuenta los enlaces menores o iguales
