@@ -64,6 +64,7 @@ def distancia_entre_atomos(df_atoms):
                          data=distancias)
     return(df_distancias)
 
+
 def gen_cliques(red, k=4): # k modificar a 7
 
     cliques_completos = [clq for clq in nx.find_cliques(red) if len(clq) >= k]
@@ -79,7 +80,7 @@ def gen_cliques(red, k=4): # k modificar a 7
 
     lista_cliques = np.unique(lista_cliques)
     # [y for x in list_of_lists for y in x]
-    return lista_cliques
+    return lista_cliques, cliques_completos
 
 
 def gen_3_cliques(df_distancias, nombre=False, dth=10, k=3):
@@ -471,12 +472,23 @@ def calculate_rmsd_rot_trans_m(cliques, array_cliques1, array_cliques2, num_cliq
         """Calculo de rmsd entre cliques tomando el atomo rotado y trasladado
         y el atomo a comparar, por el momento solo imprime el resultado"""
         # primer RMSD entre atomos
-        p12 = np.sum((np.array(
-            atom_to_compare, dtype=np.float64) - clique_trasladado_rotado) ** 2, 1)
-        rmsd_i = lambda i: np.sqrt(i) / 3
-        rmsd_final = rmsd_i(p12).mean()
+        # ####ESTO ESTA MAL######
+        # p12 = np.sum((np.array(
+        #     atom_to_compare, dtype=np.float64) - clique_trasladado_rotado) ** 2, 1)
+        # rmsd_i = lambda i: np.sqrt(i) / 3
+        # rmsd_final = rmsd_i(p12).mean()
+        #
+        # return (rmsd_final)
 
-        return (rmsd_final)
+        dim_coord = clique_trasladado_rotado.shape[1]
+        N = clique_trasladado_rotado.shape[0]
+        result = 0.0
+        for v, w in zip(atom_to_compare, clique_trasladado_rotado):
+            result += sum([(v[i] - w[i]) ** 2.0 for i in range(dim_coord)])
+
+        rmsd_final = np.sqrt(result / N)
+        return rmsd_final
+
 
     matriz_R = matrix_R(res1, res2)
     matriz_rotacion = rotation_matrix(matriz_R)
@@ -528,7 +540,7 @@ def add_element_clique(df_cliques, col_candidatos, cliques, candidatos_df, numbe
                 for nuevo_elemento in no_estan_en_clique:
                     candidato_nuevo = candidato.copy()
                     # se genera una copia para no borrar el orginal
-                    candidato_nuevo = np.append(candidato_nuevo, nuevo_elemento)
+                    candidato_nuevo = np.append(candidato_nuevo, int(nuevo_elemento))
                     # se apila un elemento de los que no estan
                     if set(candidato_nuevo) not in lista_residuos:
                         lista_residuos.append(set(candidato_nuevo))
