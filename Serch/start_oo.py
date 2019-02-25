@@ -25,8 +25,8 @@ timenow_bueno = datetime.datetime.now()
 timenow = datetime.datetime.now()
 
 # lectura de archivo
-file1 = 'pdbs/1xxa_clean.pdb'  # sys.argv[1]
-file2 = 'pdbs/1tig_clean.pdb'  # sys.argv[2]
+file1 = 'pdbs/2mhu.pdb'  # sys.argv[1]
+file2 = 'pdbs/2mrt.pdb'  # sys.argv[2]
 
 # numero de cliques, preguntar en el software para generalizarlo INPUT...
 number_elements_clique = 3
@@ -172,10 +172,12 @@ print("Se procede a calculo de cliques")
 timenow = datetime.datetime.now()
 
 
+#ESTA MAL COMO CALCULA EL RMSD O COMO ROTA Y TRASLADA RESTRUCTURAR O HACER NUEVAMENTE ESTA FUNCION
+
 def iter_rmsd(new_df_cliques1, new_df_cliques2, number_elements_clique):
 
-    print(new_df_cliques1.sort_values([0,1,2]))
-    print(new_df_cliques2.sort_values([0,1,2]))
+    new_df_cliques1.sort_values([0,1,2]).to_pickle('cliques1_'+str(number_elements_clique)+'.pkl')
+    new_df_cliques2.sort_values([0,1,2]).to_pickle('cliques2_'+str(number_elements_clique)+'.pkl')
 
     if number_elements_clique == 7:
         print("Filtrando candidatos y preparando datos para alineamiento")
@@ -193,6 +195,9 @@ def iter_rmsd(new_df_cliques1, new_df_cliques2, number_elements_clique):
     new_df_cliques1 = fc.paste_SS(ss1, new_df_cliques1, num_cliques=number_elements_clique)
     new_df_cliques2 = fc.paste_SS(ss2, new_df_cliques2, num_cliques=number_elements_clique)
     candidatos_ss = fc.compare_SS(new_df_cliques1, new_df_cliques2, num_cliques=number_elements_clique)
+
+    print(candidatos_ss)
+
     print(len(candidatos_ss))
     # rotando y trasladando
     df_cliques1 = fc.get_coords_clique(df_atoms1, new_df_cliques1, number_elements_clique)
@@ -201,37 +206,13 @@ def iter_rmsd(new_df_cliques1, new_df_cliques2, number_elements_clique):
     df_cliques2 = fc.baricenter_clique(df_cliques2, number_elements_clique)
     df_cliques1 = fc.center_vectors(df_cliques1, number_elements_clique)
     df_cliques2 = fc.center_vectors(df_cliques2, number_elements_clique)
-    idx_rmsd1, idx_rmsd2 = 3 * number_elements_clique, 4 * number_elements_clique + 3  # guardas la posicion de los vectores
+    idx_rmsd1, idx_rmsd2 = 3 * number_elements_clique, 4 * number_elements_clique + 3  # guardas la posicion de los
+    # vectores
     array_df_cliques1 = df_cliques1.values[:, range(idx_rmsd1, idx_rmsd2)]  # del 9 al 15
     array_df_cliques2 = df_cliques2.values[:, range(idx_rmsd1, idx_rmsd2)]
 
-    # filtro de distancia minima
-    df_cliques1 = fc.get_distancia_promedio(number_elements_clique, df_cliques1)
-    df_cliques2 = fc.get_distancia_promedio(number_elements_clique, df_cliques2)
-    array_dist_promedio1 = df_cliques1.values[:, -1]  # el ultimo valor de distancia.
-    array_dist_promedio2 = df_cliques2.values[:, -1]
-
-    limite_distancia_minima = 0.45
-    if number_elements_clique == 4:
-        limite_distancia_minima = 0.9
-    if number_elements_clique == 5:
-        limite_distancia_minima = 1.8
-    if number_elements_clique == 6:
-        limite_distancia_minima = 3.6
-    if number_elements_clique == 7:
-        limite_distancia_minima = 4.5
-
-    candi_dist = [(candidato_1,
-                   candidato_2,
-                   array_dist_promedio1[candidato_1] - array_dist_promedio2[candidato_2]) for candidato_1, candidato_2 in candidatos_ss]
-    # pd.DataFrame(candi_dist).to_pickle('dist_'+str(number_elements_clique)+'.pkl')
-    # filtro por distancia minima
-    # candidatos_filter_dist = [(candidato_1, candidato_2) for candidato_1, candidato_2 in candidatos_ss if (
-    #         array_dist_promedio1[candidato_1] - array_dist_promedio2[candidato_2] >= -limite_distancia_minima) & (
-    #         array_dist_promedio1[candidato_1] - array_dist_promedio2[
-    #         candidato_2] <= limite_distancia_minima)]
-    # print(len(candidatos_filter_dist))
     candidatos_filter_dist = candidatos_ss
+
     # filtro por restriccion de RMSD despues de ajuste 3D
     p = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
     restriccion_rmsd = 0.15
@@ -261,21 +242,26 @@ def iter_rmsd(new_df_cliques1, new_df_cliques2, number_elements_clique):
     df_candidatos['candidato_clique_2'] = df_candidatos.candidatos.str.get(1)
     time = datetime.datetime.now()
 
+    print(df_candidatos)
+
     print('numero de candidatos:', df_candidatos.shape[0])
     print('tiempo pasado:', time - timenow)
+    flag = 0
+    if df_candidatos.shape[0] == 1:
+        flag = 1
+        return new_df_cliques1, new_df_cliques2, number_elements_clique, df_candidatos, flag
 
     # Se agrega un nuevo elemento a los cliques.
     if number_elements_clique < 7:
         new_df_cliques1 = fc.add_element_clique(df_cliques1, 'candidato_clique_1', cliques1, df_candidatos,
                                                 number_elements_clique)
-        new_df_cliques1.reset_index(drop=True,inplace=True)
+
         new_df_cliques2 = fc.add_element_clique(df_cliques2, 'candidato_clique_2', cliques2, df_candidatos,
                                                 number_elements_clique)
-        new_df_cliques2.reset_index(drop=True, inplace=True)
         number_elements_clique = number_elements_clique + 1
 
 
-    return (new_df_cliques1, new_df_cliques2, number_elements_clique, df_candidatos)
+    return (new_df_cliques1, new_df_cliques2, number_elements_clique, df_candidatos,flag)
 
 
 # primeros cliques a filtrar
@@ -284,10 +270,12 @@ new_df_cliques2 = df_cliques2
 
 # Si se empieza en 3-cliques solo itera 5 veces para llegar a 7 :v.
 for k in range(5):
-    new_df_cliques1, new_df_cliques2, number_elements_clique, rmsd = iter_rmsd(
+    new_df_cliques1, new_df_cliques2, number_elements_clique, rmsd, stop = iter_rmsd(
         new_df_cliques1, new_df_cliques2, number_elements_clique)
     print("iteracion", k + 1, "numero de elementos:", number_elements_clique)
     print("===" * 10)
+    if stop:
+        break
 
 
 time_all = datetime.datetime.now()
@@ -329,8 +317,8 @@ vecs_center_2 = vecs2 - bari_2
 
 number_of_residues_final = df_atoms1[df_atoms1.atom_name == 'CA'].shape[0]
 
-# new_df_cliques1.to_pickle('clique1.pkl')
-# new_df_cliques2.to_pickle('clique2.pkl')
+new_df_cliques1.to_pickle('clique1.pkl')
+new_df_cliques2.to_pickle('clique2.pkl')
 # df_atoms1.to_pickle('clique1_df_atributos.pkl')
 # df_atoms2.to_pickle('clique2_df_atributos.pkl')
 # # df_candidatos.to_pickle('df_alineados.pkl')
@@ -373,6 +361,7 @@ def align_residues(idx, so):
     coord_vectores_rotados = [np.matmul(matriz_rotacion, i.reshape(3, 1)).T[0] for i in vector_gorro]
     # se obtiene el baricentro de la proteina 2
     baricentro_proteina_2 = df_new_df_clique2[clique_in_protein_2, 22]
+    # print(baricentro_proteina_2)
     # se suma el baricentro a vectores rotados de la proteina 1
     protein_trasladado_rotado = coord_vectores_rotados + baricentro_proteina_2  # nuevas coordendas proteina 1
     # se quitan residuos que pertenezcan al clique candidato para calcular la distancia y emparejar al mejor.
@@ -493,7 +482,7 @@ for i in np.arange(len(df_rmsd)):
         break
 
 print('ya termine de alinear residuo a residuo')
-print(id_so, round(so, 5), df_candidatos.distancia.mean(), df_candidatos.iloc[id_so])
+print(id_so, round(so, 5), df_candidatos.distancia.mean(), df_candidatos)
 
 # new_df_cliques1.to_pickle('clique1.pkl')
 # new_df_cliques2.to_pickle('clique2.pkl')
@@ -502,45 +491,6 @@ print(id_so, round(so, 5), df_candidatos.distancia.mean(), df_candidatos.iloc[id
 # df_candidatos.to_pickle('df_alineados.pkl')
 # pd.DataFrame(parejas_clique).to_pickle('parejas.pkl')
 # df_rmsd.to_pickle('df_rmsd.pkl')
-
-# print('Generando rotacion con parejas seleccionadas.')
-#
-# parejas = [i[1] for i in df_candidatos.values]
-#
-#
-# def R_ij(i, j, parejas = parejas):
-#     valor = sum([vecs_center_1[pos_res[0], i] * vecs_center_2[pos_res[1], j] for pos_res in parejas])
-#     return valor
-#
-#
-# def matrix_R():
-#     """cliques a comparar: i,j
-#     desde aqui se itera sobre cada i y hay que variar los vectores
-#     coordenada
-#     Regresa la matriz gigante (matriz simetrica del articulo)"""
-#     # primer renglon
-#     R11R22R33 = (R_ij(0, 0) + R_ij(1, 1) + R_ij(2, 2))
-#     R23_R32 = (R_ij(1, 2) - R_ij(2, 1))
-#     R31_R13 = (R_ij(2, 0) - R_ij(0, 2))
-#     R12_R21 = (R_ij(0, 1) - R_ij(1, 0))
-#     # segundo renglon
-#     R11_R22_R33 = (R_ij(0, 0) - R_ij(1, 1) - R_ij(2, 2))
-#     R12R21 = (R_ij(0, 1) + R_ij(1, 0))
-#     R13R31 = (R_ij(0, 2) + R_ij(2, 0))
-#     # tercer renglon
-#     _R11R22_R33 = (-R_ij(0, 0) + R_ij(1, 1) - R_ij(2, 2))
-#     R23R32 = (R_ij(1, 2) + R_ij(2, 1))
-#     # cuarto renglon
-#     _R11_R22R33 = (-R_ij(0, 0) - R_ij(1, 1) + R_ij(2, 2))
-#
-#     matriz_R = [
-#         [R11R22R33, R23_R32, R31_R13, R12_R21],
-#         [R23_R32, R11_R22_R33, R12R21, R13R31],
-#         [R31_R13, R12R21, _R11R22_R33, R23R32],
-#         [R12_R21, R13R31, R23R32, _R11_R22R33]
-#     ]
-#     return (matriz_R)
-
 
 
 # matriz_R = matrix_R()
@@ -561,7 +511,7 @@ for i in pdb11:
         i.GetAtom(j).UpDateValue('coord', new_df_atom1[mask][mask_2].new_vector.values[0])
 
 pdb1.pdbdata = pdb11
-pdb1.WriteToFile(file_out_name='1xxa_'+str(datetime.datetime.now()))
+# pdb1.WriteToFile(file_out_name='1xxa_'+str(datetime.datetime.now()))
 
 time_bueno = datetime.datetime.now()
 print('iteraciones completas:', time_bueno - timenow_bueno)

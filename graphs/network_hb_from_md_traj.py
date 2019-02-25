@@ -80,10 +80,10 @@ class Network(object):
                 except KeyError:
                     c_empty += 1
                     if not mute:
-                       print "The residue "
+                       print ("The residue ")
                        res.PrintResSummary()
-                       print "it is not a regular one.\
-                             It was skipped. Plesea check if that it's ok."
+                       print ("it is not a regular one.\
+                             It was skipped. Plesea check if that it's ok.")
                     continue
                 try:
                     h_pos = res.GetAtom("H").coord ## add function that adds proton
@@ -93,10 +93,10 @@ class Network(object):
                     res.Add_h2n(res_prev.GetAtom("C").coord)
                     h_pos = res.GetAtom("H").coord
                     if not mute:
-                       print "The residue "
+                       print ("The residue ")
                        res.PrintResSummary()
-                       print "Does no have H.\
-                              A hydrogen was added based on geometric definition."
+                       print ("Does no have H.\
+                              A hydrogen was added based on geometric definition.")
 
                 n_pos = res.GetAtom("N").coord
                 ca_pos = res.GetAtom("CA").coord
