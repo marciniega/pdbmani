@@ -43,8 +43,8 @@ pdb1.AddPdbData("%s" % file1)
 pdb2.AddPdbData("%s" % file2)
 
 #filtro SS
-# pdb1.Set_SS()
-# pdb2.Set_SS()
+pdb1.Set_SS()
+pdb2.Set_SS()
 
 # filtro dihedral
 pdb1.SetDiheMain()
@@ -89,7 +89,7 @@ cliques_2, cliques_max_2 = fc.gen_cliques(red2, k=7)
 lenght_cliquemax_1 = len(cliques_max_1)
 lenght_cliquemax_2 = len(cliques_max_2)
 
-print(lenght_cliquemax_1 * lenght_cliquemax_2)
+print("numero de cliques maximales combinaciones", lenght_cliquemax_1 * lenght_cliquemax_2)
 
 
 def eval_dihedral(ang_ref, ang_tar, cutoff = 30):
@@ -112,8 +112,42 @@ def eval_dihedral(ang_ref, ang_tar, cutoff = 30):
 
     return 0
 
+###############
+# Alineamiento#
+###############
+list_candidates = []
+for clique1 in cliques_max_1:
+    res_clq_1 = [pdb1.GetRes(j) for j in clique1]
+    for clique2 in cliques_max_2:
+        res_clq_2 = [pdb2.GetRes(j) for j in clique2]
 
-# FIltro score Estructura Secundaria
+        # Filtro PHI PSI
+        val_vec = []
+        for res1 in res_clq_1:
+            phi_ref = res1.phi
+            psi_ref = res1.psi
+            val = 0
+            for res2 in res_clq_2:
+                phi_tar = res2.phi
+                psi_tar = res2.psi
+                if eval_dihedral(phi_ref, phi_tar, cutoff=10) and (
+                        eval_dihedral(psi_ref, psi_tar, cutoff=10)):
+                    val = val + 1
+            val_vec.append(val)
+        if val_vec.count(0) < 1:
+            # debugg de vector de angulos dihedrales
+            # print(clique1, clique2)
+            # print(val_vec)
+            list_candidates.append([clique1, clique2])
+
+
+# list_candidates = [[110, 109, 106, 105, 107, 108, 111], [137, 139, 138, 140, 141, 143, 142]]
+# # numero de candidatos y parejas generadas.
+# print(list_candidates)
+print("numero de candidatos despues de filtro dihedral", len(list_candidates))
+
+
+# Filtro score Estructura Secundaria
 def score_ss(clq1, clq2):
     flag = 1
     for k in range(3):
@@ -218,7 +252,7 @@ def rmsd_between_cliques(clique_trasladado_rotado, atom_to_compare):
 
 
 # CHECK DE ALINEAMINETO
-def align(c_1, c_2):
+def align(c_1, c_2, number_elements_clique = None):
 
     bari_1 = c_1.mean(0)
     bari_2 = c_2.mean(0)
@@ -226,33 +260,33 @@ def align(c_1, c_2):
     vecs_center_1 = c_1 - bari_1
     vecs_center_2 = c_2 - bari_2
 
-    if number_elements_clique == 3:
-        limite_distancia_minima = 0.13
-    elif number_elements_clique == 4:
-        limite_distancia_minima = 0.15
-    elif number_elements_clique == 5:
-        limite_distancia_minima = 0.30
-    elif number_elements_clique == 6:
-        limite_distancia_minima = 0.40
-    elif number_elements_clique == 7:
-        limite_distancia_minima = 0.60
-    else:
-        limite_distancia_minima = 100
-
-    def minimum_distance():
-
-        flag = 0
-        origin = (0, 0, 0)
-        dist_1 = np.mean([euclidean(origin, j) for j in vecs_center_1])
-        dist_2 = np.mean([euclidean(origin, j) for j in vecs_center_2])
-        if abs(dist_1 - dist_2) > limite_distancia_minima:
-            flag = 1
-
-        return flag
-
-    if minimum_distance():
-        rmsd_final = 100  # rmsd muy grande
-        return rmsd_final
+    # if number_elements_clique == 3:
+    #     limite_distancia_minima = 0.13
+    # elif number_elements_clique == 4:
+    #     limite_distancia_minima = 0.15
+    # elif number_elements_clique == 5:
+    #     limite_distancia_minima = 0.60
+    # elif number_elements_clique == 6:
+    #     limite_distancia_minima = 0.60
+    # elif number_elements_clique == 7:
+    #     limite_distancia_minima = 0.60
+    # else:
+    #     limite_distancia_minima = 100
+    #
+    # def minimum_distance():
+    #
+    #     flag = 0
+    #     origin = (0, 0, 0)
+    #     dist_1 = np.mean([euclidean(origin, j) for j in vecs_center_1])
+    #     dist_2 = np.mean([euclidean(origin, j) for j in vecs_center_2])
+    #     if abs(dist_1 - dist_2) > limite_distancia_minima:
+    #         flag = 1
+    #
+    #     return flag
+    #
+    # if minimum_distance():
+    #     rmsd_final = 100  # rmsd muy grande
+    #     return rmsd_final
 
     matriz_R = matrix_R(vecs_center_1, vecs_center_2)
     matriz_rotacion = rotation_matrix(matriz_R)
@@ -266,6 +300,9 @@ def align(c_1, c_2):
 
     # TE PUEDES AHORRAR EL PASO DE TRASLADAR SI CALCULAS EN LOS VECTORES CENTRICOS.
     rmsd_final = rmsd_between_cliques(protein_trasladado_rotado, protein_to_compare)
+
+    if number_elements_clique == 7:
+        return rmsd_final, matriz_rotacion
 
     return rmsd_final
 
@@ -283,179 +320,30 @@ if number_elements_clique == 8:
     restriccion_rmsd = 1.80
 
 
-def add_element_to_clique(cliques_candidatos,
-                          cliques_maximales,
-                          proteina):
-    """
-    :param cliques_candidatos: lista de cliques canidatos
-    :param cliques_maximales: lista de cliques maximales
-    :param proteina: 0 o 1
-    :return: Lista de cliques nuevos
-    """
-    cliques_nuevos = []
-    # agregando elemento
-    for clique in cliques_candidatos:
-        for i in cliques_maximales:
-            if set(clique[proteina]).issubset(i):
-                # print(clique1[0])
-                # print("clique maximal:", i)
-                no_estan_en_clique = set(i).difference(set(clique[proteina]))
-                # print(no_estan_en_clique)
-                for nuevo_elemento in no_estan_en_clique:
-                    clique_nuevo = list(clique[proteina]).copy()
-                    clique_nuevo = np.append(clique_nuevo, nuevo_elemento)
-                    if clique_nuevo.tolist() not in cliques_nuevos:
-                        cliques_nuevos.append(clique_nuevo.tolist())
-    # print(cliques_nuevos)
-    return cliques_nuevos
+# GENERACION DE CLIQUES DE LA LISTA DE CLIQUES MAXIMALES APLICANDOFILTRO DIHEDRAL
+cliques_1_temp = []
+for clique1 in list_candidates:
+    list_candidate = fc.gen_cliques_3(clique1[0])
+    if list_candidate not in cliques_1_temp:
+        cliques_1_temp.append(list_candidate)
 
+cliques_2_temp = []
+for clique2 in list_candidates:
+    list_candidate = fc.gen_cliques_3(clique2[1])
+    if list_candidate not in cliques_2_temp:
+        cliques_2_temp.append(list_candidate)
 
-###############
-# Alineamiento#
-###############
-list_candidates = []
-for clique1 in cliques_max_1:
-    res_clq_1 = [pdb1.GetRes(j) for j in clique1]
-    for clique2 in cliques_max_2:
-        res_clq_2 = [pdb2.GetRes(j) for j in clique2]
-
-        # Filtro PHI PSI
-        val_vec = []
-        for i in res_clq_1:
-            phi_ref = i.phi
-            psi_ref = i.psi
-            val = 0
-            for j in res_clq_2:
-                phi_tar = j.phi
-                psi_tar = j.psi
-                if eval_dihedral(phi_ref, phi_tar, cutoff=10) and (
-                        eval_dihedral(psi_ref, psi_tar, cutoff=10)):
-                    val = val + 1
-            val_vec.append(val)
-        if val_vec.count(0) < 1:
-            # debugg de vector de angulos dihedrales
-            # print(clique1, clique2)
-            # print(val_vec)
-            list_candidates.append([clique1, clique2])
-# numero de candidatos y parejas generadas.
-print(list_candidates)
-print(len(list_candidates))
-
-
-# cliques_candidate = []
-# for clique1 in list_candidates:
-#     cliques1_3 = fc.gen_cliques_3(clique1[0])
-#     cliques2_3 = fc.gen_cliques_3(clique1[1])
-#     # filtro SS, DM, RMSD
-#     number_elements_clique = 3
-#     for res1 in cliques1_3:
-#         res_clq1_3 = [pdb1.GetRes(i) for i in res1]
-#         for res2 in cliques2_3:
-#             res_clq2_3 = [pdb2.GetRes(j) for j in res2]
-#             if score_ss(res_clq1_3, res_clq2_3):
-#                 coord_1 = np.array([res.GetAtom('CA').coord for res in res_clq1_3])
-#                 coord_2 = np.array([res.GetAtom('CA').coord for res in res_clq2_3])
-#                 if align(coord_1, coord_2) < restriccion_rmsd:
-#                     # print("RMSD: %1.5f" % align(coord_1, coord_2))
-#                     # print(res1, res2)
-#                     cliques_candidate.append((res1, res2))
-
-# print(cliques_candidate)
-# print(len(cliques_candidate))
-# exit()
-
-
-# cliques_1_temp = [y for x in list_candidates for y in x]
-# cliques_2_temp = [y for x in list_candidates for y in x]
-cliques_1_temp = [fc.gen_cliques_3(clique1[0]) for clique1 in list_candidates][0]
-cliques_2_temp = [fc.gen_cliques_3(clique1[1]) for clique1 in list_candidates][0]
-print(cliques_1_temp)
 print(len(cliques_1_temp))
-print(cliques_2_temp)
+print(len([y for x in cliques_1_temp for y in x]))
+
 print(len(cliques_2_temp))
-print("numero de comparaciones", len(cliques_1_temp) * len(cliques_2_temp) * len(list_candidates))
 
-
-
-# print("numero de cliques1", len(cliques_1_temp))
-# print("numero de cliques2", len(cliques_2_temp))
-# print("numero de candidatos %1.2f" % (len(cliques_1_temp) * len(cliques_2_temp)))
-# cliques_candidate = []
-# for clique1 in cliques_1_temp:
-#     res_clq_1 = [pdb1.GetRes(j) for j in clique1]
-#     for clique2 in cliques_2_temp:
-#         res_clq_2 = [pdb2.GetRes(j) for j in clique2]
-#         if score_ss(res_clq_1, res_clq_2):
-#             coord_1 = np.array([i.GetAtom('CA').coord for i in res_clq_1])
-#             coord_2 = np.array([i.GetAtom('CA').coord for i in res_clq_2])
-#             # print(align(coord_1, coord_2))
-#
-#             #FIltro PHI PSI
-#             # phi_1 = np.array([i.phi for i in res_clq_1])
-#             # phi_2 = np.array([i.phi for i in res_clq_2])
-#             # psi_1 = np.array([i.psi for i in res_clq_1])
-#             # psi_2 = np.array([i.psi for i in res_clq_2])
-#             # print(phi_1)
-#
-#             # if (abs((phi_2 - phi_1).mean()) < 20) or (abs((psi_2 - psi_1).mean())< 20):
-#
-#             if align(coord_1, coord_2) < restriccion_rmsd:
-#                 print(align(coord_1, coord_2))
-#                 print(clique1, clique2)
-#                 # break SE DEJA POR SI SE QUIERE IMPLEMENTAR SOBRE EL FOR
-#                 # new_cliques = []
-#                 # # agregando elemento
-#                 # for i in cliques_max_1:
-#                 #     if (set(clique1).issubset(i)):
-#                 #         print(clique1)
-#                 #         print("clique maximal:", i)
-#                 #         no_estan_en_clique = set(i).difference(set(clique1))
-#                 #         print(no_estan_en_clique)
-#                 #         for nuevo_elemento in no_estan_en_clique:
-#                 #             clique_nuevo = list(clique1).copy()
-#                 #             clique_nuevo = np.append(clique_nuevo, nuevo_elemento)
-#                 #             new_cliques.append(clique_nuevo)
-#                 # print(new_cliques)
-#                 # agrega elemento
-#
-#                 cliques_candidate.append((clique1, clique2))
-#     # break
-#
-# number_elements_clique = number_elements_clique + 1
-# # print(cliques_candidate)
-# print("Numero de candidatos", len(cliques_candidate))
-
-
-# funcion para multiprocessing
-# def filters(cliques):
-#
-#     restriccion_rmsd = 0.15
-#     if number_elements_clique == 4:
-#         restriccion_rmsd = 0.30
-#     elif number_elements_clique == 5:
-#         restriccion_rmsd = 0.60
-#     elif number_elements_clique == 6:
-#         restriccion_rmsd = 0.90
-#     elif number_elements_clique == 7:
-#         restriccion_rmsd = 1.50
-#
-#     res_clq_1 = [pdb1.GetRes(clq) for clq in cliques[0]]
-#     res_clq_2 = [pdb2.GetRes(clq) for clq in cliques[1]]
-#     if score_ss(res_clq_1, res_clq_2):
-#         coord_1 = np.array([res.GetAtom('CA').coord for res in res_clq_1])
-#         coord_2 = np.array([res.GetAtom('CA').coord for res in res_clq_2])
-#         if align(coord_1, coord_2) < restriccion_rmsd:
-#             print("RMSD: %1.5f" % align(coord_1, coord_2))
-#             print(cliques[0], cliques[1])
-#             return cliques[0], cliques[1],align(coord_1, coord_2)
-#
-#         return cliques[0], cliques[1], align(coord_1, coord_2)
+print("numero de comparaciones", len(cliques_1_temp) * len(cliques_2_temp))
 
 
 def iter_align(number_elements_clique, cliques_1_align, cliques_2_align):
 
     """
-
     :int number_elements_clique: elementos del clique
     :tuple cliques_1_align: lista de cliques a alinear de la proteina A
     :tuple cliques_2_align: lista de cliques a alinear de la proteina B
@@ -477,57 +365,147 @@ def iter_align(number_elements_clique, cliques_1_align, cliques_2_align):
     if number_elements_clique == 8:
         restriccion_rmsd = 1.80
 
-    print("numero de cliques1", len(cliques_1_align))
-    print("numero de cliques2", len(cliques_2_align))
-    print("numero de candidatos %1.5f" % (len(cliques_1_align) * len(cliques_2_align)))
-
-    # pendiente multiprocessing
-    # iterator_cliques = it.product(cliques_1_align, cliques_2_align)
-    # p = multiprocessing.Pool(processes=6) # multiprocessing.cpu_count()-1
-    # cliques_candidate = p.map(filters, iterator_cliques)
-    # p.close()
-    # p.join()
-    # print(cliques_candidate)
-
     cliques_candidate = []
-    for clique1 in cliques_1_align:
+
+    if number_elements_clique == 3:
+        for pareja in zip(cliques_1_align, cliques_2_align):
+            for clique1 in pareja[0]:
+                res_clq_1 = [pdb1.GetRes(clq) for clq in clique1]
+                for clique2 in pareja[1]:
+                    res_clq_2 = [pdb2.GetRes(clq) for clq in clique2]
+                    if score_ss(res_clq_1, res_clq_2):
+                        coord_1 = np.array([res.GetAtom('CA').coord for res in res_clq_1])
+                        coord_2 = np.array([res.GetAtom('CA').coord for res in res_clq_2])
+                        if align(coord_1, coord_2) < restriccion_rmsd:
+                            cliques_candidate.append([clique1, clique2])
+
+    else:
+        for clique1 in cliques_1_align:
             res_clq_1 = [pdb1.GetRes(clq) for clq in clique1]
             for clique2 in cliques_2_align:
                 res_clq_2 = [pdb2.GetRes(clq) for clq in clique2]
                 if score_ss(res_clq_1, res_clq_2):
                     coord_1 = np.array([res.GetAtom('CA').coord for res in res_clq_1])
                     coord_2 = np.array([res.GetAtom('CA').coord for res in res_clq_2])
-                    if align(coord_1, coord_2) < restriccion_rmsd:
-                        # print("RMSD: %1.5f" % align(coord_1, coord_2))
-                        # print(clique1, clique2)
-                        cliques_candidate.append((clique1, clique2))
+                    if number_elements_clique == 7:
+                        rmsd, mat_rot = align(coord_1, coord_2, number_elements_clique=number_elements_clique)
+                        if rmsd < restriccion_rmsd:
+                            cliques_candidate.append([clique1, clique2,mat_rot])
+                    else:
+                        if align(coord_1, coord_2) < restriccion_rmsd:
+                            cliques_candidate.append([clique1, clique2])
 
-    if number_elements_clique < 7:
-        new_cliques_1 = add_element_to_clique(cliques_candidate,
-                                              cliques_max_1,
-                                              0)
-        new_cliques_1 = tuple(tuple(x) for x in new_cliques_1)
-        new_cliques_2 = add_element_to_clique(cliques_candidate,
-                                              cliques_max_2,
-                                              1)
-        new_cliques_2 = tuple(tuple(x) for x in new_cliques_2)
-        number_elements_clique = number_elements_clique + 1
-
-    else:
-        new_cliques_1 = cliques_1_align
-        new_cliques_2 = cliques_2_align
-
-    return number_elements_clique, new_cliques_1, new_cliques_2, cliques_candidate
+    return cliques_candidate
 
 
 new_df_cliques1 = cliques_1_temp
 new_df_cliques2 = cliques_2_temp
 
-for i in range(5):
-    number_elements_clique, new_df_cliques1, new_df_cliques2, cliques_candidatos, = iter_align(
-        number_elements_clique, new_df_cliques1, new_df_cliques2)
-    print("iteracion", i + 1, "numero de elementos:", number_elements_clique)
-    print("===" * 10)
+cliques_candidatos = iter_align(number_elements_clique, new_df_cliques1, new_df_cliques2)
+
+new_df_cliques = fc.add_element_to_clique(cliques_candidatos, cliques_max_1, cliques_max_2)
+
+number_elements_clique = number_elements_clique + 1
+
+print("candidatos con n-cliques, n =", number_elements_clique-1,
+      "numero de parejas", len(cliques_candidatos))
+
+print(number_elements_clique, len(new_df_cliques))
+print('==================ya acabo con 3-cliques va con 4=========================')
+
+
+cliques_temp = []
+cliques_temp_add = []
+for parejas_4clique in new_df_cliques:
+
+    new_df_cliques1 = parejas_4clique[0]
+    new_df_cliques2 = parejas_4clique[1]
+
+    cliques_candidatos = iter_align(number_elements_clique, new_df_cliques1, new_df_cliques2)
+
+    if cliques_candidatos != []:
+        cliques_temp.append(cliques_candidatos)
+        cliques_temp_add.append(fc.add_element_to_clique(cliques_candidatos, cliques_max_1, cliques_max_2))
+
+number_elements_clique = number_elements_clique + 1
+
+
+print('==================ya acabo con 4-cliques va con 5=========================')
+
+cliques_temp_add_0 = [y for x in cliques_temp_add for y in x]
+
+cliques_temp1 = []
+cliques_temp1_add = []
+for parejas_5clique in cliques_temp_add_0:
+
+    new_df_cliques1 = parejas_5clique[0]
+    new_df_cliques2 = parejas_5clique[1]
+    cliques_candidatos = iter_align(number_elements_clique, new_df_cliques1, new_df_cliques2)
+
+    if cliques_candidatos != []:
+        cliques_temp1.append(cliques_candidatos)
+        cliques_temp1_add.append(fc.add_element_to_clique(cliques_candidatos, cliques_max_1, cliques_max_2))
+
+number_elements_clique = number_elements_clique + 1
+
+print(cliques_temp1[:5])
+print(len(cliques_temp1))
+
+print(cliques_temp1_add[:5])
+print(len(cliques_temp1_add))
+print('==================ya acabo con 5-cliques va con 6=========================')
+
+cliques_temp_add_11 = [y for x in cliques_temp1_add for y in x]
+
+cliques_temp2 = []
+cliques_temp2_add = []
+for parejas_6clique in cliques_temp_add_11:
+
+    new_df_cliques1 = parejas_6clique[0]
+    new_df_cliques2 = parejas_6clique[1]
+    cliques_candidatos = iter_align(number_elements_clique, new_df_cliques1, new_df_cliques2)
+
+    if cliques_candidatos != []:
+        cliques_temp2.append(cliques_candidatos)
+        cliques_temp2_add.append(fc.add_element_to_clique(cliques_candidatos, cliques_max_1, cliques_max_2))
+
+number_elements_clique = number_elements_clique + 1
+
+print(cliques_temp2[:5])
+print(len(cliques_temp2))
+
+print(cliques_temp2_add[:5])
+print(len(cliques_temp2_add))
+print('==================ya acabo con 6-cliques va con 7=========================')
+
+cliques_temp_add_22 = [y for x in cliques_temp2_add for y in x]
+
+cliques_temp3 = []
+
+for parejas_7clique in cliques_temp_add_22:
+
+    new_df_cliques1 = parejas_7clique[0]
+    new_df_cliques2 = parejas_7clique[1]
+    cliques_candidatos = iter_align(number_elements_clique, new_df_cliques1, new_df_cliques2)
+
+    if cliques_candidatos != []:
+        cliques_temp3.append(cliques_candidatos)
+
+print(len(cliques_temp3))
+print(cliques_temp3[:2])
+
+# APARTIR DE AQUI VA EL ALINEAMIENTO DE RESIDUOS POR MEDIO DE LAS PAREJAS CANDIDATAS
+parejas_cliques_finales = cliques_temp3
+
+
+# HAY QUE CHECAR POR QUE EXISTEN DESFASES EN LAS PAREJAS DE CLIQUES
+# SE DETECTI QYE EXISTEN LISTAS DE LISTAS DENTRO DE LAS PAREJAS FINALES DE CLIQUES
+# CHECAR POR QUE SUCEDE ESTO AUNQUE SE ARREGLA HACIENDO UNA LSITA DE COMPRENSION CON DOBLE FOR
+
+parejas_cliques_finales = [x for y in parejas_cliques_finales for x in y]
+
+# ya se obtienen las matrices de rotacion de parejas cliques finales
+print(parejas_cliques_finales)
 
 timenow = datetime.datetime.now()
 print('Tiempo Total:', timenow - time_all)

@@ -44,11 +44,10 @@ def distancia_entre_atomos(df_atoms):
     return(df_distancias)
 
 
-def gen_cliques(red, k=7): # k modificar a 7
+def gen_cliques(red, k=7):  # k modificar a 7
 
-    cliques_completos = [clq for clq in nx.find_cliques(red) if len(clq) == k] # mayor o igual que cambiarlo
+    cliques_completos = [clq for clq in nx.find_cliques(red) if len(clq) >= k] # mayor o igual que cambiarlo
     print('numero de cliques maximos encontrados:', len(cliques_completos))
-    # print(cliques_completos_1)
 
     lista_cliques = []
     for v in (cliques_completos):
@@ -66,7 +65,7 @@ def gen_cliques_3(red):
 
     combinations = list(it.combinations(red, 3))
     lista_cliques = [list(it.permutations(nclique)) for nclique in combinations]
-    lista_cliques1 = [j for i in lista_cliques for j in i]
+    lista_cliques1 = [list(clq) for combinations in lista_cliques for clq in combinations]
 
     return lista_cliques1
 
@@ -83,17 +82,82 @@ def create_ss_table(list_residues):
     return ss
 
 
-def compare_SS(df_clique1, df_clique2, num_cliques):
-    cols = df_clique1.columns[num_cliques:]
-    producto = it.product(df_clique1.index.values, df_clique2.index.values)
-    comp1 = df_clique1[cols].values
-    comp2 = df_clique2[cols].values
-    candidatos_ss = [(i, j) for i, j in producto if 2 not in (list(map(SSM, comp1[i], comp2[j])))]
+def add_element_to_clique(cliques_candidatos,
+                          cliques_maximales_1,cliques_maximales_2):
+    """
+    :param cliques_candidatos: lista de cliques canidatos
+    :param cliques_maximales: lista de cliques maximales
+    :param proteina: 0 o 1
+    :return: Lista de cliques nuevos
+    """
+    cliques_nuevos = []
+    # agregando elemento
+    for clique in cliques_candidatos:
+        cliques1_nuevos = []
+        cliques2_nuevos = []
+        for i in cliques_maximales_1:
 
-    return (candidatos_ss)
+            if set(clique[0]).issubset(i):
+                no_estan_en_clique = set(i).difference(set(clique[0]))
+                for nuevo_elemento in no_estan_en_clique:
+                    clique_nuevo1 = list(clique[0]).copy()
+                    clique_nuevo1 = np.append(clique_nuevo1, nuevo_elemento)
+                    if clique_nuevo1.tolist() not in cliques1_nuevos and len(clique_nuevo1) > 1:
+                        cliques1_nuevos.append(clique_nuevo1.tolist())
+
+        for j in cliques_maximales_2:
+            if set(clique[1]).issubset(j):
+                no_estan_en_clique = set(j).difference(set(clique[1]))
+                for nuevo_elemento in no_estan_en_clique:
+                    clique_nuevo2 = list(clique[1]).copy()
+                    clique_nuevo2 = np.append(clique_nuevo2, nuevo_elemento)
+                    if clique_nuevo2.tolist() not in cliques2_nuevos and len(clique_nuevo2) > 1:
+                        cliques2_nuevos.append(clique_nuevo2.tolist())
+
+        if cliques1_nuevos == [] or cliques2_nuevos == []:
+            continue
+        else:
+            cliques_nuevos.append([cliques1_nuevos, cliques2_nuevos])
+
+    return cliques_nuevos
+
+# funcion para multiprocessing PONERLA EN alineamiento_10 por si se necesita
+# def filters(cliques):
+#
+#     restriccion_rmsd = 0.15
+#     if number_elements_clique == 4:
+#         restriccion_rmsd = 0.30
+#     elif number_elements_clique == 5:
+#         restriccion_rmsd = 0.60
+#     elif number_elements_clique == 6:
+#         restriccion_rmsd = 0.90
+#     elif number_elements_clique == 7:
+#         restriccion_rmsd = 1.50
+#
+#     res_clq_1 = [pdb1.GetRes(clq) for clq in cliques[0]]
+#     res_clq_2 = [pdb2.GetRes(clq) for clq in cliques[1]]
+#     if score_ss(res_clq_1, res_clq_2):
+#         coord_1 = np.array([res.GetAtom('CA').coord for res in res_clq_1])
+#         coord_2 = np.array([res.GetAtom('CA').coord for res in res_clq_2])
+#         if align(coord_1, coord_2) < restriccion_rmsd:
+#             print("RMSD: %1.5f" % align(coord_1, coord_2))
+#             print(cliques[0], cliques[1])
+#             return cliques[0], cliques[1],align(coord_1, coord_2)
+#
+#         return cliques[0], cliques[1], align(coord_1, coord_2)
 
 
-def SSM(ss1,ss2):
+# def compare_SS(df_clique1, df_clique2, num_cliques):
+#     cols = df_clique1.columns[num_cliques:]
+#     producto = it.product(df_clique1.index.values, df_clique2.index.values)
+#     comp1 = df_clique1[cols].values
+#     comp2 = df_clique2[cols].values
+#     candidatos_ss = [(i, j) for i, j in producto if 2 not in (list(map(SSM, comp1[i], comp2[j])))]
+#
+#     return (candidatos_ss)
+
+
+def SSM(ss1, ss2):
     """Catalogo SSM siguiendo la tabla 1 y con una funcion extra,
     ss1: string (H,B,C)
     ss2: string (H,B,C)
