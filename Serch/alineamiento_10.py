@@ -92,7 +92,7 @@ lenght_cliquemax_2 = len(cliques_max_2)
 print("numero de cliques maximales combinaciones", lenght_cliquemax_1 * lenght_cliquemax_2)
 
 
-def eval_dihedral(ang_ref, ang_tar, cutoff = 30):
+def eval_dihedral(ang_ref, ang_tar, cutoff=30):
     """
     Evaluacion de los angulo dihedrales, manteniendo aquellos que presentan un cierto cutoff.
     :param ang_ref: angulo phi o psi
@@ -130,8 +130,8 @@ for clique1 in cliques_max_1:
             for res2 in res_clq_2:
                 phi_tar = res2.phi
                 psi_tar = res2.psi
-                if eval_dihedral(phi_ref, phi_tar, cutoff=10) and (
-                        eval_dihedral(psi_ref, psi_tar, cutoff=10)):
+                if eval_dihedral(phi_ref, phi_tar, cutoff=70) and (
+                        eval_dihedral(psi_ref, psi_tar, cutoff=70)):
                     val = val + 1
             val_vec.append(val)
         if val_vec.count(0) < 1:
@@ -506,6 +506,9 @@ parejas_cliques_finales = [x for y in parejas_cliques_finales for x in y]
 
 # ya se obtienen las matrices de rotacion de parejas cliques finales
 print(parejas_cliques_finales)
+print(len(parejas_cliques_finales))
+import pandas as pd
+pd.to_pickle(pd.DataFrame(parejas_cliques_finales), 'parejas_alineables.pkl')
 
 timenow = datetime.datetime.now()
 print('Tiempo Total:', timenow - time_all)
