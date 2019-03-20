@@ -16,8 +16,8 @@ import datetime
 time_all = datetime.datetime.now()
 # networks
 import networkx as nx
-# filtro distancia minima
-from scipy.spatial.distance import euclidean
+# # filtro distancia minima
+# from scipy.spatial.distance import euclidean
 # por si no jala
 import os
 os.chdir('/home/serch/pdbmani/Serch')
@@ -54,6 +54,31 @@ pdb2.SetDiheMain()
 pdb11 = pdb1.GetResChain()
 pdb22 = pdb2.GetResChain()
 
+if len(pdb22) < len(pdb11):
+
+    import copy
+    pdb1_temp = copy.copy(pdb1)
+    pdb2_temp = copy.copy(pdb2)
+
+    pdb11_temp = copy.copy(pdb11)
+    pdb22_temp = copy.copy(pdb22)
+
+    pdb1 = pdb2_temp
+    pdb2 = pdb1_temp
+
+    pdb11 = pdb22_temp
+    pdb22 = pdb11_temp
+
+    del [pdb1_temp]
+    del [pdb2_temp]
+    del [pdb11_temp]
+    del [pdb22_temp]
+
+    print("Intercambio de nombre ya que la proteina 1 es mas grande que la 2")
+    print(pdb1.name, len(pdb11))
+    print(pdb2.name, len(pdb22))
+    print("No te preocupes ya quedo :)")
+
 # creando tabla de estructura secundaria para filtro de SS
 ss1 = fc.create_ss_table(pdb11)
 ss2 = fc.create_ss_table(pdb22)
@@ -67,8 +92,8 @@ def get_df_distancias(ref):
 
     # calcula distancia y regresa dataframe
     enlaces = []
-    for res1 in ref[1:-1]:
-        for res2 in ref[1:-1]:
+    for res1 in ref[1:-1]:  # ref[1:30]
+        for res2 in ref[1:-1]:  # ref[1:40]
             if res2.resi >= res1.resi:
                 if mymath.distance(res2.GetAtom('CA').coord, res1.GetAtom('CA').coord) < 10:
                     enlaces.append([res1.resi, res2.resi])
@@ -130,23 +155,18 @@ for clique1 in cliques_max_1:
             for res2 in res_clq_2:
                 phi_tar = res2.phi
                 psi_tar = res2.psi
-                if eval_dihedral(phi_ref, phi_tar, cutoff=70) and (
-                        eval_dihedral(psi_ref, psi_tar, cutoff=70)):
+                if eval_dihedral(phi_ref, phi_tar, cutoff=8) and (
+                        eval_dihedral(psi_ref, psi_tar, cutoff=8)):
                     val = val + 1
             val_vec.append(val)
         if val_vec.count(0) < 1:
             # debugg de vector de angulos dihedrales
-            # print(clique1, clique2)
-            # print(val_vec)
             list_candidates.append([clique1, clique2])
 
 
-# list_candidates = [[110, 109, 106, 105, 107, 108, 111], [137, 139, 138, 140, 141, 143, 142]]
 # # numero de candidatos y parejas generadas.
-# print(list_candidates)
 print("numero de candidatos despues de filtro dihedral", len(list_candidates))
-
-
+print(list_candidates)
 # Filtro score Estructura Secundaria
 def score_ss(clq1, clq2):
     flag = 1
@@ -230,9 +250,9 @@ def rotation_vectors(vector_gorro, matriz_rotacion):
     """obtencion de vector rotado,
     utilizando la matriz de rotacion
     y los vectores gorro a rotar y trasladar"""
-    coord_rotado = [np.matmul(matriz_rotacion, coord_atom) for coord_atom in vector_gorro]
+    coord_rotado = np.array([np.matmul(matriz_rotacion, coord_atom) for coord_atom in vector_gorro])
 
-    return (np.array(coord_rotado))
+    return coord_rotado
 
 
 # calculo de RMSD
@@ -242,6 +262,7 @@ def rmsd_between_cliques(clique_trasladado_rotado, atom_to_compare):
 
     dim_coord = clique_trasladado_rotado.shape[1]
     N = clique_trasladado_rotado.shape[0]
+
     result = 0.0
     for v, w in zip(atom_to_compare, clique_trasladado_rotado):
         result += sum([(v[i] - w[i]) ** 2.0 for i in range(dim_coord)])
@@ -293,10 +314,9 @@ def align(c_1, c_2, number_elements_clique = None):
 
     vector_rotado = rotation_vectors(vecs_center_1, matriz_rotacion)
 
-    vector_rotado_trasladado_a_clique2 = vector_rotado + bari_2
+    protein_trasladado_rotado = vector_rotado + bari_2
 
-    protein_trasladado_rotado = vector_rotado_trasladado_a_clique2
-    protein_to_compare = np.array(c_2, dtype=np.float)
+    protein_to_compare = c_2
 
     # TE PUEDES AHORRAR EL PASO DE TRASLADAR SI CALCULAS EN LOS VECTORES CENTRICOS.
     rmsd_final = rmsd_between_cliques(protein_trasladado_rotado, protein_to_compare)
@@ -307,38 +327,20 @@ def align(c_1, c_2, number_elements_clique = None):
     return rmsd_final
 
 
-restriccion_rmsd = 0.15
-if number_elements_clique == 4:
-    restriccion_rmsd = 0.30
-if number_elements_clique == 5:
-    restriccion_rmsd = 0.60
-if number_elements_clique == 6:
-    restriccion_rmsd = 0.90
-if number_elements_clique == 7:
-    restriccion_rmsd = 1.50
-if number_elements_clique == 8:
-    restriccion_rmsd = 1.80
-
-
-# GENERACION DE CLIQUES DE LA LISTA DE CLIQUES MAXIMALES APLICANDOFILTRO DIHEDRAL
+# GENERACION DE CLIQUES DE LA LISTA DE CLIQUES MAXIMALES APLICANDO FILTRO DIHEDRAL
 cliques_1_temp = []
 for clique1 in list_candidates:
     list_candidate = fc.gen_cliques_3(clique1[0])
     if list_candidate not in cliques_1_temp:
         cliques_1_temp.append(list_candidate)
+        # print(cliques_1_temp)
 
 cliques_2_temp = []
 for clique2 in list_candidates:
     list_candidate = fc.gen_cliques_3(clique2[1])
     if list_candidate not in cliques_2_temp:
         cliques_2_temp.append(list_candidate)
-
-print(len(cliques_1_temp))
-print(len([y for x in cliques_1_temp for y in x]))
-
-print(len(cliques_2_temp))
-
-print("numero de comparaciones", len(cliques_1_temp) * len(cliques_2_temp))
+        # print(cliques_2_temp)
 
 
 def iter_align(number_elements_clique, cliques_1_align, cliques_2_align):
@@ -347,10 +349,7 @@ def iter_align(number_elements_clique, cliques_1_align, cliques_2_align):
     :int number_elements_clique: elementos del clique
     :tuple cliques_1_align: lista de cliques a alinear de la proteina A
     :tuple cliques_2_align: lista de cliques a alinear de la proteina B
-    :return:  number_elements_clique + 1
-              new_cliques_1 nueva lista de cliques con un elemento mas
-              new_cliques_2 nueva lista de cliques con un elemento mas
-              cliques_candidate lista de cliques candidatos
+    :return: cliques_candidate lista de cliques candidatos
     """
 
     restriccion_rmsd = 0.15
@@ -390,13 +389,16 @@ def iter_align(number_elements_clique, cliques_1_align, cliques_2_align):
                     if number_elements_clique == 7:
                         rmsd, mat_rot = align(coord_1, coord_2, number_elements_clique=number_elements_clique)
                         if rmsd < restriccion_rmsd:
-                            cliques_candidate.append([clique1, clique2,mat_rot])
+                            cliques_candidate.append([clique1, clique2, mat_rot])
+
                     else:
                         if align(coord_1, coord_2) < restriccion_rmsd:
                             cliques_candidate.append([clique1, clique2])
 
     return cliques_candidate
 
+
+print('================ alineamiento de 3-clique y agrego el 4 elemento ===================')
 
 new_df_cliques1 = cliques_1_temp
 new_df_cliques2 = cliques_2_temp
@@ -407,15 +409,19 @@ new_df_cliques = fc.add_element_to_clique(cliques_candidatos, cliques_max_1, cli
 
 number_elements_clique = number_elements_clique + 1
 
+
+# print(cliques_candidatos[2])
+# print(new_df_cliques[2])
+
 print("candidatos con n-cliques, n =", number_elements_clique-1,
       "numero de parejas", len(cliques_candidatos))
 
 print(number_elements_clique, len(new_df_cliques))
+
 print('==================ya acabo con 3-cliques va con 4=========================')
-
-
 cliques_temp = []
 cliques_temp_add = []
+
 for parejas_4clique in new_df_cliques:
 
     new_df_cliques1 = parejas_4clique[0]
@@ -428,7 +434,11 @@ for parejas_4clique in new_df_cliques:
         cliques_temp_add.append(fc.add_element_to_clique(cliques_candidatos, cliques_max_1, cliques_max_2))
 
 number_elements_clique = number_elements_clique + 1
+print(cliques_temp[:5])
+print(len(cliques_temp))
 
+print(cliques_temp_add[:5])
+print(len(cliques_temp_add))
 
 print('==================ya acabo con 4-cliques va con 5=========================')
 
@@ -492,21 +502,15 @@ for parejas_7clique in cliques_temp_add_22:
         cliques_temp3.append(cliques_candidatos)
 
 print(len(cliques_temp3))
-print(cliques_temp3[:2])
-
+print([[x[0][0], x[0][1]] for x in cliques_temp3[:5]])
+print('==================se imprimen candidatos alineables=========================')
 # APARTIR DE AQUI VA EL ALINEAMIENTO DE RESIDUOS POR MEDIO DE LAS PAREJAS CANDIDATAS
 parejas_cliques_finales = cliques_temp3
 
 
-# HAY QUE CHECAR POR QUE EXISTEN DESFASES EN LAS PAREJAS DE CLIQUES
-# SE DETECTI QYE EXISTEN LISTAS DE LISTAS DENTRO DE LAS PAREJAS FINALES DE CLIQUES
-# CHECAR POR QUE SUCEDE ESTO AUNQUE SE ARREGLA HACIENDO UNA LSITA DE COMPRENSION CON DOBLE FOR
-
-parejas_cliques_finales = [x for y in parejas_cliques_finales for x in y]
-
-# ya se obtienen las matrices de rotacion de parejas cliques finales
-print(parejas_cliques_finales)
+print(parejas_cliques_finales[0])
 print(len(parejas_cliques_finales))
+
 import pandas as pd
 pd.to_pickle(pd.DataFrame(parejas_cliques_finales), 'parejas_alineables.pkl')
 

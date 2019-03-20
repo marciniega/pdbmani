@@ -2,10 +2,6 @@
 
 # libreria de analisis de datos y una caracterizacion para su facil lectura.
 import pandas as pd
-pd.set_option('display.float_format', lambda x: '%.4f' % x)
-pd.set_option('max_rows', 100)
-pd.set_option('max_columns', 40)
-pd.set_option('display.max_colwidth', -1)
 # libreria de generacion de rede y cliques
 import networkx as nx, community
 
@@ -44,9 +40,9 @@ def distancia_entre_atomos(df_atoms):
     return(df_distancias)
 
 
-def gen_cliques(red, k=7):  # k modificar a 7
+def gen_cliques(red, k=7):
 
-    cliques_completos = [clq for clq in nx.find_cliques(red) if len(clq) >= k] # mayor o igual que cambiarlo
+    cliques_completos = [clq for clq in nx.find_cliques(red) if len(clq) >= k]  # mayor o igual que cambiarlo
     print('numero de cliques maximos encontrados:', len(cliques_completos))
 
     lista_cliques = []
@@ -57,7 +53,7 @@ def gen_cliques(red, k=7):  # k modificar a 7
             lista_cliques.append(set(permutation_temp))
 
     lista_cliques = np.unique(lista_cliques)
-    # [y for x in list_of_lists for y in x]
+
     return lista_cliques, cliques_completos
 
 
@@ -83,7 +79,8 @@ def create_ss_table(list_residues):
 
 
 def add_element_to_clique(cliques_candidatos,
-                          cliques_maximales_1,cliques_maximales_2):
+                          cliques_maximales_1,
+                          cliques_maximales_2):
     """
     :param cliques_candidatos: lista de cliques canidatos
     :param cliques_maximales: lista de cliques maximales
@@ -193,24 +190,26 @@ def rotation_matrix(matriz_R):
     """
     eignvalues, eigenvectors = np.linalg.eig(matriz_R)
     q = eigenvectors[:, np.argmax(eignvalues)]
+
+    # matriz de rotacion con eigenvectores forma USING QUATERNIONS TO CALCULATE RMSD
     q0, q1, q2, q3 = q[0], q[1], q[2], q[3]
-    # matriz de rotacion con eigenvectores
     matriz_rotacion = np.array([
         [(q0 ** 2 + q1 ** 2 - q2 ** 2 - q3 ** 2), 2 * (q1 * q2 - q0 * q3), 2 * (q1 * q3 + q0 * q2)],
         [2 * (q1 * q2 + q0 * q3), (q0 ** 2 - q1 ** 2 + q2 ** 2 - q3 ** 2), 2 * (q2 * q3 - q0 * q1)],
         [2 * (q1 * q3 - q0 * q2), 2 * (q2 * q3 + q0 * q1), (q0 ** 2 - q1 ** 2 - q2 ** 2 + q3 ** 2)]
     ], dtype=np.float64)
+
     return (matriz_rotacion)
 
 
+# aplicacion de matriz de rotacion
 def rotation_vectors(vector_gorro, matriz_rotacion):
     """obtencion de vector rotado,
     utilizando la matriz de rotacion
     y los vectores gorro a rotar y trasladar"""
+    coord_rotado = np.array([np.matmul(matriz_rotacion, coord_atom) for coord_atom in vector_gorro])
 
-    coord_rotado = [np.matmul(
-        matriz_rotacion, coord.reshape(3, 1)).T[0] for coord in vector_gorro]
-    return (coord_rotado)
+    return coord_rotado
 
 
 # EXTRACCION DE VARIABLES

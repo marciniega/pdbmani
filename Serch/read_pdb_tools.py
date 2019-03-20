@@ -80,12 +80,12 @@ class Residue(object):
 
       def GetMainChainCoord(self):
           """ Get coordinates of the mainchain atoms (N,CA,C) as numpy array."""
-          return np.array([self.N.coord,self.CA.coord,self.C.coord])
+          return np.array([self.N.coord, self.CA.coord, self.C.coord])
 
-      def SetDihe(self,phi,psi):
+      def SetDihe(self, phi, psi):
           """ Assign phi and psi dihedral values to current residue."""
-          setattr(self,'phi', float(phi))
-          setattr(self,'psi', float(psi))
+          setattr(self, 'phi', float(phi))
+          setattr(self, 'psi', float(psi))
 
       def UpDateValue(self,property_to_change,value):
           """ Re-assign values associated with a given attribute.
