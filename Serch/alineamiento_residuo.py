@@ -185,6 +185,11 @@ print('parejas_iniciales', len(pc))
 pc = pc[idx]
 print('comparaciones', len(pc))
 
+cliques_finales = []
+for cand_1,cand_2, mat_rot in pc:
+    cliques_finales.append([cand_1,cand_2])
+
+print(cliques_finales)
 
 res_conclq_1 = [res for res in pdb11]
 res_conclq_2 = [res for res in pdb22]
@@ -204,127 +209,207 @@ vecs_center_cnclq_2 = coord_conclq_2 - bari_con_clq_2
 number_of_residues_final = len(res_conclq_1)
 
 val = 0
-so = 0
+so_winner = 0.0
 candidatos = []
-mat_rot_winner = []
+winner_matrix_rotation = []
 winner_baricenter = []
 print('numero de comparaciones', len(pc))
 
+
+def gen_rot_matrix_ref(parejas):
+    # aqui comienza el segundo alineamiento!!
+
+    coord_new_1 = [[res.GetAtom('CA').coord for res in res_conclq_1 if i[0] == res.resi] for i in parejas]
+    coord_new_2 = [[res.GetAtom('CA').coord for res in res_conclq_2 if i[1] == res.resi] for i in parejas]
+
+    coord_new_1 = np.array([y for x in coord_new_1 for y in x], dtype=np.float)
+    coord_new_2 = np.array([y for x in coord_new_2 for y in x], dtype=np.float)
+
+    bari_new_1 = coord_new_1.mean(0)
+    bari_new_2 = coord_new_2.mean(0)
+
+    vecs_center_1 = coord_new_1 - bari_new_1
+    vecs_center_2 = coord_new_2 - bari_new_2
+
+    # Se genera matriz de rotacion con vectores centricos de parejas anteriores
+    matriz_R = matrix_R(vecs_center_1, vecs_center_2)
+    matriz_rotacion = rotation_matrix(matriz_R)
+    # se aplica matriz de rotacion a coordenadas de proteina a rotar
+    # la proteina consiste en solo carbonos alfa
+    vector_rotado = rotation_vectors(vecs_center_cnclq_1, matriz_rotacion)
+
+    protein_trasladado_rotado = vector_rotado + bari_new_2
+
+    protein_to_compare = coord_conclq_2
+
+    return (protein_trasladado_rotado, protein_to_compare,matriz_rotacion, bari_new_2)
+
+
+def fun_resiudos_match(protein_trasladado_rotado, protein_to_compare, res_1, res_2):
+
+    return sorted([[math.sqrt(sum((c_2 - c_1) ** 2)), (res1.resi, res2.resi)] for c_1, res1 in zip(
+        protein_trasladado_rotado, res_1) for c_2, res2 in zip(
+        protein_to_compare, res_2) if math.sqrt(sum((c_2 - c_1) ** 2)) < 3.5])
+
+
+def filter_pairs(residuos_match, flag=None):
+
+    if flag:
+        pairs_1 = [c[1][0] for c in residuos_match]
+        repeat_1 = [i for i in pairs_1 if pairs_1.count(i) > 2]
+
+        pairs_2 = [c[1][1] for c in residuos_match]
+        repeat_2 = [i for i in pairs_2 if pairs_2.count(i) > 2]
+    else:
+        repeat_1, repeat_2 = [], []
+
+    c1 = []
+    c2 = []
+    cand_n = []
+    for i in residuos_match:
+        if (i[1][0] in c1) or (i[1][1] in c2) or (i[1][0] in repeat_1) or (i[1][1] in repeat_2):
+            continue
+        else:
+            c1.append(i[1][0])
+            c2.append(i[1][1])
+            cand_n.append(i)
+
+    return(cand_n)
+
+
+matriz_rotacion = []
+bari_new_2 = []
+winner_parejas = []
+
 for cand_1, cand_2, mat_rot in pc:
 
-    # if not set(cand_2).issubset(np.arange(129, 143)):
-    #     print('********************************************')
-    #     print(cand_1, cand_2)
+    print('***********************************************************')
+    print(val, cand_1, cand_2)
+    res_sinclq_1 = [res for res in pdb11 if res.resi not in cand_1]
+    res_sinclq_2 = [res for res in pdb22 if res.resi not in cand_2]
 
-        res_sinclq_1 = [res for res in pdb11 if res.resi not in cand_1]
-        res_sinclq_2 = [res for res in pdb22 if res.resi not in cand_2]
+    coord_sinclq_1 = np.array([res.GetAtom('CA').coord for res in res_sinclq_1], dtype=np.float)
+    coord_sinclq_2 = np.array([res.GetAtom('CA').coord for res in res_sinclq_2], dtype=np.float)
 
-        coord_sinclq_1 = np.array([res.GetAtom('CA').coord for res in res_sinclq_1], dtype=np.float)
-        coord_sinclq_2 = np.array([res.GetAtom('CA').coord for res in res_sinclq_2], dtype=np.float)
+    bari_1 = coord_sinclq_1.mean(0)
+    bari_2 = coord_sinclq_2.mean(0)
 
-        bari_1 = coord_sinclq_1.mean(0)
-        bari_2 = coord_sinclq_2.mean(0)
+    vecs_center_1 = coord_sinclq_1 - bari_1
+    # aplico matriz de rotacion de cliques a vectores centricos sin clique
+    vector_rotado = rotation_vectors(vecs_center_1, mat_rot)
+    protein_trasladado_rotado = vector_rotado + bari_2
 
-        vecs_center_1 = coord_sinclq_1 - bari_1
-        # aplico matriz de rotacion de cliques a vectores centricos sin clique
-        vector_rotado = rotation_vectors(vecs_center_1, mat_rot)
-        protein_trasladado_rotado = vector_rotado + bari_2
+    protein_to_compare = coord_sinclq_2
 
-        protein_to_compare = coord_sinclq_2
+    # apilo la distancia y la pareja de residuos correspondientes si cumple con que el RMSD sea menor a 3.5
+    residuos_match = fun_resiudos_match(protein_trasladado_rotado, protein_to_compare,
+                                        res_sinclq_1, res_sinclq_2)
 
-        # apilo la distancia y la pareja de residuos correspondientes si cumple con que el RMSD sea menor a 3.5
-        residuos_match = [[round(math.sqrt(sum((c_2 - c_1) ** 2)), 5), (res1.resi, res2.resi)] for c_1, res1 in zip(
-            protein_trasladado_rotado, res_sinclq_1) for c_2, res2 in zip(
-            protein_to_compare, res_sinclq_2) if math.sqrt(sum((c_2 - c_1) ** 2)) < 3.5]
+    cand_n = filter_pairs(residuos_match, flag=False)
 
-        residuos_match = sorted(residuos_match)
+    so_temp = round(len(cand_n) / (number_of_residues_final - 7), 4)
+    print('PRE_SO:', so_temp)
+    so_temp_plus_1 = 0.0
 
-        c1 = []
-        c2 = []
-        cand_n = []
-        for i in residuos_match:
-            if (i[1][0] in c1) or (i[1][1] in c2) or (i[0] > 3.5):
-                continue
-            else:
-                c1.append(i[1][0])
-                c2.append(i[1][1])
-                cand_n.append(i)
+    # se agrega emparejamiento de cliques a las parejas anteriormente generadas
+    # matriz_rotacion = []
+    # bari_new_2 = []
 
-        so_temp = len(cand_n) / (number_of_residues_final - 7)
-
-        # se agrega emparejamiento de cliques a las parejas anteriormente generadas
+    while so_temp_plus_1 < so_temp:  # Primer refinamiento
         parejas = [i[1] for i in cand_n]
         for i, j in zip(cand_1, cand_2):
             parejas.insert(0, (i, j))
 
-        # aqui comienza el segundo alineamiento!!
+        # aqui comienza el segundo alineamiento!! Refinamiento
+        ptr, ptc, mr, bc = gen_rot_matrix_ref(parejas)
+        # match residuos ordenado por distancia
+        rm = fun_resiudos_match(ptr, ptc, res_conclq_1, res_conclq_2)
 
-        coord_new_1 = [[res.GetAtom('CA').coord for res in res_conclq_1 if i[0] == res.resi] for i in parejas]
-        coord_new_2 = [[res.GetAtom('CA').coord for res in res_conclq_2 if i[1] == res.resi] for i in parejas]
-
-        coord_new_1 = np.array([y for x in coord_new_1 for y in x], dtype=np.float)
-        coord_new_2 = np.array([y for x in coord_new_2 for y in x], dtype=np.float)
-
-        bari_new_1 = coord_new_1.mean(0)
-        bari_new_2 = coord_new_2.mean(0)
-
-        vecs_center_1 = coord_new_1 - bari_new_1
-        vecs_center_2 = coord_new_2 - bari_new_2
-
-        # Se genera matriz de rotacion con vectores centricos de parejas anteriores
-        matriz_R = matrix_R(vecs_center_1, vecs_center_2)
-        matriz_rotacion = fc.rotation_matrix(matriz_R)
-        # se aplica matriz de rotacion a coordenadas de proteina a rotar
-        # la proteina consiste en solo carbonos alfa
-        vector_rotado = fc.rotation_vectors(vecs_center_cnclq_1, matriz_rotacion)
-
-        protein_trasladado_rotado = vector_rotado + bari_new_2
-
-        protein_to_compare = coord_conclq_2
-
-        residuos_match = [[math.sqrt(sum((c_2 - c_1) ** 2)), (res1.resi, res2.resi)] for c_1, res1 in zip(
-            protein_trasladado_rotado, res_conclq_1) for c_2, res2 in zip(
-            protein_to_compare, res_conclq_2) if math.sqrt(sum((c_2 - c_1) ** 2)) < 3.5]
-
-        # residuos_match = sorted(residuos_match)
-
-        c1 = []
-        c2 = []
-        cand_n = []
-        for i in residuos_match:
-            if (i[1][0] in c1) or (i[1][1] in c2) or (i[0] > 3.5):
-                continue
-            else:
-                c1.append(i[1][0])
-                c2.append(i[1][1])
-                cand_n.append(i)
-
-        so_temp = len(cand_n) / number_of_residues_final
-
-        if so_temp > so:
-            so = so_temp
-            candidatos = [cand_1, cand_2]
-            mat_rot_winner = mat_rot
-            winner_baricenter = bari_new_2
-            print('========================='*3)
-            print('cliques', candidatos)
-            print('numero de parejas', len(cand_n))
-            print('iteracion %s' % val, 'SO: %1.4f' % so_temp)
-            print('RMSD:', np.mean([x[0] for x in cand_n]))
-            print('parejas:', [x[1] for x in cand_n])
-
-            print(bari_new_1, bari_new_2)
-        val = val+1
-        if so_temp == 1:
+        # quitar residuos repetidos
+        cand_n = filter_pairs(rm, flag=False)
+        so_temp_plus_1 = round(len(cand_n) / number_of_residues_final, 4)
+        so_temp_minus_1 = so_temp
+        print(so_temp_plus_1)
+        if so_temp_plus_1 < so_temp:  # evita infinite loop
             break
 
-#  Actualizacion de coordendas
-coord_protein_1 = np.array([res.GetAtom(name).coord for res in pdb11 for name in res.atomnames], dtype=np.float)
-bari_full1 = coord_protein_1.mean(0)
-vecs_center_protein_1 = coord_protein_1 - bari_full1
+        print(so_temp_minus_1, so_temp_plus_1)
 
-vector_rotado = fc.rotation_vectors(vecs_center_protein_1, mat_rot_winner)
-protein_trasladado_rotado = vector_rotado + np.array(winner_baricenter)
+        while so_temp_minus_1 < so_temp_plus_1:  # segundo refinamiento iterativo
+            so_temp_minus_1 = so_temp_plus_1
+            parejas = [i[1] for i in cand_n]
+            for i, j in zip(cand_1, cand_2):
+                parejas.insert(0, (i, j))
+
+            # aqui comienza el segundo alineamiento!! Refinamiento
+            ptr, ptc, matriz_rotacion, bari_new_2 = gen_rot_matrix_ref(parejas)
+            # match residuos ordenado por distancia
+            rm = fun_resiudos_match(ptr, ptc, res_conclq_1, res_conclq_2)
+
+            # quitar residuos repetidos
+            cand_n = filter_pairs(rm, flag=True)
+            so_temp_plus_1 = round(len(cand_n) / number_of_residues_final, 4)
+
+            # keep_matriz_rotacion = matriz_rotacion
+            # keep_baricenter = bari_new_2
+            print(so_temp_minus_1, so_temp_plus_1)
+
+        if so_temp_plus_1 < so_temp_minus_1:
+            so_temp_plus_1 = so_temp_minus_1
+
+        if so_temp_plus_1 > so_temp:
+            so_temp = so_temp_plus_1
+
+    print(so_winner)
+    #actualizacion de so
+    if so_temp > so_winner:
+
+        so_winner = so_temp
+        winner_matrix_rotation = matriz_rotacion
+        winner_baricenter = bari_new_2
+        print(so_temp_plus_1)
+        candidatos = [cand_1, cand_2]
+        winner_parejas = cand_n
+        print('========================='*3)
+        print('cliques', candidatos)
+        print('numero de parejas', len(cand_n))
+        print('iteracion %s' % val, 'SO: %1.4f' % so_temp)
+        print('RMSD:', np.mean([x[0] for x in cand_n]))
+        print('parejas:', [x[1] for x in cand_n])
+        print('================================================================================')
+
+    val = val+1
+
+    if so_temp == 1:
+        break
+
+print('=====pareja ganadora======')
+print('cliques', candidatos)
+print('numero de parejas', len(winner_parejas))
+print('SO: %1.4f' % so_winner)
+print('RMSD:', np.mean([x[0] for x in winner_parejas]))
+print('parejas:', sorted([x[1] for x in winner_parejas]))
+# print(so,candidatos,mat_rot_winner,winner_baricenter)
+
+
+# #prueba para saber si los CA si estan rotando y trasladando bien
+# coord_protein_1 = np.array([res.GetAtom('CA').coord for res in pdb11], dtype=np.float)
+# bari_full_1 = coord_protein_1.mean(0)
+# vecs_center_protein_1 = coord_protein_1 - bari_full_1
+#
+# # aplicacion de la rotacion y traslacion a toda la proteina
+# vector_rotado = fc.rotation_vectors(vecs_center_protein_1, winner_matrix_rotation)
+# protein_trasladado_rotado = vector_rotado + winner_baricenter
+
+ # Actualizacion de coordendas
+coord_protein_1 = np.array([res.GetAtom(name).coord for res in pdb11 for name in res.atomnames],
+                           dtype=np.float)
+bari_full_1 = coord_protein_1.mean(0)
+vecs_center_protein_1 = coord_protein_1 - bari_full_1
+
+# aplicacion de la rotacion y traslacion a toda la proteina
+vector_rotado = rotation_vectors(vecs_center_protein_1, winner_matrix_rotation)
+protein_trasladado_rotado = vector_rotado + winner_baricenter
 
 # actualizacion de coordenadas
 k = 0
@@ -333,7 +418,10 @@ for res in pdb11:
         setattr(res.GetAtom(atom), 'coord', protein_trasladado_rotado[k])
         k = k+1
 
+
+# se escribe el nuevo pdb rotado y trasladado
 pdb1.WriteToFile(file_out_name='1xxa_vs_1tig_'+str(datetime.datetime.now())[:19])
 
+#tiempo de ejecucion
 timenow = datetime.datetime.now()
 print('Tiempo Total:', timenow - time_all)
