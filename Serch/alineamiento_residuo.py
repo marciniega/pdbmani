@@ -22,8 +22,8 @@ import os
 os.chdir('/home/serch/pdbmani/Serch')
 
 # lectura de archivo
-file1 = '/home/serch/pdbmani/Serch/pdbs/1zao.pdb'  # sys.argv[1] #2fmq.pdb
-file2 = '/home/serch/pdbmani/Serch/pdbs/1kj9.pdb'  # sys.argv[2] #2bpt.pdb
+file1 = '/home/serch/pdbmani/Serch/pdbs/1xxa_clean.pdb'  # sys.argv[1] #2fmq.pdb
+file2 = '/home/serch/pdbmani/Serch/pdbs/1tig_clean.pdb'  # sys.argv[2] #2bpt.pdb
 
 # file1 = 'pdbs/2mhu.pdb'  # sys.argv[1]
 # file2 = 'pdbs/2mrt.pdb'  # sys.argv[2]
@@ -163,7 +163,7 @@ def rotation_vectors(vector_gorro, matriz_rotacion):
     return (np.array(coord_rotado))
 
 
-pc = pd.read_pickle('parejas_alineables_1zao_1kj9.pkl').values
+pc = pd.read_pickle('parejas_alineables_lean_lean.pkl').values
 pc = np.array([i[0] for i in pc])
 
 lista = []

@@ -25,9 +25,11 @@ os.chdir('/home/serch/pdbmani/Serch')
 # import multiprocessing
 # from functools import partial
 
+#para 1xxa y 1tig el cutoff del filtro dihedral es 8
+
 # lectura de archivo
-file1 = '/home/serch/pdbmani/Serch/pdbs/1zao.pdb'  # sys.argv[1] #1zao.pdb #1xxa_clean.pdb #1xxa_clean.pdb
-file2 = '/home/serch/pdbmani/Serch/pdbs/1kj9.pdb'  # sys.argv[2] #1kj9.pdb #1tig_clean.pdb #1tig_clean.pdb
+file1 = '/home/serch/pdbmani/Serch/pdbs/1xxa_clean.pdb'  # sys.argv[1] #1zao.pdb #1xxa_clean.pdb #1xxa_clean.pdb
+file2 = '/home/serch/pdbmani/Serch/pdbs/1tig_clean.pdb'  # sys.argv[2] #1kj9.pdb #1tig_clean.pdb #1tig_clean.pdb
 
 # file1 = 'pdbs/2mhu.pdb'  # sys.argv[1]
 # file2 = 'pdbs/2mrt.pdb'  # sys.argv[2]
@@ -157,8 +159,8 @@ for clique1 in cliques_max_1:
             for res2 in res_clq_2:
                 phi_tar = res2.phi
                 psi_tar = res2.psi
-                if eval_dihedral(phi_ref, phi_tar, cutoff=3) and (
-                        eval_dihedral(psi_ref, psi_tar, cutoff=3)):
+                if eval_dihedral(phi_ref, phi_tar, cutoff=8) and (
+                        eval_dihedral(psi_ref, psi_tar, cutoff=8)):
                     val = val + 1
             val_vec.append(val)
         if val_vec.count(0) < 1:
