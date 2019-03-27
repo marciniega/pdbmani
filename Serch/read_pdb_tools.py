@@ -31,10 +31,11 @@ class Residue(object):
       """Store residue info
               Rememer that the Atom Class is accessed through Residue.
               Atoms are defined as attributes of the Residue."""
-      def __init__(self, resi, resn, chain, ss=None, atomnames=None,
+      def __init__(self, resi, resn, chain, resx, ss=None, atomnames=None,
                    atoms=None, ngb=None, center_mass=None):
           self.resi = int(resi)
           self.resn = resn
+          self.resx = resx  # index in pdbdata array
           self.chain = chain
           self.ss = ss
           if atomnames is None:
@@ -164,7 +165,7 @@ class PdbStruct(object):
       def ResetResIter( self , start = 0):
           self.current = start
 
-      def AddPdbData(self,pdb_name):
+      def AddPdbData(self, pdb_name, target_chain=None):
           """ Reads a pdb file and stores its information """
           if type(pdb_name) is str:
              data_pdb = open('%s'%pdb_name,'r').readlines()
@@ -179,9 +180,9 @@ class PdbStruct(object):
               if line[:4] == 'ATOM':
                  atn_count += 1
                  line = line.split('\n')[0]
-                 coord = [float(line[30:38]),float(line[38:46]),float(line[46:54])]
-                 r_fact = float(line[60:66])
                  chain = "".join(line[20:22].split())
+                 coord = [float(line[30:38]), float(line[38:46]), float(line[46:54])]
+                 r_fact = float(line[60:66])
                  occup = float("".join(line[57:61].split()))
                  if line[21] == ' ':
                     flag_no_chain = True
@@ -197,7 +198,7 @@ class PdbStruct(object):
                  element = line[-1]
                  if not resi == tmp_resi:
                     res_count += 1
-                    data.append(Residue(resi,resn,chain))
+                    data.append(Residue(resi,resn,chain, res_count))
                     tmp_resi = resi
                     residue = data[res_count]
                     ###
@@ -227,6 +228,10 @@ class PdbStruct(object):
       def GetRes(self, idx):
           """ Retrive the residue object. As input the residue number should be given."""
           return [ res for res in self.pdbdata if int(res.resi) == idx ][0]
+
+      def GetResIdx(self, idx):
+          """ Retrive the residue object. As input the residue index should be given."""
+          return self.pdbdata[idx]
 
       def GetResChain(self, chain='A'):
           """ Retrive the Residues of the chain ('A','B','C'.'D','E','F')"""
@@ -265,7 +270,7 @@ class PdbStruct(object):
           """ Return an array with the coordinates of the requested main chain atoms.
               Default is consider the c-alpha atom and all the residues"""
           # checking atom name
-          if atoms_to_consider in ['N','CA','C','O']:
+          if atoms_to_consider in ['N', 'CA', 'C', 'O']:
              pass
           else:
              raise NoValidAtomNameError
@@ -322,13 +327,15 @@ class PdbStruct(object):
                  data.append(np.array([0.0,0.0]))
           return data
 
-      def SetDiheMain(self):
+      def SetDiheMain(self, chain_n='A'):
           """ Assign the phi and psi angles residues in the molecule"""
-          for index in [ int(i.resi) for i in self.pdbdata ][1:-1]:
+
+          for index in [int(i.resx) for i in self.pdbdata if i.chain == chain_n][1:-1]:
+
               try:
-                 res_pre = self.GetRes(index-1)
-                 res = self.GetRes(index)
-                 res_nex = self.GetRes(index+1)
+                 res_pre = self.GetResIdx(index-1)
+                 res = self.GetResIdx(index)
+                 res_nex = self.GetResIdx(index+1)
               except:
                  continue
 
@@ -336,12 +343,13 @@ class PdbStruct(object):
               # phi = dihedral(getattr(res_pre,'C').coord,getattr(res,'N').coord,getattr(res,'CA').coord,getattr(res,'C').coord)
               # psi = dihedral(getattr(res,'N').coord,getattr(res,'CA').coord,getattr(res,'C').coord,getattr(res_nex,'N').coord)
               #modif Serch
+
               phi = dihedral(res_pre.GetAtom('C').coord, res.GetAtom('N').coord, res.GetAtom('CA').coord,
                              res.GetAtom('C').coord)
               psi = dihedral(res.GetAtom('N').coord, res.GetAtom('CA').coord, res.GetAtom('C').coord,
                              res_nex.GetAtom('N').coord)
 
-              self.GetRes(index).SetDihe(phi-180, psi-180)
+              self.GetResIdx(index).SetDihe(phi-180, psi-180)
 
 
       def SetRfactor(self , new_data):
@@ -384,6 +392,7 @@ class PdbStruct(object):
           data = open(temp_name+'.dssp').readlines()
           flag = False
 
+          cutoff = 0
           for line in data:
               line = line.split('\n')[0]
               if 'X-CA   Y-CA   Z-CA' in line:
@@ -391,15 +400,18 @@ class PdbStruct(object):
                  continue
               if flag:
                  try:
-                    resi = int(line.split()[1])
+                    resi = int(line.split()[0]) - 1 - cutoff
                  except ValueError:
                     continue
                  if flag_tray:
                     chain = ''
                  else:
                     chain = line.split()[2]
+                    if chain == '0':
+                        cutoff = cutoff + 1
+                        continue
                  ss = line[16:17]
-                 res = self.GetRes(resi)
+                 res = self.GetResIdx(resi)
                  if res.chain == chain:
                      setattr(res, 'ss', dic_ss[ss])
 
@@ -414,6 +426,7 @@ class PdbStruct(object):
           for res in self.pdbdata:
               res.UpDateName('resn', list_of_new_names[c])
               c += 1
+
 
       def WriteToFile(self,file_out_name=None,flag_trj=False):
           """ Write a structre back to a pdb file.

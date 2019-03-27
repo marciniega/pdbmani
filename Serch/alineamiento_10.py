@@ -26,8 +26,9 @@ os.chdir('/home/serch/pdbmani/Serch')
 # from functools import partial
 
 # lectura de archivo
-file1 = '/home/serch/pdbmani/Serch/pdbs/1xxa_clean.pdb'  # sys.argv[1]
-file2 = '/home/serch/pdbmani/Serch/pdbs/1tig_clean.pdb'  # sys.argv[2]
+file1 = '/home/serch/pdbmani/Serch/pdbs/1zao.pdb'  # sys.argv[1] #1zao.pdb #1xxa_clean.pdb #1xxa_clean.pdb
+file2 = '/home/serch/pdbmani/Serch/pdbs/1kj9.pdb'  # sys.argv[2] #1kj9.pdb #1tig_clean.pdb #1tig_clean.pdb
+
 # file1 = 'pdbs/2mhu.pdb'  # sys.argv[1]
 # file2 = 'pdbs/2mrt.pdb'  # sys.argv[2]
 
@@ -53,6 +54,7 @@ pdb2.SetDiheMain()
 # se obtienen los residuos que perteneces a la cadena de interes por default chain = 'A'
 pdb11 = pdb1.GetResChain()
 pdb22 = pdb2.GetResChain()
+
 
 if len(pdb22) < len(pdb11):
 
@@ -92,11 +94,11 @@ def get_df_distancias(ref):
 
     # calcula distancia y regresa dataframe
     enlaces = []
-    for res1 in ref[1:-1]:  # ref[1:30]
-        for res2 in ref[1:-1]:  # ref[1:40]
-            if res2.resi >= res1.resi:
+    for res1 in ref[1:-1]:
+        for res2 in ref[1:-1]:
+            if res2.resx >= res1.resx:
                 if mymath.distance(res2.GetAtom('CA').coord, res1.GetAtom('CA').coord) < 10:
-                    enlaces.append([res1.resi, res2.resi])
+                    enlaces.append([res1.resx, res2.resx])
 
     # se genera la matriz de adyacencias para la red
     return enlaces
@@ -142,9 +144,9 @@ def eval_dihedral(ang_ref, ang_tar, cutoff=30):
 ###############
 list_candidates = []
 for clique1 in cliques_max_1:
-    res_clq_1 = [pdb1.GetRes(j) for j in clique1]
+    res_clq_1 = [pdb1.GetResIdx(j) for j in clique1]
     for clique2 in cliques_max_2:
-        res_clq_2 = [pdb2.GetRes(j) for j in clique2]
+        res_clq_2 = [pdb2.GetResIdx(j) for j in clique2]
 
         # Filtro PHI PSI
         val_vec = []
@@ -155,8 +157,8 @@ for clique1 in cliques_max_1:
             for res2 in res_clq_2:
                 phi_tar = res2.phi
                 psi_tar = res2.psi
-                if eval_dihedral(phi_ref, phi_tar, cutoff=8) and (
-                        eval_dihedral(psi_ref, psi_tar, cutoff=8)):
+                if eval_dihedral(phi_ref, phi_tar, cutoff=3) and (
+                        eval_dihedral(psi_ref, psi_tar, cutoff=3)):
                     val = val + 1
             val_vec.append(val)
         if val_vec.count(0) < 1:
@@ -166,7 +168,7 @@ for clique1 in cliques_max_1:
 
 # # numero de candidatos y parejas generadas.
 print("numero de candidatos despues de filtro dihedral", len(list_candidates))
-print(list_candidates)
+print(list_candidates[:100])
 # Filtro score Estructura Secundaria
 def score_ss(clq1, clq2):
     flag = 1
@@ -369,9 +371,9 @@ def iter_align(number_elements_clique, cliques_1_align, cliques_2_align):
     if number_elements_clique == 3:
         for pareja in zip(cliques_1_align, cliques_2_align):
             for clique1 in pareja[0]:
-                res_clq_1 = [pdb1.GetRes(clq) for clq in clique1]
+                res_clq_1 = [pdb1.GetResIdx(clq) for clq in clique1]
                 for clique2 in pareja[1]:
-                    res_clq_2 = [pdb2.GetRes(clq) for clq in clique2]
+                    res_clq_2 = [pdb2.GetResIdx(clq) for clq in clique2]
                     if score_ss(res_clq_1, res_clq_2):
                         coord_1 = np.array([res.GetAtom('CA').coord for res in res_clq_1])
                         coord_2 = np.array([res.GetAtom('CA').coord for res in res_clq_2])
@@ -380,9 +382,9 @@ def iter_align(number_elements_clique, cliques_1_align, cliques_2_align):
 
     else:
         for clique1 in cliques_1_align:
-            res_clq_1 = [pdb1.GetRes(clq) for clq in clique1]
+            res_clq_1 = [pdb1.GetResIdx(clq) for clq in clique1]
             for clique2 in cliques_2_align:
-                res_clq_2 = [pdb2.GetRes(clq) for clq in clique2]
+                res_clq_2 = [pdb2.GetResIdx(clq) for clq in clique2]
                 if score_ss(res_clq_1, res_clq_2):
                     coord_1 = np.array([res.GetAtom('CA').coord for res in res_clq_1])
                     coord_2 = np.array([res.GetAtom('CA').coord for res in res_clq_2])
@@ -512,7 +514,7 @@ print(parejas_cliques_finales[0])
 print(len(parejas_cliques_finales))
 
 import pandas as pd
-pd.to_pickle(pd.DataFrame(parejas_cliques_finales), 'parejas_alineables.pkl')
+pd.to_pickle(pd.DataFrame(parejas_cliques_finales), 'parejas_alineables_'+file1[-8:-4]+'_'+file2[-8:-4]+'.pkl')
 
 timenow = datetime.datetime.now()
 print('Tiempo Total:', timenow - time_all)

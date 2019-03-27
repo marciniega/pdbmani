@@ -166,6 +166,7 @@ def SSM(ss1, ss2):
         elif (ss1 == 'B') and (ss2 == 'H'):
             score_ss = 2
         else:
+            print(ss1.ss2)
             print('WTF are u doing!')
 
         return(score_ss)
