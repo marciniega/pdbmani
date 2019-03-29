@@ -5,7 +5,6 @@ import numpy as np
 # por si no te lee las tools o functions creadas
 import sys
 sys.path.append("/home/serch/pdbmani/Serch/math_tricks/")
-sys.path.append("/home/serch/pdbmani/Serch/")
 import math_vect_tools as mymath
 # herramientas para leer pdbs
 import read_pdb_tools as rpt
@@ -16,20 +15,12 @@ import datetime
 time_all = datetime.datetime.now()
 # networks
 import networkx as nx
-# # filtro distancia minima
-# from scipy.spatial.distance import euclidean
-# por si no jala
-import os
-os.chdir('/home/serch/pdbmani/Serch')
-# multiprocessing
-# import multiprocessing
-# from functools import partial
 
 #para 1xxa y 1tig el cutoff del filtro dihedral es 8
 
 # lectura de archivo
-file1 = '/home/serch/pdbmani/Serch/pdbs/1xxa_clean.pdb'  # sys.argv[1] #1zao.pdb #1xxa_clean.pdb #1xxa_clean.pdb
-file2 = '/home/serch/pdbmani/Serch/pdbs/1tig_clean.pdb'  # sys.argv[2] #1kj9.pdb #1tig_clean.pdb #1tig_clean.pdb
+file1 = '/home/serch/pdbmani/Serch/networks_scripts/pdbs/4p81.pdb'  # sys.argv[1] #1zao.pdb #1xxa_clean.pdb #1xxa_clean.pdb
+file2 = '/home/serch/pdbmani/Serch/networks_scripts/pdbs/4p84.pdb'  # sys.argv[2] #1kj9.pdb #1tig_clean.pdb #1tig_clean.pdb
 
 # file1 = 'pdbs/2mhu.pdb'  # sys.argv[1]
 # file2 = 'pdbs/2mrt.pdb'  # sys.argv[2]
