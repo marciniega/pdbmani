@@ -19,8 +19,8 @@ import networkx as nx
 #para 1xxa y 1tig el cutoff del filtro dihedral es 8
 
 # lectura de archivo
-file1 = '/home/serch/pdbmani/Serch/networks_scripts/pdbs/4p81.pdb'  # sys.argv[1] #1zao.pdb #1xxa_clean.pdb #1xxa_clean.pdb
-file2 = '/home/serch/pdbmani/Serch/networks_scripts/pdbs/4p84.pdb'  # sys.argv[2] #1kj9.pdb #1tig_clean.pdb #1tig_clean.pdb
+file1 = '/home/serch/pdbmani/Serch/networks_scripts/pdbs/4p81.pdb'  # sys.argv[1] #1zao.pdb #1xxa.pdb #1xxa.pdb
+file2 = '/home/serch/pdbmani/Serch/networks_scripts/pdbs/4p84.pdb'  # sys.argv[2] #1kj9.pdb #1tig.pdb #1tig.pdb
 
 # file1 = 'pdbs/2mhu.pdb'  # sys.argv[1]
 # file2 = 'pdbs/2mrt.pdb'  # sys.argv[2]

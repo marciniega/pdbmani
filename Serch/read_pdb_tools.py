@@ -184,17 +184,11 @@ class PdbStruct(object):
                  coord = [float(line[30:38]), float(line[38:46]), float(line[46:54])]
                  r_fact = float(line[60:66])
                  occup = float("".join(line[57:61].split()))
-                 if line[21] == ' ':
-                    flag_no_chain = True
-                 else:
-                    flag_no_chain = False
+                 # se modifico para hacerlo por posicion en el pdb
+                 aton = line[13:17].split()[0]
+                 resn = line[17:22].split()[0]
+                 resi = line[23:29]
                  line = line.split()
-                 aton = line[2]
-                 resn = line[3]
-                 if flag_no_chain:
-                    resi = line[4]
-                 else:
-                    resi = line[5]
                  element = line[-1]
                  if not resi == tmp_resi:
                     res_count += 1
@@ -385,6 +379,7 @@ class PdbStruct(object):
               if flag_tray:
                 temp_name = flag_tray
               else:
+                print(self.name)
                 temp_name = '%s' % self.name
                 # self.WriteToFile(temp_name)
                 sp.run(['dssp', '-i', temp_name, '-o', temp_name+'.dssp'])

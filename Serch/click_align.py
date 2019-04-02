@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # librerias que utilizaras
 import numpy as np
 # por si no te lee las tools o functions creadas
@@ -13,13 +15,22 @@ import datetime
 time_all = datetime.datetime.now()
 # networks
 import networkx as nx
+# formato resultados
+import pandas as pd
 
 # lectura de archivo
-file1 = '/home/serch/pdbmani/Serch/pdbs/1xxa_clean.pdb'  # sys.argv[1] #1zao.pdb #1xxa_clean.pdb #1xxa_clean.pdb
-file2 = '/home/serch/pdbmani/Serch/pdbs/1tig_clean.pdb'  # sys.argv[2] #1kj9.pdb #1tig_clean.pdb #1tig_clean.pdb
+file1 = sys.argv[1]
+file2 = sys.argv[2]
+global_cutoff = float(sys.argv[3])
 
-# file1 = 'pdbs/2mhu.pdb'  # sys.argv[1]
-# file2 = 'pdbs/2mrt.pdb'  # sys.argv[2]
+# carpeta destino
+directory = file1.split("/")[-2]+"/"
+
+# cadena de interes
+chain1 = file1[-10:-4].split("_")[1]
+chain2 = file2[-10:-4].split("_")[1]
+
+# global_cutoff = 10  # modificar si quieres cambiar de cutoff!!! en filtro dihedral
 
 # numero de cliques, preguntar en el software para generalizarlo INPUT...
 number_elements_clique = 3
@@ -37,21 +48,29 @@ pdb1.Set_SS()
 pdb2.Set_SS()
 
 # filtro dihedral
-pdb1.SetDiheMain()
-pdb2.SetDiheMain()
+pdb1.SetDiheMain(chain_n=chain1)
+pdb2.SetDiheMain(chain_n=chain2)
 
 # se obtienen los residuos que perteneces a la cadena de interes por default chain = 'A'
-pdb11 = pdb1.GetResChain()
-pdb22 = pdb2.GetResChain()
+pdb11 = pdb1.GetResChain(chain=chain1)
+pdb22 = pdb2.GetResChain(chain=chain2)
 
+if len(pdb11) > 500 or len(pdb22) > 500:
+    print('Esta muy grande la proteina va a tardar siglos ya ni le intentes!')
+    print(file1, file2)
+    pdb_file = open('Experimentos/'+directory+file1[-10:-4]+'_'+file2[-10:-4]+".delete", "w")
+    pdb_file.write("Proteinas muy grandes, muchos residuos")
+    pdb_file.close()
+    exit()
 
+#verifica tamanio
 pdb1, pdb2, pdb11, pdb22 = fc.verify_file_order(pdb1, pdb2, pdb11, pdb22)
 
 # creando tabla de estructura secundaria para filtro de SS
 ss1 = fc.create_ss_table(pdb11)
 ss2 = fc.create_ss_table(pdb22)
-
-
+# print(ss1,ss2)
+# generacion de enlaces
 enlaces1 = (fc.get_df_distancias(pdb11))
 enlaces2 = (fc.get_df_distancias(pdb22))
 
@@ -84,8 +103,8 @@ for clique1 in cliques_max_1:
             for res2 in res_clq_2:
                 phi_tar = res2.phi
                 psi_tar = res2.psi
-                if fc.eval_dihedral(phi_ref, phi_tar, cutoff=8) and (
-                        fc.eval_dihedral(psi_ref, psi_tar, cutoff=8)):
+                if fc.eval_dihedral(phi_ref, phi_tar, cutoff=global_cutoff) and (
+                        fc.eval_dihedral(psi_ref, psi_tar, cutoff=global_cutoff)):
                     val = val + 1
             val_vec.append(val)
         if val_vec.count(0) < 1:
@@ -94,7 +113,17 @@ for clique1 in cliques_max_1:
 
 # # numero de candidatos y parejas generadas.
 print("numero de candidatos despues de filtro dihedral", len(list_candidates))
-print(list_candidates[:100])
+print(list_candidates[:3])
+
+# filtro de tardara mucho
+if len(list_candidates) > 500:
+    print('no se filtraron los suficientes cambia el cutoff!')
+    print(file1, file2)
+    pdb_file = open('Experimentos/'+directory+file1[-10:-4]+'_'+file2[-10:-4]+".delete", "w")
+    pdb_file.write("bajar_cutoff_dihedral")
+    pdb_file.close()
+    exit()
+
 
 # GENERACION DE CLIQUES DE LA LISTA DE CLIQUES MAXIMALES APLICANDO FILTRO DIHEDRAL
 cliques_1_temp = []
@@ -205,10 +234,10 @@ for parejas_4clique in new_df_cliques:
         cliques_temp_add.append(fc.add_element_to_clique(cliques_candidatos, cliques_max_1, cliques_max_2))
 
 number_elements_clique = number_elements_clique + 1
-print(cliques_temp[:5])
+print(cliques_temp[:1])
 print(len(cliques_temp))
 
-print(cliques_temp_add[:5])
+print(cliques_temp_add[:1])
 print(len(cliques_temp_add))
 
 print('==================ya acabo con 4-cliques va con 5=========================')
@@ -231,16 +260,16 @@ for parejas_5clique in cliques_temp_add_0:
 
 number_elements_clique = number_elements_clique + 1
 
-print(cliques_temp1[:5])
+print(cliques_temp1[:1])
 print(len(cliques_temp1))
 
-print(cliques_temp1_add[:5])
+print(cliques_temp1_add[:1])
 print(len(cliques_temp1_add))
 print('==================ya acabo con 5-cliques va con 6=========================')
 
 cliques_temp_add_11 = [y for x in cliques_temp1_add for y in x]
 
-# cliques_temp_add_11 = fc.filter_candidates(cliques_temp_add_11, flag=False)
+# cliques_temp_add_11 = fc.filter_candidates(cliques_temp_add_11, flag=True)
 
 cliques_temp2 = []
 cliques_temp2_add = []
@@ -256,15 +285,15 @@ for parejas_6clique in cliques_temp_add_11:
 
 number_elements_clique = number_elements_clique + 1
 
-print(cliques_temp2[:5])
+print(cliques_temp2[:1])
 print(len(cliques_temp2))
 
-print(cliques_temp2_add[:5])
+print(cliques_temp2_add[:1])
 print(len(cliques_temp2_add))
 print('==================ya acabo con 6-cliques va con 7=========================')
 
 cliques_temp_add_22 = [y for x in cliques_temp2_add for y in x]
-# cliques_temp_add_22 = fc.filter_candidates(cliques_temp_add_22, flag=False)
+# cliques_temp_add_22 = fc.filter_candidates(cliques_temp_add_22, flag=True)
 
 cliques_temp3 = []
 
@@ -287,16 +316,11 @@ parejas_cliques_finales = cliques_temp3
 print(parejas_cliques_finales[0])
 print(len(parejas_cliques_finales))
 
-# import pandas as pd
-# pd.to_pickle(pd.DataFrame(parejas_cliques_finales), 'parejas_alineables_'+file1[-8:-4]+'_'+file2[-8:-4]+'.pkl')
-
 timenow = datetime.datetime.now()
 print('Tiempo Total:', timenow - time_all)
 print('termina alineamiento de cliques, se procede alineamiento de residuo a residuo')
 
 # AQUI COMIENZA EL ALINEAMIENTO RESIDUO A RESIDUO
-
-# pc = pd.read_pickle('parejas_alineables_lean_lean.pkl').values
 pc = parejas_cliques_finales
 pc = fc.filter_candidates(pc)
 
@@ -336,8 +360,11 @@ def gen_rot_matrix_ref(parejas):
     :param parejas:
     :return: proteina rotada y trasladada, proteina a comparar, matriz de rotacion, baricentro de parejas
     """
+
+    # aveces truena si los pdbs no tienen los numeros de residuos continuos.
     coord_new_1 = [[res.GetAtom('CA').coord for res in res_conclq_1 if i[0] == res.resi] for i in parejas]
     coord_new_2 = [[res.GetAtom('CA').coord for res in res_conclq_2 if i[1] == res.resi] for i in parejas]
+
 
     coord_new_1 = np.array([y for x in coord_new_1 for y in x], dtype=np.float)
     coord_new_2 = np.array([y for x in coord_new_2 for y in x], dtype=np.float)
@@ -372,8 +399,8 @@ for cand_1, cand_2, mat_rot in pc:
     # primera iteracion sin cliques se aplica la matriz de rotacion y baricentro
     print('***********************************************************')
     print(val, cand_1, cand_2)
-    res_sinclq_1 = [res for res in pdb11 if res.resi not in cand_1]
-    res_sinclq_2 = [res for res in pdb22 if res.resi not in cand_2]
+    res_sinclq_1 = [res for res in pdb11 if res.resx not in cand_1]
+    res_sinclq_2 = [res for res in pdb22 if res.resx not in cand_2]
 
     coord_sinclq_1 = np.array([res.GetAtom('CA').coord for res in res_sinclq_1], dtype=np.float)
     coord_sinclq_2 = np.array([res.GetAtom('CA').coord for res in res_sinclq_2], dtype=np.float)
@@ -403,7 +430,7 @@ for cand_1, cand_2, mat_rot in pc:
         parejas = [i[1] for i in cand_n]
         for i, j in zip(cand_1, cand_2):
             parejas.insert(0, (i, j))
-
+        # print(parejas)
         # aqui comienza el segundo alineamiento!! Refinamiento
         ptr, ptc, mr, bc = gen_rot_matrix_ref(parejas)
         # match residuos ordenado por distancia
@@ -426,6 +453,7 @@ for cand_1, cand_2, mat_rot in pc:
             for i, j in zip(cand_1, cand_2):
                 parejas.insert(0, (i, j))
 
+            # print(parejas)
             # aqui comienza el segundo alineamiento!! Refinamiento
             ptr, ptc, matriz_rotacion, bari_new_2 = gen_rot_matrix_ref(parejas)
             # match residuos ordenado por distancia
@@ -462,7 +490,7 @@ for cand_1, cand_2, mat_rot in pc:
         print('numero de parejas', len(cand_n))
         print('iteracion %s' % val, 'SO: %1.4f' % so_temp)
         print('RMSD:', np.mean([x[0] for x in cand_n]))
-        print('parejas:', [x[1] for x in cand_n])
+        # print('parejas:', [x[1] for x in cand_n])
         print('================================================================================')
 
     val = val+1
@@ -477,8 +505,26 @@ print('SO: %1.4f' % so_winner)
 print('RMSD:', np.mean([x[0] for x in winner_parejas]))
 print('parejas:', sorted([x[1] for x in winner_parejas]))
 
+# se escribe el nuevo pdb rotado y trasladado
+print('escribiendo resultados')
+
+num_match_atoms = len(winner_parejas)
+num_res_total = number_of_residues_final
+rmsd = round(np.mean([x[0] for x in winner_parejas]), 4)
+so_out = so_winner
+parejas = sorted([x[1] for x in winner_parejas])
+
+df = pd.DataFrame([file1[-10:-4]+'_'+file2[-10:-4], 'model_s', candidatos, num_match_atoms, num_res_total,
+                    so_out, rmsd, parejas],
+                    index=['proteinaA_proteinaB', 'grupo', 'cliques_ganadores', 'num_parejas', 'num_residuos_total',
+                    'SO', 'RMSD', 'parejas']).T
+
+df.to_csv('Experimentos/'+directory+file1[-10:-4]+'_'+file2[-10:-4]+'_mani.csv')
+
 
 # Actualizacion de coordendas
+file_output_name = 'Experimentos/'+directory+file1[-10:-4]+'_vs_'+file2[-10:-4]+'_'+str(datetime.datetime.now())[:19]
+
 coord_protein_1 = np.array([res.GetAtom(name).coord for res in pdb11 for name in res.atomnames],
                            dtype=np.float)
 bari_full_1 = coord_protein_1.mean(0)
@@ -495,13 +541,11 @@ for res in pdb11:
         setattr(res.GetAtom(atom), 'coord', protein_trasladado_rotado[k])
         k = k+1
 
-
-# se escribe el nuevo pdb rotado y trasladado
-file_output_name = file1[-8:-4]+'_vs_'+file2[-8:-4]+'_'+str(datetime.datetime.now())[:19]
+# escritura del pdb
 pdb1.WriteToFile(file_out_name=file_output_name)
 
 #tiempo de ejecucion
 timenow = datetime.datetime.now()
 print('Tiempo Total:', timenow - time_all)
-print('termine puedes alinear utilizando los pdbs %s %s y el alineamiento %s' % (file1[-8:-4], file2[-8:-4],
+print('termine puedes alinear utilizando los pdbs %s %s y el alineamiento %s' % (file1[-10:-4], file2[-10:-4],
                                                                                  file_output_name))

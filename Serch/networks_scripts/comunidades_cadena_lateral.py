@@ -26,8 +26,8 @@ os.chdir('/home/serch/pdbmani/Serch')
 # from functools import partial
 
 # lectura de archivo
-file1 = '/home/serch/pdbmani/Serch/pdbs/1xxa_clean.pdb'  # sys.argv[1]
-file2 = '/home/serch/pdbmani/Serch/pdbs/1tig_clean.pdb'  # sys.argv[2]
+file1 = '/home/serch/pdbmani/Serch/pdbs/1xxa.pdb'  # sys.argv[1]
+file2 = '/home/serch/pdbmani/Serch/pdbs/1tig.pdb'  # sys.argv[2]
 # file1 = 'pdbs/2mhu.pdb'  # sys.argv[1]
 # file2 = 'pdbs/2mrt.pdb'  # sys.argv[2]
 
