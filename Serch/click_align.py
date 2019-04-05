@@ -24,7 +24,7 @@ file2 = sys.argv[2]
 global_cutoff = float(sys.argv[3])
 
 # carpeta destino
-directory = file1.split("/")[-2]+"/"
+directory = '/home/serch/pdbmani/Serch/Experimentos/cluster_70/'+file1.split("/")[-2]+"/"
 
 # cadena de interes
 chain1 = file1[-10:-4].split("_")[1]
@@ -58,7 +58,7 @@ pdb22 = pdb2.GetResChain(chain=chain2)
 if len(pdb11) > 500 or len(pdb22) > 500:
     print('Esta muy grande la proteina va a tardar siglos ya ni le intentes!')
     print(file1, file2)
-    pdb_file = open('Experimentos/'+directory+file1[-10:-4]+'_'+file2[-10:-4]+".delete", "w")
+    pdb_file = open(directory+file1[-10:-4]+'_'+file2[-10:-4]+".delete", "w")
     pdb_file.write("Proteinas muy grandes, muchos residuos")
     pdb_file.close()
     exit()
@@ -116,14 +116,17 @@ print("numero de candidatos despues de filtro dihedral", len(list_candidates))
 print(list_candidates[:3])
 
 # filtro de tardara mucho
-if len(list_candidates) > 500:
+if len(list_candidates) > 3000:
     print('no se filtraron los suficientes cambia el cutoff!')
     print(file1, file2)
-    pdb_file = open('Experimentos/'+directory+file1[-10:-4]+'_'+file2[-10:-4]+".delete", "w")
+    pdb_file = open(directory+file1[-10:-4]+'_'+file2[-10:-4]+".delete", "w")
     pdb_file.write("bajar_cutoff_dihedral")
     pdb_file.close()
     exit()
 
+if len(list_candidates) == 0:
+    print('no hubo candidatos cambia filtro dihedral')
+    exit()
 
 # GENERACION DE CLIQUES DE LA LISTA DE CLIQUES MAXIMALES APLICANDO FILTRO DIHEDRAL
 cliques_1_temp = []
@@ -217,7 +220,7 @@ print(number_elements_clique, len(new_df_cliques))
 
 print('==================ya acabo con 3-cliques va con 4=========================')
 # refiltro
-new_df_cliques = fc.filter_candidates(new_df_cliques, flag=False)
+# new_df_cliques = fc.filter_candidates(new_df_cliques, flag=False)
 
 cliques_temp = []
 cliques_temp_add = []
@@ -360,11 +363,9 @@ def gen_rot_matrix_ref(parejas):
     :param parejas:
     :return: proteina rotada y trasladada, proteina a comparar, matriz de rotacion, baricentro de parejas
     """
-
     # aveces truena si los pdbs no tienen los numeros de residuos continuos.
-    coord_new_1 = [[res.GetAtom('CA').coord for res in res_conclq_1 if i[0] == res.resi] for i in parejas]
-    coord_new_2 = [[res.GetAtom('CA').coord for res in res_conclq_2 if i[1] == res.resi] for i in parejas]
-
+    coord_new_1 = [[res.GetAtom('CA').coord for res in res_conclq_1 if i[0] == res.resx] for i in parejas]
+    coord_new_2 = [[res.GetAtom('CA').coord for res in res_conclq_2 if i[1] == res.resx] for i in parejas]
 
     coord_new_1 = np.array([y for x in coord_new_1 for y in x], dtype=np.float)
     coord_new_2 = np.array([y for x in coord_new_2 for y in x], dtype=np.float)
@@ -397,8 +398,8 @@ winner_parejas = []
 for cand_1, cand_2, mat_rot in pc:
 
     # primera iteracion sin cliques se aplica la matriz de rotacion y baricentro
-    print('***********************************************************')
-    print(val, cand_1, cand_2)
+    # print('***********************************************************')
+    # print(val, cand_1, cand_2)
     res_sinclq_1 = [res for res in pdb11 if res.resx not in cand_1]
     res_sinclq_2 = [res for res in pdb22 if res.resx not in cand_2]
 
@@ -422,7 +423,7 @@ for cand_1, cand_2, mat_rot in pc:
     cand_n = fc.filter_pairs(residuos_match, flag=False)
     # calculo el SO
     so_temp = round(len(cand_n) / (number_of_residues_final - 7), 4)
-    print('PRE_SO:', so_temp)
+    # print('PRE_SO:', so_temp)
     so_temp_plus_1 = 0.0
 
     # Refinamiento por medio de las parejas seleccionadas y el clique.
@@ -440,11 +441,11 @@ for cand_1, cand_2, mat_rot in pc:
         cand_n = fc.filter_pairs(rm, flag=False)
         so_temp_plus_1 = round(len(cand_n) / number_of_residues_final, 4)
         so_temp_minus_1 = so_temp
-        print(so_temp_plus_1)
+        # print(so_temp_plus_1)
         if so_temp_plus_1 < so_temp:  # evita infinite loop
             break
 
-        print(so_temp_minus_1, so_temp_plus_1)
+        # print(so_temp_minus_1, so_temp_plus_1)
 
         # Rerefinamiento por si puede ir encontrando nuevas y mejores parejas
         while so_temp_minus_1 < so_temp_plus_1:  # segundo refinamiento iterativo
@@ -463,7 +464,7 @@ for cand_1, cand_2, mat_rot in pc:
             cand_n = fc.filter_pairs(rm, flag=False)
             so_temp_plus_1 = round(len(cand_n) / number_of_residues_final, 4)
 
-            print(so_temp_minus_1, so_temp_plus_1)
+            # print(so_temp_minus_1, so_temp_plus_1)
 
         # actualizacion de datos
         if so_temp_plus_1 < so_temp_minus_1:
@@ -474,7 +475,7 @@ for cand_1, cand_2, mat_rot in pc:
             so_temp = so_temp_plus_1
 
     # check que si este guardando el SO
-    print(so_winner)
+    # print(so_winner)
 
     # Si supera el SO ganador se guardan los parametros y se actualiza el SO
     if so_temp > so_winner:
@@ -485,7 +486,7 @@ for cand_1, cand_2, mat_rot in pc:
         candidatos = [cand_1, cand_2]  # actualizacion de parejas de cliques estrella
         winner_parejas = cand_n   # actualizacion de parejas y distancia.
         print('========================='*3)
-        print(so_temp_plus_1)
+        print('viejo so:',so_temp_plus_1)
         print('cliques', candidatos)
         print('numero de parejas', len(cand_n))
         print('iteracion %s' % val, 'SO: %1.4f' % so_temp)
@@ -519,11 +520,11 @@ df = pd.DataFrame([file1[-10:-4]+'_'+file2[-10:-4], 'model_s', candidatos, num_m
                     index=['proteinaA_proteinaB', 'grupo', 'cliques_ganadores', 'num_parejas', 'num_residuos_total',
                     'SO', 'RMSD', 'parejas']).T
 
-df.to_csv('Experimentos/'+directory+file1[-10:-4]+'_'+file2[-10:-4]+'_mani.csv')
+df.to_csv(directory+file1[-10:-4]+'_'+file2[-10:-4]+'_mani.csv')
 
 
 # Actualizacion de coordendas
-file_output_name = 'Experimentos/'+directory+file1[-10:-4]+'_vs_'+file2[-10:-4]+'_'+str(datetime.datetime.now())[:19]
+file_output_name = directory+file1[-10:-4]+'_vs_'+file2[-10:-4]+'_'+str(datetime.datetime.now())[:19]
 
 coord_protein_1 = np.array([res.GetAtom(name).coord for res in pdb11 for name in res.atomnames],
                            dtype=np.float)
@@ -546,6 +547,7 @@ pdb1.WriteToFile(file_out_name=file_output_name)
 
 #tiempo de ejecucion
 timenow = datetime.datetime.now()
+print('el cutoff dihedral era de:', global_cutoff)
 print('Tiempo Total:', timenow - time_all)
 print('termine puedes alinear utilizando los pdbs %s %s y el alineamiento %s' % (file1[-10:-4], file2[-10:-4],
                                                                                  file_output_name))

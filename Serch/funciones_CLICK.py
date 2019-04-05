@@ -320,7 +320,7 @@ def create_ss_table(list_residues):
     :return: DataFrame con valores de estructura secundaria, numero de residuo y cadena
     """
     ss_list = [i.ss for i in list_residues]
-    num_resi_list = [i.resi for i in list_residues]
+    num_resi_list = [i.resx for i in list_residues]
     chain_list = [i.chain for i in list_residues]
 
     ss = pd.DataFrame()
@@ -411,7 +411,7 @@ def fun_resiudos_match(protein_trasladado_rotado, protein_to_compare, res_1, res
     :param res_2:
     :return: Lista ordenada de parejas de residuos y su distancia
     """
-    return sorted([[math.sqrt(sum((c_2 - c_1) ** 2)), (res1.resi, res2.resi)] for c_1, res1 in zip(
+    return sorted([[math.sqrt(sum((c_2 - c_1) ** 2)), (res1.resx, res2.resx)] for c_1, res1 in zip(
         protein_trasladado_rotado, res_1) for c_2, res2 in zip(
         protein_to_compare, res_2) if math.sqrt(sum((c_2 - c_1) ** 2)) < 3.5])
 

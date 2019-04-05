@@ -190,14 +190,14 @@ class PdbStruct(object):
                  element = line[-1]
                  if not resi == tmp_resi:
                     res_count += 1
-                    data.append(Residue(resi,resn,chain))
+                    data.append(Residue(resi, resn, chain))
                     tmp_resi = resi
                     residue = data[res_count]
                     ###
                     if not chain in chains_in_data.keys():
                        chains_in_data[chain] = res_count
                     ###
-                 residue.AddAtom(aton,coord,r_fact,atn_count,occup,element)
+                 residue.AddAtom(aton, coord, r_fact, atn_count, occup, element)
           self.seqlength = len(data)
           self.current = 0
           self.end = self.seqlength
