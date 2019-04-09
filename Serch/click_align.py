@@ -24,7 +24,7 @@ file2 = sys.argv[2]
 global_cutoff = float(sys.argv[3])
 
 # carpeta destino
-directory = '/home/serch/pdbmani/Serch/Experimentos/cluster_70/'+file1.split("/")[-2]+"/"
+directory = '/home/serch/pdbmani/Serch/Experimentos/cluster_30/'+file1.split("/")[-2]+"/"
 
 # cadena de interes
 chain1 = file1[-10:-4].split("_")[1]
@@ -551,3 +551,4 @@ print('el cutoff dihedral era de:', global_cutoff)
 print('Tiempo Total:', timenow - time_all)
 print('termine puedes alinear utilizando los pdbs %s %s y el alineamiento %s' % (file1[-10:-4], file2[-10:-4],
                                                                                  file_output_name))
+

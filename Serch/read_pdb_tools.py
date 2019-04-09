@@ -88,21 +88,21 @@ class Residue(object):
           setattr(self, 'phi', float(phi))
           setattr(self, 'psi', float(psi))
 
-      def UpDateValue(self,property_to_change,value):
+      def UpDateValue(self, property_to_change, value):
           """ Re-assign values associated with a given attribute.
               Remember that the Atom Class is accessed through Residue.
               Atoms are defined as attributes of the Residue."""
           for atom_in_res in self.atomnames:
-              current_atom = getattr(self,atom_in_res)
+              current_atom = self.GetAtom(atom_in_res)
               if property_to_change == 'coord':
-                 setattr(current_atom,property_to_change, value)
+                 setattr(current_atom, property_to_change, value)
               else:
-                 setattr(current_atom,property_to_change, float(value))
+                 setattr(current_atom, property_to_change, float(value))
 
       def GetAtom(self,atom_name):
           return [self.atoms[i] for i in range(self.atomwithin) if self.atomnames[i] == atom_name ][0]
 
-      def UpDateName(self,property_to_change,new_name):
+      def UpDateName(self,property_to_change, new_name):
           """ Re-name a given attribute."""
           setattr(self, property_to_change, new_name)
 
@@ -225,7 +225,11 @@ class PdbStruct(object):
 
       def GetResIdx(self, idx):
           """ Retrive the residue object. As input the residue index should be given."""
-          return self.pdbdata[idx]
+          # print(idx)
+          try:
+            return self.pdbdata[idx]
+          except TypeError:
+              print(idx)
 
       def GetResChain(self, chain='A'):
           """ Retrive the Residues of the chain ('A','B','C'.'D','E','F')"""
@@ -384,6 +388,7 @@ class PdbStruct(object):
                 # self.WriteToFile(temp_name)
                 sp.run(['dssp', '-i', temp_name, '-o', temp_name+'.dssp'])
 
+          temp_name = dssp_file
           data = open(temp_name+'.dssp').readlines()
           flag = False
 
