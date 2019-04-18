@@ -50,7 +50,7 @@ class Residue(object):
       def __iter__(self):
           return self
 
-      def next(self): # Python 3: def __next__(self)
+      def next(self):  # Python 3: def __next__(self)
           if self.current > self.end:
              raise StopIteration
           else:
@@ -81,7 +81,7 @@ class Residue(object):
 
       def GetMainChainCoord(self):
           """ Get coordinates of the mainchain atoms (N,CA,C) as numpy array."""
-          return np.array([self.N.coord, self.CA.coord, self.C.coord])
+          return np.array([self.GetAtom('N').coord, self.GetAtom('CA').coord, self.GetAtom('C').coord])
 
       def SetDihe(self, phi, psi):
           """ Assign phi and psi dihedral values to current residue."""
@@ -112,8 +112,8 @@ class Residue(object):
           a = normalize_vec(self.GetAtom('CA').coord - n)
           t = np.cross(c,a)
           angle = np.cos(118.2*np.pi/180.)
-          equ = np.array([[a[0],a[1],a[2]],\
-                          [c[0],c[1],c[2]],\
+          equ = np.array([[a[0],a[1],a[2]],
+                          [c[0],c[1],c[2]],
                           [t[0],t[1],t[2]]])
           sol = np.array([[angle],[angle],[0.0]])
           h = np_linalg.solve(equ,sol)
@@ -205,7 +205,6 @@ class PdbStruct(object):
           self.end = self.seqlength
           self.chains = chains_in_data
 
-
       def PrintPdbInfo(self):
           """ Print information regarding the number of residues and frame"""
           print ("Number of residues and frame: %s    %s"%(self.seqlength, self.timefrm))
@@ -225,11 +224,7 @@ class PdbStruct(object):
 
       def GetResIdx(self, idx):
           """ Retrive the residue object. As input the residue index should be given."""
-          # print(idx)
-          try:
-            return self.pdbdata[idx]
-          except TypeError:
-              print(idx)
+          return self.pdbdata[idx]
 
       def GetResChain(self, chain='A'):
           """ Retrive the Residues of the chain ('A','B','C'.'D','E','F')"""
@@ -594,7 +589,7 @@ class Trajectory(object):
                       res = fr.GetRes(index)
                       atom = getattr(res,atn)
                       temp_coor.append(getattr(atom,'coord'))
-                      #temp_rfact.append((getattr(atom,'rfact') - store_dist_data[i][0])/store_dist_data[i][1])
+                      # temp_rfact.append((getattr(atom,'rfact') - store_dist_data[i][0])/store_dist_data[i][1])
                       temp_rfact.append((getattr(atom,'rfact')))
                   ave_coor = np.average(np.array(temp_coor),axis=0)
                   std_coor = np.std(np.array(temp_coor),axis=0)

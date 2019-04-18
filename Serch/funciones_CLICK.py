@@ -479,3 +479,40 @@ def filter_candidates(pc, flag=True):
     pc = pc[idx]
     print('comparaciones', len(pc))
     return pc
+
+
+def gen_rot_matrix_ref(residuos1, residuos2, parejas, vecs_center_cnclq_1, coord_conclq_2):
+    """
+    Genera matriz de rotacion con parejas
+    :param residuos1: lista de objetos residuo de la proteina 1
+    :param residuos2: lista de objetos residuo de la proteina 2
+    :param parejas: parejas en formato de tupla en un lista [(1,1),...(89,90)]
+    :param vecs_center_cnclq_1: vectores centricos previamente calculados
+    :param coord_conclq_2: coordenadas originales de la proteina 2
+    :return: coordenadas de proteina rotada y trasladada, proteina original, Matriz de rotacion, Baricentro de parejas.
+    """
+    # aveces truena si los pdbs no tienen los numeros de residuos continuos.
+    coord_new_1 = [[res.GetAtom('CA').coord for res in residuos1 if i[0] == res.resx] for i in parejas]
+    coord_new_2 = [[res.GetAtom('CA').coord for res in residuos2 if i[1] == res.resx] for i in parejas]
+
+    coord_new_1 = np.array([y for x in coord_new_1 for y in x], dtype=np.float)
+    coord_new_2 = np.array([y for x in coord_new_2 for y in x], dtype=np.float)
+
+    bari_new_1 = coord_new_1.mean(0)
+    bari_new_2 = coord_new_2.mean(0)
+
+    vecs_center_1 = coord_new_1 - bari_new_1
+    vecs_center_2 = coord_new_2 - bari_new_2
+
+    # Se genera matriz de rotacion con vectores centricos de parejas anteriores
+    matriz_R = matrix_R(vecs_center_1, vecs_center_2)
+    matriz_rotacion = rotation_matrix(matriz_R)
+    # se aplica matriz de rotacion a coordenadas de proteina a rotar
+    # la proteina consiste en solo carbonos alfa
+    vector_rotado = rotation_vectors(vecs_center_cnclq_1, matriz_rotacion)
+
+    protein_trasladado_rotado = vector_rotado + bari_new_2
+
+    protein_to_compare = coord_conclq_2
+
+    return (protein_trasladado_rotado, protein_to_compare,matriz_rotacion, bari_new_2)

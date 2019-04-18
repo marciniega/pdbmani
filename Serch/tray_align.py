@@ -66,8 +66,11 @@ trj22 = np.random.choice(trj22, size=num_samples, replace=False)
 #filtro SS
 # no se puede todo de jalon primero sacarlo....
 
-for pdb in zip(trj11, trj22):
-    print(pdb)
+for inde, pdb in enumerate(zip(trj11, trj22)):
+
+    number_elements_clique = 3
+
+    print(inde, pdb)
     # first_align
     pdb1 = pdb[0]
     pdb1.Set_SS(dssp_file='pdbs/dimer_con_cofact_clean2')
@@ -227,6 +230,11 @@ for pdb in zip(trj11, trj22):
 
     new_df_cliques1 = cliques_1_temp
     new_df_cliques2 = cliques_2_temp
+    print(new_df_cliques1[0])
+    print(new_df_cliques2[0])
+    # if inde > 0:
+    #     new_df_cliques1 = [y for x in cliques_1_temp for y in x]
+    #     new_df_cliques2 = [y for x in cliques_2_temp for y in x]
 
     # emparejamiento de cliques
     cliques_candidatos = iter_align(number_elements_clique, new_df_cliques1, new_df_cliques2)
