@@ -176,18 +176,11 @@ class PdbStruct(object):
                  r_fact = float(line[60:66])
                  chain = "".join(line[20:22].split())
                  occup = float("".join(line[57:61].split()))
-                 if line[21]==' ':
-                    flag_no_chain = True
-                 else:
-                    flag_no_chain = False
-                 line = line.split()
-                 aton = line[2]
-                 resn = line[3]
-                 if flag_no_chain:
-                    resi = line[4]
-                 else:
-                    resi = line[5]
-                 element = line[-1]
+                 resi = int(line[22:26])
+                 resn = line[17:20]
+                 aton = line[12:17].replace(" ","")
+                 chain = line[21]
+                 element = line[76:].replace(" ","")
                  if not resi == tmp_resi:
                     res_count += 1
                     data.append(Residue(resi,resn,chain))
@@ -327,6 +320,18 @@ class PdbStruct(object):
               res.UpDateName('resn',list_of_new_names[c])
               c += 1
 
+       def UpdateCoord(self,newcoord):
+           """ Update coordinates of protein structure """
+           if not newcoord.shape[0] == self.pdbdata[-1].atoms[-1].atom_number :
+              print(" The suggested new coordinates are not in the same shape as the current data.")
+              print(" new : %s  current : %s "%(newcoord.shape,np.array(self.pdbdata).shape))
+              raise SystemExit("Nothing was done!!!")
+           i = 0
+           for res in self.pdbdata:
+                for atom in res.atoms:
+                    setattr(atom,"coord",newcoord[i])
+                    i += 1
+
       def WriteToFile(self,file_out_name=None,flag_trj=False):
           """ Write a structre back to a pdb file.
           Example of line:
@@ -339,6 +344,8 @@ class PdbStruct(object):
              out_data.write("MODEL\n")
           if file_out_name is None and not flag_trj:
              file_out_name = self.name
+             out_data = open('%s.pdb'%file_out_name,'w')
+          if file_out_name is not None and not flag_trj:
              out_data = open('%s.pdb'%file_out_name,'w')
           out_data.write("REMARK %s writen by me. \n"%self.name)
           #for index in [ int(i.resi) for i in self.pdbdata ][1:-1]:
