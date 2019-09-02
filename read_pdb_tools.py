@@ -320,9 +320,9 @@ class PdbStruct(object):
               res.UpDateName('resn',list_of_new_names[c])
               c += 1
 
-       def UpdateCoord(self,newcoord):
+      def UpdateCoord(self,newcoord):
            """ Update coordinates of protein structure """
-           if not newcoord.shape[0] == self.pdbdata[-1].atoms[-1].atom_number :
+           if not newcoord.shape[0] == len(self.pdbdata[-1].atoms) :
               print(" The suggested new coordinates are not in the same shape as the current data.")
               print(" new : %s  current : %s "%(newcoord.shape,np.array(self.pdbdata).shape))
               raise SystemExit("Nothing was done!!!")
@@ -376,11 +376,12 @@ class PdbStruct(object):
 
 class Trajectory(object):
       """Handles trajectory files. My trajectory file format. """
-      def __init__(self, name, frames=None, length=None):
+      def __init__(self, name, frames=None ):
           self.name = name
           if frames is None:
              self.frames = []
-             self.length = length
+             self.length = 0
+             self.current = 0
 
       def __iter__(self):
           return self
@@ -398,14 +399,18 @@ class Trajectory(object):
 
       def WriteTraj(self , out_name , str_frame = 1 ):
           outfile = open('%s.pdb'%out_name,'w')
-          self.ResetIter()
           for cnt in range(self.length):
-              frm = self.next()
+              frm = self.frames[cnt]
               outfile = frm.WriteToFile(outfile,True)
           outfile.write("END\n")
 
-      def AddFrame(self,PdbStruct):
-          self.frames.append(PdbStruct)
+      def AddFrame(self,new_frame):
+          frames = self.frames
+          frames.append(new_frame)
+          self.length = len(frames) # Ready
+          self.end = self.length         # for
+          self.current = self.end-1      # iterations
+          self.frames = frames
 
       def ReadTraj(self,file_to_read,every=1):
           fr = 0
