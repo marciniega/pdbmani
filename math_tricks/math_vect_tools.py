@@ -244,3 +244,6 @@ def rot_z(v1,theta):
                     [ seno  ,  cose,    0.  ],
                     [   0.  ,  0.  ,    1.  ]])
     return np.array(np.sum(mtx*v1.T,axis=1).T)[0]
+
+
+class DihedralGeometryError(Exception): pass
