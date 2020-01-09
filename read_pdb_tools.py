@@ -2,10 +2,12 @@ import numpy as np
 import numpy.linalg as np_linalg
 # metodo necesario para importar la libreria desde el repositorio #
 import sys
-sys.path.append('math_tricks/')
+sys.path.append('/Users/marcelino/pdbmani/math_tricks/')
 from math_vect_tools import *
 from operations import *
 #                                     #                            #
+
+excluded_hetatms= ['SOL','HOH']
 
 class Atom(object):
       #TODO check if coord has 3 dimensions.
@@ -112,6 +114,61 @@ class Residue(object):
           pos = n+h.transpose()[0]
           self.AddAtom('H',pos, '0.0', 0 , '0.0','H')
 
+      def getHDs(self):
+          HDons = []
+          for atom in self.atoms:
+             if atom.element == 'HD':
+                HDons.append(atom.coord)
+          return HDons
+
+      def getHAcceptors(self):
+          HAccs =[]
+          for atom in self.atoms:
+              if atom.element == 'OA' or atom.element == 'SA' or atom.element ==  'NA':
+                 HAccs.append(atom.coord)
+          return HAccs
+
+      def getGeometricCenter(self,section='all'):
+          if section == 'all':
+             exclude = []
+          if section == 'side_chain':
+             exclude = ['N','CA','C','O']
+          return np.mean(np.array([ i.coord for i in self.atoms if not i.name in exclude ]),axis=0)
+
+      def getAromaticData(self):
+          """
+          Returns the GeometricCenter and NormalVector of the benzene of Aromatic Residues.
+          """
+          dic_aro_atms = { 'TRP6': ['CZ2','CH2','CZ3','CE3','CD2','CE2'],
+                           'TRP5': ['NE1','CD1','CG','CD2','CE2'],
+                           'TYR': ['CG','CD1','CD2','CE1','CE2','CZ'],
+                           'PHE': ['CG','CD1','CD2','CE1','CE2','CZ'],
+                           'HI' : ['CG','CD2','NE2','CE1','ND1']
+                         }
+          if self.resn in ['TRP','TYR','PHE','HIS','HIE','HID','HIP']:
+             if self.resn == 'TRP':
+                aro_atms = [ dic_aro_atms['TRP6'] , dic_aro_atms['TRP5'] ]
+             if self.resn.find('HI')==0:
+                aro_atms = [ dic_aro_atms['HI'] ]
+             if self.resn in ['TYR','PHE'] :
+                aro_atms = [ dic_aro_atms[self.resn] ]
+             aro_data = []
+             for aa in aro_atms:
+                 ring_coord = []
+                 for atom in self.atoms:
+                     if atom.name in aa :
+                        ring_coord.append(atom.coord)
+                 ring_coord = np.array(ring_coord)
+                 if len(ring_coord) != len(aa):
+                    raise IncompleteResidue("Aromatic Residue incomplete!!!!")
+                 center = np.mean(ring_coord,axis=0)
+                 cross = np.cross(ring_coord[0]-center,ring_coord[1]-center)
+                 data = (center,normalize_vec(cross))
+                 aro_data.append(data)
+             return aro_data
+          else:
+             pass
+
 #int test_add_h2n ( RowVector3f* bb_atoms ) {
 #     RowVector3f N = bb_atoms[1];
 #     RowVector3f C = (bb_atoms[0]-N).normalized();
@@ -138,11 +195,12 @@ class Residue(object):
 class PdbStruct(object):
       """\n This class is defined to store a single pdb file.\n
       """
-      def __init__(self,name,pdbdata=None,timefrm=None):
+      def __init__(self,name,pdbdata=None,timefrm=None,ligandname=None):
           self.name = name
           if pdbdata is None:
              self.pdbdata = []
           self.timefrm = timefrm
+          self.ligandname = ligandname
 
       def __iter__(self):
           return self
@@ -169,7 +227,7 @@ class PdbStruct(object):
           atn_count = 0
           chains_in_data = {}
           for line in data_pdb:
-              if line[:4] == 'ATOM':
+              if line[:4] == 'ATOM' or ( line[:6] == 'HETATM' and not line[17:20] in excluded_hetatms):
                  atn_count += 1
                  line = line.split('\n')[0]
                  coord = [float(line[30:38]),float(line[38:46]),float(line[46:54])]
@@ -191,6 +249,7 @@ class PdbStruct(object):
                        chains_in_data[chain] = res_count
                     ###
                  residue.AddAtom(aton,coord,r_fact,atn_count,occup,element)
+
           self.seqlength = len(data)
           self.current = 0
           self.end = self.seqlength
@@ -212,6 +271,10 @@ class PdbStruct(object):
       def GetRes(self, idx):
           """ Retrive the residue object. As input the residue number should be given."""
           return [ res for res in self.pdbdata if int(res.resi) == idx ][0]
+
+      def GetLig(self):
+          """ Retrive the residue object. As input the residue number should be given."""
+          return [ res for res in self.pdbdata if res.resn == self.ligandname ][0]
 
       def GetSeqRfact(self,atoms_to_consider=None):
           """ Return an array of the B-factors, each residue has an assingment.
@@ -529,6 +592,11 @@ class ListCheckError(Exception):
     def __str__(self):
         return self.msg
 class NoAtomInResidueError(Exception):
+      def __init__(self, msg):
+          self.msg = msg
+      def __str__(self):
+          return self.msg
+class IncompleteResidue(Exception):
       def __init__(self, msg):
           self.msg = msg
       def __str__(self):
