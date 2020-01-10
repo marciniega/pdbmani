@@ -2,11 +2,11 @@
 import sys
 import numpy as np
 from numpy import pi
-#sys.path.append('/Users/marcelino/pdbmani/graphs')
-sys.path.append('/home/tholak/pdbmani/graphs')
+sys.path.append('/Users/marcelino/pdbmani/graphs')
+#sys.path.append('/home/tholak/pdbmani/graphs')
 import graph as mygraph
-#sys.path.append('/Users/marcelino/pdbmani/math_tricks')
-sys.path.append('/home/tholak/pdbmani/math_tricks')
+sys.path.append('/Users/marcelino/pdbmani/math_tricks')
+#sys.path.append('/home/tholak/pdbmani/math_tricks')
 from math_vect_tools import normalize_vec,dihedral
 
 dict_sybyl = {'C.3' : 4 , 'C.2'  : 3    , 'C.1': 2 , 'C.ar': 3,
@@ -36,16 +36,16 @@ def pdb_line(coor,at_nu="1",at_nm="C",rs_nu=1,rs_nm="XXX",ch="X"):
     line = "ATOM"
     line += "%7s"%at_nu
     line += "%5s"%at_nm
-    line += "%4s"%rs_nu
-    line += "%2s"%ch
     line += "%4s"%rs_nm
+    line += "%2s"%ch
+    line += "%4s"%rs_nu
     line += "    "
     line += "%8.3f"%coor[0]
     line += "%8.3f"%coor[1]
     line += "%8.3f"%coor[2]
     line += "%6.2f"%0.0
     line += "%6.2f"%0.0
-    line += "         "
+    line += " "
     line += "%3s"%at_nm
     return line
 
