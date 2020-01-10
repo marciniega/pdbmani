@@ -2,9 +2,11 @@
 import sys
 import numpy as np
 from numpy import pi
-sys.path.append('/Users/marcelino/pdbmani/graphs')
+#sys.path.append('/Users/marcelino/pdbmani/graphs')
+sys.path.append('/home/tholak/pdbmani/graphs')
 import graph as mygraph
-sys.path.append('/Users/marcelino/pdbmani/math_tricks')
+#sys.path.append('/Users/marcelino/pdbmani/math_tricks')
+sys.path.append('/home/tholak/pdbmani/math_tricks')
 from math_vect_tools import normalize_vec,dihedral
 
 dict_sybyl = {'C.3' : 4 , 'C.2'  : 3    , 'C.1': 2 , 'C.ar': 3,
@@ -299,16 +301,20 @@ class Molmol2():
                  potential = []
 
               if len_cyc - len(possibles) - len(potential) == 0 and check_planarity(self,c):
-                 self.aro_cycles.append(c)
+                 self.aro_cycles.append(np.sort(c))
               else:
                  pass
 
       def setAroData(self):
           aro_data = []
+          ascending_order=self.aro_cycles
+          ao = sorted(ascending_order,key=lambda c: c[0])
+          setattr(self,'aro_cycles',ao)
           for c in self.aro_cycles:
               com = np.mean(np.array([ self.getAtom(a).coord for a in c ]),axis=0)
               v1 = normalize_vec(self.getAtom(c[0]).coord - com)
-              v2 = normalize_vec(self.getAtom(c[1]).coord - com)
+              ngb = [ a for a in c[1:] if a in self.getAtom(c[0]).neighbors ][0]
+              v2 = normalize_vec(self.getAtom(ngb).coord - com)
               nm = normalize_vec(np.cross(v1,v2))
               aro_data.append((com,nm))
           self.aro_data = aro_data
