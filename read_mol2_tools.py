@@ -2,7 +2,7 @@
 import sys
 import numpy as np
 from numpy import pi
-sys.path.append('/Users/marcelino/Things_ifp/graphs')
+sys.path.append('/Users/marcelino/pdbmani/graphs')
 import graph as mygraph
 sys.path.append('/Users/marcelino/pdbmani/math_tricks')
 from math_vect_tools import normalize_vec,dihedral
@@ -204,6 +204,8 @@ class Molmol2():
                  atm1 = int(line[1])-1
                  atm2 = int(line[2])-1
                  btyp = line[3]
+                 if (self.getAtom(atm1).atype == 'O.co2' or self.getAtom(atm2).atype == 'O.co2') and not btyp == 'ar':
+                    btyp = 'ar'
                  bond = str(atm1)+"_"+str(atm2)
                  self.bonds[bond] = btyp
                  self.atoms[atm1].neighbors.append(atm2)
