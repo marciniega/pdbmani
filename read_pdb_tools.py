@@ -447,7 +447,7 @@ class Trajectory(object):
              self.current = 0
 
       def __iter__(self):
-          return self
+          return iter(self.frames)
 
       def next(self): # Python 3: def __next__(self)
           if self.current > self.end:
