@@ -42,7 +42,7 @@ class Residue(object):
              self.atoms = []
 
       def __iter__(self):
-          return self
+          return iter(self.atoms)
 
       def next(self): # Python 3: def __next__(self)
           if self.current > self.end:
@@ -203,7 +203,7 @@ class PdbStruct(object):
           self.ligandname = ligandname
 
       def __iter__(self):
-          return self
+          return iter(self.pdbdata)
 
       def next(self): # Python 3: def __next__(self)
           if self.current > self.end:
