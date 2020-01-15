@@ -129,6 +129,7 @@ class Atom():
               n_bonds += val
           if n_bonds > dict_max_bonds[self.element]:
              print("\nFake correction on number of bonds was done!\n")
+             print("\n Atom index: %s Atom name: %s  Atom type: %s\n"%(self.index,self.name,self.atype))
              n_bonds = dict_max_bonds[self.element]
           self.nbonds = n_bonds
 
@@ -174,8 +175,9 @@ class Molmol2():
           """ Print Mol information
               No.Atoms"""
           #print ('Notes:\n For HBD only the number of heavy atoms is printed.\n')
-          print ('Atoms %2s  HBD %2s  HBA %2s  Aro %2s  Cations %2s  Anions %2s  Phobic %2s\n'\
-                %(self.end,len(set([ self.getAtom(p[0]).index for p in self.donors])),len(self.acceptors),\
+          print ('HevAtoms %2s  HBD %2s  HBA %2s  Aro %2s  Cations %2s  Anions %2s  Phobic %2s'\
+                %(len([ 1 for i in self if not i.element == 'H' ]),\
+                  len(set([ self.getAtom(p[0]).index for p in self.donors])),len(self.acceptors),\
                   len(self.aro_cycles) ,len(self.cations),len(self.anions),len(self.phobic)))
 
       def readMolFile(self,infile):
