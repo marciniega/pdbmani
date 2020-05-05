@@ -125,7 +125,7 @@ df_da2 = distancia_entre_atomos(df_ca2)
 
 def gen_3_cliques(df_da, dth = 10, k=3):
     """Genera n-cliques de dataframe de distancias, tomando en cuenta los enlaces menores o iguales
-    a dth y forma los k-cliques que elijas 
+    a dth y forma los k-cliques que elijas
     valores por default:
     dth=10, k=3"""
     #red de distancias completa
@@ -150,7 +150,7 @@ def gen_3_cliques(df_da, dth = 10, k=3):
                 #recuerda que para comparar elementos utiliza set, y apilalos como set
                 lista_cliques.append(set(j))
 
-    df_lc = pd.DataFrame(lista_cliques)            
+    df_lc = pd.DataFrame(lista_cliques)
     print("numero de %s-cliques posibles:" % (k), df_lc.shape[0])
     return(df_lc)
 
@@ -170,8 +170,8 @@ df_lc2 = gen_3_cliques(df_da2,dth = 10, k=3)
 def get_coord_clique(df_ca,df_lc):
     """df_ca:DataFrame con coordenadas de carbonos alfa,
     df_lc:Dataframe con cliques, si coincide el numero del atomo
-    le pega su coordenada y genera una matriz de vectores que contiene 
-    las coordenadas de cada atomo ordenado de izquierda a derecha como 
+    le pega su coordenada y genera una matriz de vectores que contiene
+    las coordenadas de cada atomo ordenado de izquierda a derecha como
     aparecen en df_lc"""
     lista_matriz_coordendas = [] #lista para apilar las coordenadas
     x = []
@@ -208,12 +208,12 @@ df_lc2 = get_coord_clique(df_ca2,df_lc2)
 # ## Comparacion de cliques
 # ### Pasos para comparar
 # Para obtener el __RMSD__ es necesario primero rotar y trasladar un atomo con respecto al atomo a comparar (de la otra proteina) y calcular el __RMSD__.
-# 
+#
 # Siguiendo al metodologia en *Using quaternions to calculate RMSD*.
 # Se generan las funciones de traslado y rotacion.
-# 
+#
 # __Segunda parte esto va mas abajo__
-# 
+#
 # Para obtener C, $\alpha$, $\beta$ con:
 #    + $\Phi$
 #    + $\Psi$
@@ -222,9 +222,9 @@ df_lc2 = get_coord_clique(df_ca2,df_lc2)
 
 # ### Traslacion
 # Se calcula el baricentro de cada clique en ambas moleculas y se generan nuevos vectores que van del baricentro al atomo llamados $\hat{x}$.
-# 
+#
 # El baricentro se calcula como $\bar{x} =$($\frac{(x_1 + x_2 + x_3)}{3}$,$\frac{(y_1 + y_2 + y_3)}{3}$,$\frac{(z_1 + z_2 + z_3)}{3}$)
-# 
+#
 # $\hat{x} = x_k - \bar{x}$
 
 # In[10]:
@@ -232,7 +232,7 @@ df_lc2 = get_coord_clique(df_ca2,df_lc2)
 
 # funcion de calculo de baricentro
 def baricenter_clique(df_lc):
-    """se calcula el baricentro de cada clique 
+    """se calcula el baricentro de cada clique
     siguiendo la formula de arriba.
     df_lc: Dataframe con los cliques y coordenadas
     regresa
@@ -267,7 +267,7 @@ df_lc2 = baricenter_clique(df_lc2)
 
 
 def center_vectors(df_lc):
-    """Calculo de los vectores gorro que van del baricentro 
+    """Calculo de los vectores gorro que van del baricentro
     a la coordenada del atomo
     df_lc: Dataframe con baricentro y coordenadas de cada clique
     regresa
@@ -314,12 +314,12 @@ df_lc1.head(1)
 
 # ### Rotacion
 # Para generar la rotacion tenemos que generar la *matriz gigante* que depende de los elemento de la matriz de correlacion $R_{ij}$
-# 
+#
 # Donde $R_{ij} = \sum\limits_{k=1}^N{x_{ik}y_{jk}}, i,j = 1,2,3$
-# 
+#
 # Posteriormente se calculan los eigenvalores y eigenvectores de esta matriz gigante
 # Para obtener los quaterniones y generar la matriz de rotacion y con ella calcular el vector rotado
-# 
+#
 # Por ultimo, se suma al vector rotado y trasladado se suma el baricentro del clique a comparar y se calcula el RMSD
 
 # In[15]:
@@ -361,8 +361,8 @@ def R_ij(i, j, a1=0, a2=0):
 
 def giant_matrix(i,j):
     """cliques a comparar: i,j
-    desde aqui se itera sobre cada i y hay que variar los vectores 
-    coordenada 
+    desde aqui se itera sobre cada i y hay que variar los vectores
+    coordenada
     Regresa la matriz gigante (matriz simetrica del articulo)"""
     #primer renglon
     R11R22R33 = (R_ij(1,1,a1=i,a2=j) + R_ij(2,2,a1=i,a2=j) + R_ij(3,3,a1=i,a2=j))
@@ -413,7 +413,7 @@ def rotation_matrix(matriz_gigante):
 
 def rotation_vectors(vector_gorro,mat_rot):
     """obtencion de vector rotado,
-    utilizando la matriz de rotacion 
+    utilizando la matriz de rotacion
     y los vectores gorro a rotar y trasladar"""
     #multiplicacion de matrices de cada vector rotado
     vec1 = vector_gorro
@@ -438,7 +438,7 @@ def rmsd_between_cliques(atom_trans_rot,atom_to_compare):
     p12 = np.sum((b-a)**2,1)
     rmsd_i = lambda i: np.sqrt(i)/3
     rmsd_final = rmsd_i(p12).mean()
-    
+
     # if rmsd_final <= 0.15:
     #     print('RMSD_final:', rmsd_final,a,b)
 

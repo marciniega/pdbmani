@@ -30,6 +30,9 @@ def cartesian_to_spherical(vector):
     # Return the spherical coordinate vector.
     return array([r, theta, phi], float64)
 
+def magnitude(vec):
+    return norm(vec)
+
 def create_vector2d(vec):
     """Returns a vector as a numpy array."""
     return np.array([vec[0],vec[1]])

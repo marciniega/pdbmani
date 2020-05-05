@@ -9,17 +9,41 @@ class Graph:
     def __init__(self,vertices):
         self.V= vertices #No. of vertices
         self.graph = defaultdict(list) # default dictionary to store graph
+        self.wgts = defaultdict(list) # default dictionary to store graph
         self.paths = [] # default dictionary to store graph
         self.cycles = [] # default dictionary to store graph
 
     def SetGraphByEdges(self,list_of_edges):
+        if len(list_of_edges[0]) == 3:
+           have_wgts = True
+        elif len(list_of_edges[0]) == 2:
+           have_wgts = False
+        else:
+           print("The length of the elements in the list should be: ")
+           print(" 2 for unweight edges or 3 for weighted edges ")
+           print("Elements with length %s were found. "%len(list_of_edges[0]))
+           sys.exit()
+
+        for pair in list_of_edges:
+            n1 = int(pair[0])-1
+            n2 = int(pair[1])-1
+            if have_wgts:
+               w = float(pair[2])
+               self.addEdge(n1,n2,w)
+            else:
+               self.addEdge(n1,n2)
+
+    def addEdge(self,u,v,w=1.):
+        """function to add an edge to graph"""
+        key_entry = str(u)+"_"+str(v)
+        self.wgts[key_entry] = w
+        self.graph[u].append(v) #Add w to v_s list
+        self.graph[v].append(u) #Add v to w_s list
+
+    def LoadDictWeigths(self,dict_wts_edges):
         for pair in list_of_edges:
             self.addEdge(int(pair[0])-1, int(pair[1])-1)
 
-    def addEdge(self,v,w):
-        """function to add an edge to graph"""
-        self.graph[v].append(w) #Add w to v_s list
-        self.graph[w].append(v) #Add v to w_s list
 
     def CreateAdjMat(self):
         length = self.V
@@ -62,13 +86,6 @@ class Graph:
         path.pop()
         visited[u]= False
 
-    def getAllPaths(self, s , d , c):
-        # Mark all the vertices as not visited
-        visited =[False]*(self.V)
-        # Create an array to store paths
-        path = []
-        # Call the recursive helper function to print all paths
-        self.getAllPathsUtil(s , d , visited , path , c )
 
     def findCyclesOfSize(self,target):
         target -= 1 # the search is actully over edges
@@ -88,6 +105,68 @@ class Graph:
         for p in self.paths:
             if p not in self.cycles:
                self.cycles.append(p)
+
+    def getAllPaths(self, s , d , c, dist = 0):
+        # Mark all the vertices as not visited
+        visited =[False]*(self.V)
+        # Create an array to store paths
+        path = []
+        # Call the recursive helper function to print all paths
+        if dist == 0:
+           self.getAllPathsUtil(s , d , visited , path , c )
+        else:
+           of = open('paths/from_%s_to_%s.txt'%(s,d),'w')
+           setattr(self,"paths",[])
+           self.getAllPathsCutoff(s , d , visited , path , c , dist,of )
+
+
+    def getAllPathsCutoff(self, u, d, visited, path, steps, dist, of):
+        '''A recursive function to find all paths from 'u' to 'd' with
+           weighted distance less than c.
+           visited[] keeps track of vertices in current path.
+           path[] stores actual vertices and path_index is current
+           index in path[]'''
+
+        if not visited[u]:
+           visited[u]= True
+           path.append(u)
+           ed_dist = 0.
+           if len(path)>1:
+              cur_edge = str(path[-2])+"_"+str(u)
+              ed_dist = self.getWgt(cur_edge)
+           dist -= ed_dist
+           steps -= 1
+           if steps == -1:
+              #print("reached deep: ",path)
+              pass
+           if dist < 0.:
+              #print("reached deep: ",path)
+              pass
+           #elif u == d and dist >= 0. and not path in self.paths:
+           elif u == d and dist >= 0.:
+                #print("reached destiny: ", path , dist)
+                g = '_'.join([str(x) for x in path])
+                of.write("%-10.10f %s\n"%(dist,g))
+                #self.paths.append(list(path))
+           else:
+               for i in self.graph[u]:
+                   if visited[i]==False:
+                      self.getAllPathsCutoff(i, d, visited, path, steps,dist, of)
+           path.pop()
+           visited[u]= False
+
+    def getWgt(self,edge):
+        ed_dis = self.wgts[edge]
+        if not isinstance(ed_dis,float):
+          alt = edge.split('_')
+          alt.reverse()
+          alt_edge = '_'.join(alt)
+          ed_dis = self.wgts[alt_edge]
+        return ed_dis
+
+    def checkPathDistance(self,path):
+        pairs = [ '_'.join([str(i),str(j)]) for i,j in zip(path[:-1],path[1:]) ]
+        return np.sum( [ self.getWgt(i) for i in pairs ] )
 
 
 """
