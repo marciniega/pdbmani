@@ -8,6 +8,7 @@ from operations import *
 #                                     #                            #
 
 excluded_hetatms= ['SOL','HOH']
+excluded_res= ['ACE','NME']
 
 class Atom(object):
       #TODO check if coord has 3 dimensions.
@@ -32,14 +33,17 @@ class Residue(object):
       """Store residue info
               Remember that the Atom Class is accessed through Residue.
               Atoms are defined as attributes of the Residue."""
-      def __init__(self, resi, resn, chain ,atomnames=None,atoms=None):
+      def __init__(self, resi, resn, chain, resx ,atomnames=None,atoms=None):
           self.resi = int(resi)
           self.resn = resn
           self.chain = chain
+          self.resx = resx # index on the pdbdata array
           if atomnames is None:
              self.atomnames = []
           if atoms is None:
              self.atoms = []
+          self.chain_start = False
+          self.chain_end = False
 
       def __iter__(self):
           return iter(self.atoms)
@@ -115,18 +119,91 @@ class Residue(object):
           self.AddAtom('H',pos, '0.0', 0 , '0.0','H')
 
       def getHDs(self):
+          """ Name convection as found in gromacs amber99sb forcefield """
+          dict_one_don = {'SER':('HG','OG'),'TYR':('HH','OH'),'THR':('HG1','OG1'),
+                          'CYS':('HG','SG'),'GLU':('HE2','OE2'),'ASP':('HD2','OD2'),
+                          'TRP':('HE1','NE1'),'ASN':('HD21','ND2'),'GLN':('HE21','NE2'),
+                          'HIS':('HD1','ND1'),'ARG':('HE','NE')}
+          dict_two_don = {'ASN':('HD22','ND2'),'GLN':('HE22','NE2'),
+                          'HIS':('HE2','NE2')}
+
+          def set_h_mvec(h_name,d_name):
+              h = self.GetAtom(h_name).coord
+              d = self.GetAtom(d_name).coord
+              dh = normalize_vec(h-d)
+              return (h,dh)
+
           HDons = []
-          for atom in self.atoms:
-             if atom.element == 'HD':
-                HDons.append(atom.coord)
+          #for atom in self.atoms:
+          #   if atom.element == 'HD':
+          #      HDons.append(atom.coord)
+          if self.resn in [ 'PRO' ]:
+             pass
+          else:
+             HDons.append(set_h_mvec("H","N"))
+
+          if self.resn in dict_one_don :
+             if not self.resn in ['ASP','GLU','CYS']:
+                HDons.append(set_h_mvec(dict_one_don[self.resn][0],dict_one_don[self.resn][1]))
+             else:
+                h_count = len([ 1 for i in self if i.name[0]=='H' ])
+                if h_count > 1:
+                   HDons.append(set_h_mvec(dict_one_don[self.resn][0],dict_one_don[self.resn][1]))
+
+          if self.resn in dict_two_don :
+             HDons.append(set_h_mvec(dict_one_don[self.resn][0],dict_one_don[self.resn][1]))
+
+          if self.resn == 'ARG':
+             HDons.append(set_h_mvec("HH21","NH2"))
+             HDons.append(set_h_mvec("HH22","NH2"))
+             HDons.append(set_h_mvec("HH11","NH1"))
+             HDons.append(set_h_mvec("HH12","NH1"))
           return HDons
 
       def getHAcceptors(self):
+          """ Name convection as found in gromacs amber99sb forcefield """
+          dict_one_don = {'SER':'OG','TYR':'OH','THR':'OG1',
+                          'CYS':'SG','GLU':'OE1','ASP':'OD1',
+                          'ASN':'OD1','GLN':'OE1','HIS':'ND1'}
+
+          dict_two_don = {'GLU':'OE2','ASP':'OD2','HIS':'NE2'}
           HAccs =[]
-          for atom in self.atoms:
-              if atom.element == 'OA' or atom.element == 'SA' or atom.element ==  'NA':
-                 HAccs.append(atom.coord)
+          #for atom in self.atoms:
+          #    if atom.element == 'OA' or atom.element == 'SA' or atom.element ==  'NA':
+          #       HAccs.append(atom.coord)
+          HAccs.append(self.GetAtom("O").coord)
+          if self.resn in dict_one_don :
+             HAccs.append(self.GetAtom(dict_one_don[self.resn]).coord)
+          if self.resn in dict_two_don :
+             HAccs.append(self.GetAtom(dict_one_don[self.resn]).coord)
           return HAccs
+
+      def getCations(self):
+          """ Name convection as found in gromacs amber99sb forcefield """
+          atoms_charged = []
+          if self.resn == 'ARG':
+             atoms_charged.append(np.array([ i.coord for i in self if i.name in ['CZ','NH1','NH2']]).mean(axis=0))
+          if self.resn == 'LYS':
+             atoms_charged.append(self.GetAtom('NZ').coord)
+          if self.resn in [ 'HIS', 'HIP'] and len([1 for i in self if i.name in ['HD1','HE2']]) == 2 :
+             atoms_charged.append(np.array([ i.coord for i in self if i.name in ['ND1','NE2']]).mean(axis=0))
+          if self.chain_start:
+             atom_charge.append(self.GetAtom('N').coord)
+          return atoms_charged
+
+      def getAnions(self):
+          """ Name convection as found in gromacs amber99sb forcefield """
+          atoms_charged = []
+          if self.resn == 'GLU':
+             atoms_charged.append(np.array([ i.coord for i in self if i.name in ['CD','OE1','OE2']]).mean(axis=0) )
+          if self.resn == 'ASP':
+             atoms_charged.append(np.array([ i.coord for i in self if i.name in ['CG','OD1','OD2']]).mean(axis=0))
+          if self.chain_end:
+             if 'OC1' in [ i.name for i in self ]:
+                atoms_charged.append(np.array([ i.coord for i in self if i.name in ['C','OC1','OC2']]).mean(axis=0))
+             else:
+                atoms_charged.append(np.array([ i.coord for i in self if i.name in ['C','O','OXT']]).mean(axis=0)) # unique pymol exception
+          return atoms_charged
 
       def getGeometricCenter(self,section='all'):
           if section == 'all':
@@ -141,9 +218,9 @@ class Residue(object):
           """
           dic_aro_atms = { 'TRP6': ['CZ2','CH2','CZ3','CE3','CD2','CE2'],
                            'TRP5': ['NE1','CD1','CG','CD2','CE2'],
-                           'TYR': ['CG','CD1','CD2','CE1','CE2','CZ'],
-                           'PHE': ['CG','CD1','CD2','CE1','CE2','CZ'],
-                           'HI' : ['CG','CD2','NE2','CE1','ND1']
+                           'TYR' : ['CG','CD1','CD2','CE1','CE2','CZ'],
+                           'PHE' : ['CG','CD1','CD2','CE1','CE2','CZ'],
+                           'HI'  : ['CG','CD2','NE2','CE1','ND1']
                          }
           if self.resn in ['TRP','TYR','PHE','HIS','HIE','HID','HIP']:
              if self.resn == 'TRP':
@@ -201,6 +278,7 @@ class PdbStruct(object):
              self.pdbdata = []
           self.timefrm = timefrm
           self.ligandname = ligandname
+          self.chains_starts_resx = []
 
       def __iter__(self):
           return iter(self.pdbdata)
@@ -215,18 +293,25 @@ class PdbStruct(object):
       def ResetResIter( self , start = 0):
           self.current = start
 
-      def AddPdbData(self,pdb_name):
+      def AddPdbData(self,pdb_name,target_atoms=[]):
           """ Reads a pdb file and stores its information """
           if type(pdb_name) is str:
              data_pdb = open('%s'%pdb_name,'r').readlines()
           else: # it is already read
              data_pdb = pdb_name
+          if len(target_atoms)>0:
+             check_target_atoms = True
+          else:
+             check_target_atoms = False
           data = self.pdbdata
           tmp_resi = None
           res_count = -1
           atn_count = 0
           chains_in_data = {}
+          flag=False
           for line in data_pdb:
+              if check_target_atoms and not line[12:17].replace(" ","") in target_atoms:
+                 continue
               if line[:4] == 'ATOM' or ( line[:6] == 'HETATM' and not line[17:20] in excluded_hetatms):
                  atn_count += 1
                  line = line.split('\n')[0]
@@ -239,15 +324,23 @@ class PdbStruct(object):
                  aton = line[12:17].replace(" ","")
                  chain = line[21]
                  element = line[76:].replace(" ","")
+
                  if not resi == tmp_resi:
                     res_count += 1
-                    data.append(Residue(resi,resn,chain))
+                    data.append(Residue(resi,resn,chain,res_count))
                     tmp_resi = resi
                     residue = data[res_count]
-                    ###
                     if not chain in chains_in_data.keys():
-                       chains_in_data[chain] = res_count
-                    ###
+                       chains_in_data[chain] = 1
+                       self.chains_starts_resx.append(res_count)
+                       residue.chain_start = True
+                    else:
+                       chains_in_data[chain] += 1
+                       if not res_count == 0:
+                          data[res_count-1].chain_end = False
+                          residue.chain_end = True
+                 if aton[0].isdigit():
+                    aton = aton[1:]+aton[0]
                  residue.AddAtom(aton,coord,r_fact,atn_count,occup,element)
 
           self.seqlength = len(data)
@@ -255,10 +348,10 @@ class PdbStruct(object):
           self.end = self.seqlength
           self.chains = chains_in_data
 
-      def PrintPdbInfo(self):
+      def printPdbInfo(self):
           """ Print information regarding the number of residues and frame"""
-          print ("Number of residues and frame: %s    %s"%(self.seqlength ,self.timefrm))
-          print ("Number of chains:             %s "%len(self.chains.keys()))
+          print("Number of residues and frame: %s    %s"%(self.seqlength ,self.timefrm))
+          print("Number of chains:             %s "%len(self.chains.keys()))
 
       def GetSeqInd(self):
           """ Retrive the sequence by residue number"""
@@ -268,9 +361,13 @@ class PdbStruct(object):
           """ Retrive the sequence by residue name"""
           return [ i.resn for i in self.pdbdata ]
 
-      def GetRes(self, idx):
-          """ Retrive the residue object. As input the residue number should be given."""
-          return [ res for res in self.pdbdata if int(res.resi) == idx ][0]
+      def GetRes(self, resi , chain):
+          """ Retrive the residue object. As input the residue identifier number should be given."""
+          return [ res for res in self.pdbdata if int(res.resi) == resi and res.chain == chain ][0]
+
+      def GetRex(self, idx):
+          """ Retrive the residue object. As input the residue index should be given."""
+          return self.pdbdata[idx]
 
       def GetLig(self):
           """ Retrive the residue object. As input the residue number should be given."""
@@ -281,27 +378,19 @@ class PdbStruct(object):
               The assigned value corresponds to the average of B-factors of the
               considered atoms. The option atoms_to_consider take an array of atom name
               to consider in the assigment. Default is consider all atoms in residue"""
-
-          #def check_list_of_atoms(res,atoms_list):
-          #    atnames=''
-          #    if atoms_list is None: # consider all the atoms
-          #       atnames = res.atomnames
-          #    elif type(atoms_list) is list: # check if a list is given
-          #       atnames = atoms_list
-          #    else:
-          #      raise ListCheckError("The atoms_to_consider should be given as a list")
-          #    return atnames
-
-          data = []
+          data = [ ]
           for res in self.pdbdata:
               res_rfact = 0
-              atom_names = check_list_of_atoms(res,atoms_to_consider)
+              if not atoms_to_consider == None:
+                 atom_names = atoms_to_consider
+              else:
+                  atoms_names = res.atomnames
               for atm in atom_names:
-                  if hasattr(res, atm):
-                     atom_ob = getattr(res,atm)
-                     res_rfact += atom_ob.rfact
-                  else:
-                      raise NoAtomInResidueError("The residue %s%s in structure %s does not have atom %s"%(res.resi,res.resn,self.name,atm))
+                  try:
+                      atom_ob = res.GetAtom(atm)
+                      res_rfact += atom_ob.rfact
+                  except IndexError:
+                      res_rfact += 0.0
               data.append(res_rfact/float(len(atom_names)))
           return data
 
@@ -339,9 +428,9 @@ class PdbStruct(object):
 
       def GetDiheMain(self):
           data = []
-          for index in [ int(i.resi) for i in self.pdbdata ][1:-1]:
+          for index in [ int(i.resx) for i in self.pdbdata ][1:-1]:
               try:
-                 res = self.GetRes(index)
+                 res = self.GetRex(index)
                  data.append(np.array([res.phi,res.psi]))
               except:
                  data.append(np.array([0.0,0.0]))
@@ -349,16 +438,22 @@ class PdbStruct(object):
 
       def SetDiheMain(self):
           """ Assign the phi and psi angles residues in the molecule"""
-          for index in [ int(i.resi) for i in self.pdbdata ][1:-1]:
+          self.GetRex(0).SetDihe(0.0,0.0)
+          self.GetRex(self.seqlength-1).SetDihe(0.0,0.0)
+          for index in np.arange(1,self.seqlength-1): # make correction for chains
               try:
-                 res_pre = self.GetRes(index-1)
-                 res = self.GetRes(index)
-                 res_nex = self.GetRes(index+1)
+                 res_pre = self.GetRex(index-1)
+                 res = self.GetRex(index)
+                 res_nex = self.GetRex(index+1)
               except:
                  continue
-              phi = dihedral(getattr(res_pre,'C').coord,getattr(res,'N').coord,getattr(res,'CA').coord,getattr(res,'C').coord)
-              psi = dihedral(getattr(res,'N').coord,getattr(res,'CA').coord,getattr(res,'C').coord,getattr(res_nex,'N').coord)
-              self.GetRes(index).SetDihe(phi-180,psi-180)
+              phi = dihedral(res_pre.GetAtom('C').coord,res.GetAtom('N').coord,res.GetAtom('CA').coord,res.GetAtom('C').coord)
+              psi = dihedral(res.GetAtom('N').coord,res.GetAtom('CA').coord,res.GetAtom('C').coord,res_nex.GetAtom('N').coord)
+              if phi > 180:
+                 phi = phi-360
+              if psi > 180:
+                 psi = psi-360
+              self.GetRex(index).SetDihe(phi,psi)
 
       def SetRfactor(self , new_data):
           """ Asign external values to a pdb. Specific to put the new value in the B-factor value of the CA.
@@ -385,12 +480,12 @@ class PdbStruct(object):
 
       def UpdateCoord(self,newcoord):
            """ Update coordinates of protein structure """
-           if not newcoord.shape[0] == len(self.pdbdata[-1].atoms) :
+           if not newcoord.shape[0] == self.pdbdata[-1].atoms[-1].atom_number:
               print(" The suggested new coordinates are not in the same shape as the current data.")
-              print(" new : %s  current : %s "%(newcoord.shape,np.array(self.pdbdata).shape))
+              print(" new : %s  current : %s "%(newcoord.shape,self.pdbdata[-1].atoms[-1].atom_number))
               raise SystemExit("Nothing was done!!!")
            i = 0
-           for res in self.pdbdata:
+           for res in self:
                 for atom in res.atoms:
                     setattr(atom,"coord",newcoord[i])
                     i += 1
@@ -412,8 +507,7 @@ class PdbStruct(object):
              out_data = open('%s.pdb'%file_out_name,'w')
           out_data.write("REMARK %s writen by me. \n"%self.name)
           #for index in [ int(i.resi) for i in self.pdbdata ][1:-1]:
-          for index in [ int(i.resi) for i in self.pdbdata ]:
-              res = self.GetRes(index)
+          for res in self:
               for atn in res.atomnames:
                   atom = res.GetAtom(atn)
                   line = "ATOM"
@@ -428,14 +522,20 @@ class PdbStruct(object):
                   line += "%8.3f"%atom.coord[2]
                   line += "%6.2f"%atom.occup
                   line += "%6.2f"%atom.rfact
-                  line += "         "
-                  line += "%3s"%atom.element
+                  line += "           "
+                  line += "%-3s"%atom.element
                   out_data.write("%s\n"%line)
           if flag_trj:
              out_data.write("ENDMDL\n")
              return out_data
           else:
              out_data.write("END\n")
+
+      def getCoorArray(self,exclude=True):
+          if exclude:
+             return np.array([a.coord for res in self for a in res if not res.resn in excluded_res])
+          else:
+             return np.array([a.coord for res in self for a in res])
 
 class Trajectory(object):
       """Handles trajectory files. My trajectory file format. """
@@ -475,7 +575,7 @@ class Trajectory(object):
           self.current = self.end-1      # iterations
           self.frames = frames
 
-      def ReadTraj(self,file_to_read,every=1):
+      def ReadTraj(self,file_to_read,every=1,target_atoms=[]):
           fr = 0
           exfr = 0
           sav_fr = True
@@ -495,7 +595,7 @@ class Trajectory(object):
                       if exfr == every:
                          fr += 1
                          temp = PdbStruct('frame_%s'%fr,timefrm=fr)
-                         temp.AddPdbData(frame)
+                         temp.AddPdbData(frame,target_atoms)
                          #temp.PrintPDBSumary()
                          self.frames.append(temp)
                          exfr = 0
@@ -552,16 +652,21 @@ class Trajectory(object):
               resi = temp_ob.resi
               resn = temp_ob.resn
               chain = temp_ob.chain
-              data.append(Residue(resi,resn,chain))
+              data.append(Residue(resi,resn,chain,res_count))
               residue = data[res_count]
-              for atn in ['N','CA','C']:
+              valid_atoms = ['N','CA','C']
+              if residue.resn == 'ACE':
+                 valid_atoms = ['C']
+              if residue.resn == 'NME':
+                 valid_atoms = ['N']
+              for atn in valid_atoms:
                   atn_count += 1
                   temp_coor = []
                   temp_rfact = []
                   for i in set_frames:
                       fr = self.frames[i]
                       res = fr.GetRes(index)
-                      atom = getattr(res,atn)
+                      atom = res.GetAtom(atn)
                       temp_coor.append(getattr(atom,'coord'))
                       #temp_rfact.append((getattr(atom,'rfact') - store_dist_data[i][0])/store_dist_data[i][1])
                       temp_rfact.append((getattr(atom,'rfact')))
