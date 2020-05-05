@@ -3,10 +3,10 @@ import sys
 import numpy as np
 from numpy import pi
 #sys.path.append('/Users/marcelino/pdbmani/graphs')
-sys.path.append('/home/tholak/pdbmani/graphs')
+#sys.path.append('/home/tholak/pdbmani/graphs')
 import graph as mygraph
 #sys.path.append('/Users/marcelino/pdbmani/math_tricks')
-sys.path.append('/home/tholak/pdbmani/math_tricks')
+#sys.path.append('/home/tholak/pdbmani/math_tricks')
 from math_vect_tools import normalize_vec,dihedral
 
 dict_sybyl = {'C.3' : 4 , 'C.2'  : 3    , 'C.1': 2 , 'C.ar': 3,
