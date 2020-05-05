@@ -417,4 +417,3 @@ class Molmol2():
               outfile.write("TER\n")
               r_count += 1
               a_count += 1
-
