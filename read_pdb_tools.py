@@ -2,7 +2,8 @@ import numpy as np
 import numpy.linalg as np_linalg
 # metodo necesario para importar la libreria desde el repositorio #
 import sys
-sys.path.append('/Users/marcelino/pdbmani/math_tricks/')
+#sys.path.append('/Users/marcelino/pdbmani/math_tricks/')
+sys.path.append('/home/tholak/pdbmani/math_tricks/')
 from math_vect_tools import *
 from operations import *
 #                                     #                            #

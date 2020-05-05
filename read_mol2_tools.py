@@ -2,11 +2,11 @@
 import sys
 import numpy as np
 from numpy import pi
-sys.path.append('/Users/marcelino/pdbmani/graphs')
-#sys.path.append('/home/tholak/pdbmani/graphs')
+#sys.path.append('/Users/marcelino/pdbmani/graphs')
+sys.path.append('/home/tholak/pdbmani/graphs')
 import graph as mygraph
-sys.path.append('/Users/marcelino/pdbmani/math_tricks')
-#sys.path.append('/home/tholak/pdbmani/math_tricks')
+#sys.path.append('/Users/marcelino/pdbmani/math_tricks')
+sys.path.append('/home/tholak/pdbmani/math_tricks')
 from math_vect_tools import normalize_vec,dihedral
 
 dict_sybyl = {'C.3' : 4 , 'C.2'  : 3    , 'C.1': 2 , 'C.ar': 3,
@@ -418,37 +418,3 @@ class Molmol2():
               r_count += 1
               a_count += 1
 
-#def read_mol2_file(infile):
-#    found_bounds = False
-#    flag = False
-#    dict_coor = {}
-#    dict_name = {}
-#    dict_type = {}
-#    dict_bond = {}
-#    count = 0
-#    for line in open(infile,'r').readlines():
-#        line = line.split('\n')[0].split()
-#        if '@<TRIPOS>MOLECULE' in line:
-#            count += 1
-#            continue
-#        if '@<TRIPOS>BOND' in line:
-#            found_bounds = True
-#            continue
-#        if '@<TRIPOS>SUBSTRUCTURE' in line or count > 1:
-#            break
-#        if '@<TRIPOS>ATOM' in line and not found_bounds:
-#           flag = True
-#           continue
-#        if flag and not found_bounds:
-#           ndx = int(line[0])
-#           dict_coor[ndx] = np.array([ float(i) for i in line[2:5]])
-#           dict_name[ndx] = line[1]
-#           dict_type[ndx] = line[5]
-#        if found_bounds and count == 1:
-#           bond = line[1]+"_"+line[2]
-#           if line[3] in [ 'ar' , '2']:
-#              dict_bond[bond] = 1
-#           else:
-#              dict_bond[bond] = 0
-#
-#    return dict_coor,dict_name,dict_type,dict_bond
