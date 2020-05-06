@@ -1,10 +1,5 @@
 #!/usr/bin/env python
-import sys
 import numpy as np
-#sys.path.append('/Users/marcelino/pdbmani/')
-#sys.path.append('/Users/marcelino/pdbmani/math_tricks/')
-sys.path.append('/home/tholak/pdbmani/')
-sys.path.append('/home/tholak/pdbmani/math_tricks/')
 import read_pdb_tools as rpt
 import math_vect_tools as mvt
 

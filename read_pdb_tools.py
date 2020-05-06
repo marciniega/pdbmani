@@ -1,12 +1,8 @@
 import numpy as np
 import numpy.linalg as np_linalg
-# metodo necesario para importar la libreria desde el repositorio #
-import sys
-#sys.path.append('/Users/marcelino/pdbmani/math_tricks/')
-sys.path.append('/home/tholak/pdbmani/math_tricks/')
 from math_vect_tools import *
 from operations import *
-#                                     #                            #
+
 
 excluded_hetatms= ['SOL','HOH']
 excluded_res= ['ACE','NME']
@@ -119,7 +115,7 @@ class Residue(object):
           pos = n+h.transpose()[0]
           self.AddAtom('H',pos, '0.0', 0 , '0.0','H')
 
-      def getHDs(self):
+      def getHDs(self,debug=False):
           """ Name convection as found in gromacs amber99sb forcefield """
           dict_one_don = {'SER':('HG','OG'),'TYR':('HH','OH'),'THR':('HG1','OG1'),
                           'CYS':('HG','SG'),'GLU':('HE2','OE2'),'ASP':('HD2','OD2'),
@@ -134,77 +130,116 @@ class Residue(object):
               dh = normalize_vec(h-d)
               return (h,dh)
 
-          HDons = []
+          hdons = []
+          n_hdons = []
           #for atom in self.atoms:
           #   if atom.element == 'HD':
           #      HDons.append(atom.coord)
           if self.resn in [ 'PRO' ]:
              pass
           else:
-             HDons.append(set_h_mvec("H","N"))
+             hdons.append(set_h_mvec("H","N"))
+             n_hdons.append("%s_%s_%s"%(self.resn,self.resi,"H"))
 
           if self.resn in dict_one_don :
              if not self.resn in ['ASP','GLU','CYS']:
-                HDons.append(set_h_mvec(dict_one_don[self.resn][0],dict_one_don[self.resn][1]))
+                hdons.append(set_h_mvec(dict_one_don[self.resn][0],dict_one_don[self.resn][1]))
+                n_hdons.append("%s_%s_%s"%(self.resn,self.resi,dict_one_don[self.resn][0]))
              else:
                 h_count = len([ 1 for i in self if i.name[0]=='H' ])
                 if h_count > 1:
-                   HDons.append(set_h_mvec(dict_one_don[self.resn][0],dict_one_don[self.resn][1]))
+                   hdons.append(set_h_mvec(dict_one_don[self.resn][0],dict_one_don[self.resn][1]))
+                   n_hdons.append("%s_%s_%s"%(self.resn,self.resi,dict_one_don[self.resn][0]))
 
           if self.resn in dict_two_don :
-             HDons.append(set_h_mvec(dict_one_don[self.resn][0],dict_one_don[self.resn][1]))
+             hdons.append(set_h_mvec(dict_two_don[self.resn][0],dict_two_don[self.resn][1]))
+             n_hdons.append("%s_%s_%s"%(self.resn,self.resi,dict_two_don[self.resn][0]))
 
           if self.resn == 'ARG':
-             HDons.append(set_h_mvec("HH21","NH2"))
-             HDons.append(set_h_mvec("HH22","NH2"))
-             HDons.append(set_h_mvec("HH11","NH1"))
-             HDons.append(set_h_mvec("HH12","NH1"))
-          return HDons
+             hdons.append(set_h_mvec("HH21","NH2"))
+             hdons.append(set_h_mvec("HH22","NH2"))
+             hdons.append(set_h_mvec("HH11","NH1"))
+             hdons.append(set_h_mvec("HH12","NH1"))
+             n_hdons.append("%s_%s_%s"%(self.resn,self.resi,"HH21"))
+             n_hdons.append("%s_%s_%s"%(self.resn,self.resi,"HH22"))
+             n_hdons.append("%s_%s_%s"%(self.resn,self.resi,"HH11"))
+             n_hdons.append("%s_%s_%s"%(self.resn,self.resi,"HH12"))
+          if debug:
+             return n_hdons
+          else:
+             #return hdons
+             return [(hdons[i],n_hdons[i]) for i in range(len(n_hdons))]
 
-      def getHAcceptors(self):
+      def getHAcceptors(self,debug=False):
           """ Name convection as found in gromacs amber99sb forcefield """
-          dict_one_don = {'SER':'OG','TYR':'OH','THR':'OG1',
+          dict_one_acc = {'SER':'OG','TYR':'OH','THR':'OG1',
                           'CYS':'SG','GLU':'OE1','ASP':'OD1',
                           'ASN':'OD1','GLN':'OE1','HIS':'ND1'}
 
-          dict_two_don = {'GLU':'OE2','ASP':'OD2','HIS':'NE2'}
-          HAccs =[]
+          dict_two_acc = {'GLU':'OE2','ASP':'OD2','HIS':'NE2'}
+          haccs =[]
+          n_haccs =[]
           #for atom in self.atoms:
           #    if atom.element == 'OA' or atom.element == 'SA' or atom.element ==  'NA':
           #       HAccs.append(atom.coord)
-          HAccs.append(self.GetAtom("O").coord)
-          if self.resn in dict_one_don :
-             HAccs.append(self.GetAtom(dict_one_don[self.resn]).coord)
-          if self.resn in dict_two_don :
-             HAccs.append(self.GetAtom(dict_one_don[self.resn]).coord)
-          return HAccs
+          haccs.append(self.GetAtom("O").coord)
+          n_haccs.append("%s_%s_%s"%(self.resn,self.resi,"O"))
 
-      def getCations(self):
+          if self.resn in dict_one_acc :
+             haccs.append(self.GetAtom(dict_one_acc[self.resn]).coord)
+             n_haccs.append("%s_%s_%s"%(self.resn,self.resi,dict_one_acc[self.resn]))
+          if self.resn in dict_two_acc :
+             haccs.append(self.GetAtom(dict_two_acc[self.resn]).coord)
+             n_haccs.append("%s_%s_%s"%(self.resn,self.resi,dict_two_acc[self.resn]))
+          if debug:
+             return n_haccs
+          else:
+             #return haccs
+             return [(haccs[i],n_haccs[i]) for i in range(len(n_haccs))]
+
+      def getCations(self,debug=False):
           """ Name convection as found in gromacs amber99sb forcefield """
           atoms_charged = []
+          n_atoms_charged = []
           if self.resn == 'ARG':
              atoms_charged.append(np.array([ i.coord for i in self if i.name in ['CZ','NH1','NH2']]).mean(axis=0))
+             n_atoms_charged.append('%s_%s_%s'%(self.resn,self.resi,'CZ'))
           if self.resn == 'LYS':
              atoms_charged.append(self.GetAtom('NZ').coord)
+             n_atoms_charged.append('%s_%s_%s'%(self.resn,self.resi,'NZ'))
           if self.resn in [ 'HIS', 'HIP'] and len([1 for i in self if i.name in ['HD1','HE2']]) == 2 :
              atoms_charged.append(np.array([ i.coord for i in self if i.name in ['ND1','NE2']]).mean(axis=0))
+             n_atoms_charged.append('%s_%s_%s'%(self.resn,self.resi,'ND1'))
           if self.chain_start:
              atom_charge.append(self.GetAtom('N').coord)
-          return atoms_charged
+             n_atoms_charged.append('%s_%s_%s'%(self.resn,self.resi,'N'))
+          if debug:
+             return n_atoms_charged 
+          else:
+             #return atoms_charged
+             return [(atoms_charged[i],n_atoms_charged[i]) for i in range(len(n_atoms_charged))]
 
-      def getAnions(self):
+      def getAnions(self,debug=False):
           """ Name convection as found in gromacs amber99sb forcefield """
           atoms_charged = []
+          n_atoms_charged = []
           if self.resn == 'GLU':
              atoms_charged.append(np.array([ i.coord for i in self if i.name in ['CD','OE1','OE2']]).mean(axis=0) )
+             n_atoms_charged.append('%s_%s_%s'%(self.resn,self.resi,'CD'))
           if self.resn == 'ASP':
              atoms_charged.append(np.array([ i.coord for i in self if i.name in ['CG','OD1','OD2']]).mean(axis=0))
+             n_atoms_charged.append('%s_%s_%s'%(self.resn,self.resi,'CG'))
           if self.chain_end:
+             n_atoms_charged.append('%s_%s_%s'%(self.resn,self.resi,'C'))
              if 'OC1' in [ i.name for i in self ]:
                 atoms_charged.append(np.array([ i.coord for i in self if i.name in ['C','OC1','OC2']]).mean(axis=0))
              else:
                 atoms_charged.append(np.array([ i.coord for i in self if i.name in ['C','O','OXT']]).mean(axis=0)) # unique pymol exception
-          return atoms_charged
+          if debug:
+             return n_atoms_charged 
+          else:
+             #return atoms_charged
+             return [(atoms_charged[i],n_atoms_charged[i]) for i in range(len(n_atoms_charged))]
 
       def getGeometricCenter(self,section='all'):
           if section == 'all':
@@ -213,7 +248,7 @@ class Residue(object):
              exclude = ['N','CA','C','O']
           return np.mean(np.array([ i.coord for i in self.atoms if not i.name in exclude ]),axis=0)
 
-      def getAromaticData(self):
+      def getAromaticData(self,debug=False):
           """
           Returns the GeometricCenter and NormalVector of the benzene of Aromatic Residues.
           """
@@ -224,13 +259,18 @@ class Residue(object):
                            'HI'  : ['CG','CD2','NE2','CE1','ND1']
                          }
           if self.resn in ['TRP','TYR','PHE','HIS','HIE','HID','HIP']:
+             n_aro_data = []
+             aro_data = []
              if self.resn == 'TRP':
                 aro_atms = [ dic_aro_atms['TRP6'] , dic_aro_atms['TRP5'] ]
+                n_aro_data.append("%s_%s"%('TRP6',self.resi) )
+                n_aro_data.append("%s_%s"%('TRP5',self.resi) )
              if self.resn.find('HI')==0:
                 aro_atms = [ dic_aro_atms['HI'] ]
+                n_aro_data.append("%s_%s"%(self.resn,self.resi) )
              if self.resn in ['TYR','PHE'] :
                 aro_atms = [ dic_aro_atms[self.resn] ]
-             aro_data = []
+                n_aro_data.append("%s_%s"%(self.resn,self.resi))
              for aa in aro_atms:
                  ring_coord = []
                  for atom in self.atoms:
@@ -243,7 +283,11 @@ class Residue(object):
                  cross = np.cross(ring_coord[0]-center,ring_coord[1]-center)
                  data = (center,normalize_vec(cross))
                  aro_data.append(data)
-             return aro_data
+             if debug:
+                return n_aro_data
+             else:
+                #return aro_data
+                return [(aro_data[i],n_aro_data[i]) for i in range(len(n_aro_data))]
           else:
              pass
 
