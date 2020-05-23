@@ -2,12 +2,10 @@
 import sys
 import numpy as np
 from numpy import pi
-#sys.path.append('/Users/marcelino/pdbmani/graphs')
-#sys.path.append('/home/tholak/pdbmani/graphs')
 import graph as mygraph
-#sys.path.append('/Users/marcelino/pdbmani/math_tricks')
-#sys.path.append('/home/tholak/pdbmani/math_tricks')
 from math_vect_tools import normalize_vec,dihedral
+
+
 
 dict_sybyl = {'C.3' : 4 , 'C.2'  : 3    , 'C.1': 2 , 'C.ar': 3,
               'N.3' : 4 , 'N.2'  : 3    , 'N.1': 2 , 'N.ar': 3,
@@ -85,6 +83,14 @@ def find_num_aro_bonds(atmobj):
     except ValueError as e:
         print(e)
         sys.exit()
+
+def list_duplicates(seq):
+    """This returns the elements that appear more than once in a list.
+       The elements in the list should be int or str."""
+    seen = set()
+    seen_add = seen.add
+    seen_twice = set( x for x in seq if x in seen or seen_add(x) )
+    return list( seen_twice )           
 
 class Atom():
       def __init__(self,ndx,name,atype,coord,charge):
@@ -228,9 +234,11 @@ class Molmol2():
           self.setCycles()
           self.getAroCycles()
           self.setAroData()
+          self.findMultiAromatic()
           self.getHbs()
           self.getCharged()
           self.getPhobic()
+          self.findClusterHydrophobic()
 
       def addAtom(self,nx,nm,atp,crd,chrg):
           new_atom = Atom(nx,nm,atp,crd,chrg)
@@ -374,6 +382,12 @@ class Molmol2():
 
       def writePharPhore(self,name_out):
           outfile = open(name_out,'w')
+          sarn = len(self.donors)+len(self.acceptors)+1 # starting aromatic residue number 
+          for g in self.multi_aro:
+              outfile.write("REMARK connected aromatic cycles : %s\n"% ','.join([ str(c+sarn) for c in g]))
+          sprn = sarn+len(self.aro_data)+len(self.cations)+len(self.anions)+1 # starting phobic residue number 
+          for g in self.multi_pho:
+              outfile.write("REMARK connected phobic atoms : %s\n"% ','.join([ str(c+sprn) for c in g]))
           a_count = 1
           r_count = 1
           for a,v in self.donors:
@@ -418,3 +432,115 @@ class Molmol2():
               r_count += 1
               a_count += 1
 
+      def findMultiAromatic(self):
+          """Gets atoms on each aro cycle, groups the adjacent ones and sets them into groups if any. Prints on terminal and 
+          stores on text file with the same name as the .mol2 file
+          """
+          def find_adjacent(rings):
+              """ This function take the list cycles stored in self.aro_cycles
+                  and returns a list of pair of indexes (refering to the position 
+                  the input list) that are adjacent.""" 
+              #Goes through all but the last element in self.aro_cycles to avoid exceeding len(self.aro_cycles)
+              pairs = []
+              ch = -1
+              for cycle_hunt in rings[:-1]:    
+                  ch += 1
+                  cp = 0
+                  for cycle_prey in rings[1:]:
+                      cp += 1
+                      if cp>ch and any( atm in cycle_prey for atm in cycle_hunt ): # If one atom is shared, then 
+                         pairs.append([ch,cp])                                     # two rings are adjacent. 
+              return pairs 
+
+          def group_adjacent( pairs ):
+              """This function returns a list of cycles that are conected. 
+                 The list are indexes of self.aro_cycles """
+              groups = [pairs[0]]
+              if len(pairs) >  1:    
+                 for p in pairs[1:]:
+                     flag = False     
+                     cg = -1
+                     for g in groups:
+                         cg += 1
+                         if any(c in g for c in p): # if cycle index c is already in the group g, then 
+                            flag = True             # exit the loop and add c to g. Update the group list.
+                            break                   # if c is not found in any g, then the pair containing c
+                     if flag:                       # starts its own group.
+                        g.append(p[0])               
+                        g.append(p[1])              
+                        g = list(set(g))            
+                        groups[cg]= g              
+                     else:
+                        groups.append(p)
+
+                 cycles_in_pairs = list(set([ x for p in pairs for x in p ]))
+                 cycles_in_groups = [ x for g in groups for x in g ]
+              
+                 while not len(cycles_in_pairs) == len(cycles_in_groups): # each cycle index should belong to only one group. 
+                    repeated = list_duplicates(cycles_in_groups)          # If a cycle index appears in more than one group,
+                    for rp in repeated:                                   # then those groups should merge.   
+                        membership = [ ndx for ndx in range(len(groups)) if rp in groups[ndx] ]
+                        new_groups = [ groups[ndx] for ndx in range(len(groups)) if not ndx in membership ]
+                        ng = list(set([ c for ndx in membership for c in groups[ndx] ]))
+                        new_groups.append(ng)
+                        groups = new_groups
+                    cycles_in_groups = [ x for g in groups for x in g ]
+              return groups
+
+          if len(self.aro_cycles) > 1: # if the molecule has aro cycles
+             list_of_adj = find_adjacent(self.aro_cycles)
+             if len(list_of_adj):  # if there are adjacent cycles
+                grouped = group_adjacent(list_of_adj)
+             else:   
+                grouped = []
+          else:
+             grouped = []
+          self.multi_aro = grouped
+
+      def findClusterHydrophobic(self):
+          """Merge into one group all the hydrophobic atoms that are connected.
+          """
+          def group_phobic(phobics):
+              atm = self.getAtom(phobics[0])
+              groups[0] = [atm.ndx]+atm.neighbors
+              clust_ndx = 1
+              for a in phobics[1:]:
+                  atm = self.getAtom(a)
+                  net = [atm.ndx]+atm.neighbors
+                  flag = False               # exit the loop and add c to g. Update the group list.
+                  for k in groups:
+                      g = groups[k]
+                      if any(c in g for c in net): # if atom index c is already in the group g, then 
+                         flag = True               # exit the loop and add c to g. Update the group list.
+                         break                     # if c is not found in any g, then the network containing c
+                  if flag:                         # starts its own group.
+                     for c in net:
+                         g.append(c)
+                     g = list(set(g))            
+                     groups[k]= g              
+                  else:
+                     groups[clust_ndx] = net
+                     clust_ndx += 1
+
+              atms_in_groups = [ x for clust_ndx in groups for x in groups[clust_ndx] ]
+              while not len(phobic) == len(atms_in_groups):            # each atom index should belong to only one group. 
+                 repeated = list_duplicates(atms_in_groups)            # If a atom index appears in more than one group,
+                 for rp in repeated:                                   # then those groups should merge.   
+                     membership = [ clust_ndx for clust_ndx in groups if rp in groups[clust_ndx] ]
+                     new_groups = {}
+                     to_merge = []
+                     for clust_ndx in groups:
+                         if  not clust_ndx in membership:
+                             new_groups[clust_ndx] = groups[clust_ndx]
+                         else:
+                             to_merge += groups[clust_ndx]  
+                     new_groups[membership[0]] = to_merge
+                     groups = new_groups
+                 atms_in_groups = [ x for clust_ndx in groups for x in groups[clust_ndx] ]
+              return groups
+
+          if len(self.phobic) > 1:
+             list_of_cluster = group_phobic(self.phobic)
+          else:
+             list_of_cluster = []
+          self.multi_pho = list_of_cluster 
