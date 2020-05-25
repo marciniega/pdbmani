@@ -385,9 +385,16 @@ class Molmol2():
           sarn = len(self.donors)+len(self.acceptors)+1 # starting aromatic residue number 
           for g in self.multi_aro:
               outfile.write("REMARK connected aromatic cycles : %s\n"% ','.join([ str(c+sarn) for c in g]))
-          sprn = sarn+len(self.aro_data)+len(self.cations)+len(self.anions)+1 # starting phobic residue number 
-          for g in self.multi_pho:
-              outfile.write("REMARK connected phobic atoms : %s\n"% ','.join([ str(c+sprn) for c in g]))
+          
+          try:
+              sprn = sarn+len(self.aro_data)+len(self.cations)+len(self.anions) # starting phobic residue number 
+              for g in self.multi_pho:
+                  end = sprn+len(g)
+                  num = [ str(i) for i in range(sprn,end)]
+                  outfile.write("REMARK connected phobic atoms : %s\n"% ','.join(num))
+                  sprn = end
+          except ValueError:
+                  outfile.write("REMARK connected phobic atoms : -1\n")
           a_count = 1
           r_count = 1
           for a,v in self.donors:
@@ -502,11 +509,12 @@ class Molmol2():
           """
           def group_phobic(phobics):
               atm = self.getAtom(phobics[0])
-              groups[0] = [atm.ndx]+atm.neighbors
+              groups = {}
+              groups[0] = [atm.index] + [ n for n in atm.neighbors if n in phobics ] 
               clust_ndx = 1
               for a in phobics[1:]:
                   atm = self.getAtom(a)
-                  net = [atm.ndx]+atm.neighbors
+                  net = [atm.index] + [ n for n in atm.neighbors if n in phobics ] 
                   flag = False               # exit the loop and add c to g. Update the group list.
                   for k in groups:
                       g = groups[k]
@@ -523,7 +531,7 @@ class Molmol2():
                      clust_ndx += 1
 
               atms_in_groups = [ x for clust_ndx in groups for x in groups[clust_ndx] ]
-              while not len(phobic) == len(atms_in_groups):            # each atom index should belong to only one group. 
+              while not len(phobics) == len(atms_in_groups):           # each atom index should belong to only one group. 
                  repeated = list_duplicates(atms_in_groups)            # If a atom index appears in more than one group,
                  for rp in repeated:                                   # then those groups should merge.   
                      membership = [ clust_ndx for clust_ndx in groups if rp in groups[clust_ndx] ]
@@ -540,7 +548,11 @@ class Molmol2():
               return groups
 
           if len(self.phobic) > 1:
-             list_of_cluster = group_phobic(self.phobic)
+             pho_dic = group_phobic(self.phobic)
+             keys_more_to_less = sorted( pho_dic , key=lambda k: len(pho_dic[k]), reverse=True)
+             list_of_cluster = [ pho_dic[i] for i in keys_more_to_less ]
+             by_cluster_size= [ c for g in list_of_cluster for c in g ]
+             setattr(self,'phobic',by_cluster_size)
           else:
              list_of_cluster = []
           self.multi_pho = list_of_cluster 
