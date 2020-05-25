@@ -538,11 +538,11 @@ class Molmol2():
                      new_groups = {}
                      to_merge = []
                      for clust_ndx in groups:
-                         if  not clust_ndx in membership:
+                         if not clust_ndx in membership:
                              new_groups[clust_ndx] = groups[clust_ndx]
                          else:
                              to_merge += groups[clust_ndx]  
-                     new_groups[membership[0]] = to_merge
+                     new_groups[membership[0]] = set(to_merge)
                      groups = new_groups
                  atms_in_groups = [ x for clust_ndx in groups for x in groups[clust_ndx] ]
               return groups
