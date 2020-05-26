@@ -117,8 +117,8 @@ class Residue(object):
 
       def getHDs(self,debug=False):
           """ Name convection as found in gromacs amber99sb forcefield """
-          dict_one_don = {'SER':('HG','OG'),'TYR':('HH','OH'),'THR':('HG1','OG1'),
-                          'CYS':('HG','SG'),'GLU':('HE2','OE2'),'ASP':('HD2','OD2'),
+          dict_one_don = {'SER':('HG','OG'),  'TYR':('HH','OH'),   'THR':('HG1','OG1'),
+                          'CYS':('HG','SG'),  'GLU':('HE2','OE2'), 'ASP':('HD2','OD2'),
                           'TRP':('HE1','NE1'),'ASN':('HD21','ND2'),'GLN':('HE21','NE2'),
                           'ARG':('HE','NE')}
           dict_two_don = {'ASN':('HD22','ND2'),'GLN':('HE22','NE2')}
@@ -135,8 +135,9 @@ class Residue(object):
           if self.resn in [ 'PRO' ]:
              pass
           else:
-             hdons.append(set_h_mvec("H","N"))
-             n_hdons.append("%s_%s_%s"%(self.resn,self.resi,"H"))
+              if "H" in self.atomnames: # N-term case does not have it
+                  hdons.append(set_h_mvec("H","N"))
+                  n_hdons.append("%s_%s_%s"%(self.resn,self.resi,"H"))
 
           if self.resn in dict_one_don :
              if not self.resn in ['ASP','GLU','CYS']:
