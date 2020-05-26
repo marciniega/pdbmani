@@ -120,9 +120,8 @@ class Residue(object):
           dict_one_don = {'SER':('HG','OG'),'TYR':('HH','OH'),'THR':('HG1','OG1'),
                           'CYS':('HG','SG'),'GLU':('HE2','OE2'),'ASP':('HD2','OD2'),
                           'TRP':('HE1','NE1'),'ASN':('HD21','ND2'),'GLN':('HE21','NE2'),
-                          'HIS':('HD1','ND1'),'ARG':('HE','NE')}
-          dict_two_don = {'ASN':('HD22','ND2'),'GLN':('HE22','NE2'),
-                          'HIS':('HE2','NE2')}
+                          'ARG':('HE','NE')}
+          dict_two_don = {'ASN':('HD22','ND2'),'GLN':('HE22','NE2')}
 
           def set_h_mvec(h_name,d_name):
               h = self.GetAtom(h_name).coord
@@ -132,9 +131,7 @@ class Residue(object):
 
           hdons = []
           n_hdons = []
-          #for atom in self.atoms:
-          #   if atom.element == 'HD':
-          #      HDons.append(atom.coord)
+
           if self.resn in [ 'PRO' ]:
              pass
           else:
@@ -146,14 +143,28 @@ class Residue(object):
                 hdons.append(set_h_mvec(dict_one_don[self.resn][0],dict_one_don[self.resn][1]))
                 n_hdons.append("%s_%s_%s"%(self.resn,self.resi,dict_one_don[self.resn][0]))
              else:
-                h_count = len([ 1 for i in self if i.name[0]=='H' ])
-                if h_count > 1:
+                flag = False
+                if self.resn == 'ASP' and 'HD2' in self.atomnames: 
+                    flag = True
+                if self.resn == 'GLU' and 'HD2' in self.atomnames: 
+                    flag = True
+                if self.resn == 'CYS' and 'HG' in self.atomnames: 
+                    flag = True
+                if flag:    
                    hdons.append(set_h_mvec(dict_one_don[self.resn][0],dict_one_don[self.resn][1]))
                    n_hdons.append("%s_%s_%s"%(self.resn,self.resi,dict_one_don[self.resn][0]))
 
-          if self.resn in dict_two_don :
+          if self.resn in dict_two_don:
              hdons.append(set_h_mvec(dict_two_don[self.resn][0],dict_two_don[self.resn][1]))
              n_hdons.append("%s_%s_%s"%(self.resn,self.resi,dict_two_don[self.resn][0]))
+
+          if self.resn[:2] == 'HI':
+              if 'HD1' in self.atomnames: 
+                  hdons.append(set_h_mvec("HD1","ND1"))
+                  n_hdons.append("%s_%s_%s"%(self.resn,self.resi,"HD1"))
+              if 'HE2' in self.atomnames:
+                  hdons.append(set_h_mvec("HE2","NE2"))
+                  n_hdons.append("%s_%s_%s"%(self.resn,self.resi,"HE2"))
 
           if self.resn == 'ARG':
              hdons.append(set_h_mvec("HH21","NH2"))
