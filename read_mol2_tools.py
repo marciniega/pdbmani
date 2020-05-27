@@ -203,6 +203,8 @@ class Molmol2():
               if '@<TRIPOS>ATOM' in line and not found_bounds:
                  flag = True
                  continue
+              if flag and '@<TRIPOS>' in line[0]: # In case other information appear before the bonds
+                 flag = False 
               if flag and not found_bounds:
                  ndx = int(line[0])-1
                  coor = np.array([ float(i) for i in line[2:5]])
