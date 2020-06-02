@@ -26,6 +26,29 @@ class Atom(object):
           """ Re-name a given attribute."""
           setattr(self, property_to_change, new_value)
 
+      def writePdbAtom(self,resn,resc,resi,atomn,res_type="ATOM"):
+          """ Write a line in pdb format.
+          Example of line:
+          0         1         2         3         4         5         6         7
+          01234567890123456789012345678901234567890123456789012345678901234567890123456789
+          ATOM   1855  C   GLU D 250     -16.312 -74.893  -0.456  1.00133.59           C
+          """
+          line = "%-6s"%res_type
+          line += "%5s"%atomn
+          line += "%5s"%self.name
+          line += "%4s"%resn
+          line += "%2s"%resc
+          line += "%4s"%resi
+          line += "    "
+          line += "%8.3f"%self.coord[0]
+          line += "%8.3f"%self.coord[1]
+          line += "%8.3f"%self.coord[2]
+          line += "%6.2f"%self.occup
+          line += "%6.2f"%self.rfact
+          line += "           "
+          line += "%-3s"%self.element
+          return "%s\n"%line
+
 class Residue(object):
       """Store residue info
               Remember that the Atom Class is accessed through Residue.
@@ -73,6 +96,24 @@ class Residue(object):
           self.atomwithin = len(self.atomnames)
           self.current = 0
           self.end = self.atomwithin
+      
+      def delAtom(self,atomtodel):
+          atpos= self.atomnames.index(atomtodel)
+          nm = self.atomnames
+          nm.pop(atpos)
+          self.atomnames = nm
+          self.atomwithin = len(self.atomnames)
+          self.end = self.atomwithin
+          aa = self.atoms
+          aa.pop(atpos)
+          self.atoms = aa
+
+      def renameAtom(self,atomtorename,newname):
+          atpos= self.atomnames.index(atomtorename)
+          nm = self.atomnames
+          nm[atpos] = newname 
+          self.atomnames = nm
+          setattr(self.atoms[atpos],'name',newname)
 
       def GetMainChainCoord(self):
           """ Get coordinates of the mainchain atoms (N,CA,C) as numpy array."""
@@ -303,28 +344,19 @@ class Residue(object):
           else:
              pass
 
-#int test_add_h2n ( RowVector3f* bb_atoms ) {
-#     RowVector3f N = bb_atoms[1];
-#     RowVector3f C = (bb_atoms[0]-N).normalized();
-#     RowVector3f A = (bb_atoms[2]-N).normalized();
-#     RowVector3f H = bb_atoms[3]-N;
-#     RowVector3f T = A.cross(C);
-#     Matrix3f equ;
-#     Vector3f sol;
-#     float angle = cos(118.2*PI/180);
-#     equ << A[0],A[1],A[2],
-#            C[0],C[1],C[2],
-#            T[0],T[1],T[2];
-#     sol << angle,angle,0.0;
-#     Vector3f x = equ.colPivHouseholderQr().solve(sol);
-#     RowVector3f res;
-#     res = x.transpose();
-#     std::cout << "The norm is:\n" << res.norm() << std::endl;
-#     std::cout << "The \% error in the solution is:\n" << 100*(H-res).norm() << std::endl;
-#     std::cout << "The H position is:\n" << N+res << std::endl;
-#
-#     return 0;
-# }
+      def writePdbRes(self,resi='',atmi=''):
+          if resi == '':
+             resi = self.resi 
+          atn_count = -1
+          line = ''
+          for atom in self:
+              atn_count += 1
+              if atmi == '':
+                 atmn = atom.atom_number
+              else:
+                 atmn = atmi + atn_count
+              line += atom.writePdbAtom(self.resn,self.chain,resi,atmn)
+          return line
 
 class PdbStruct(object):
       """\n This class is defined to store a single pdb file.\n
@@ -563,13 +595,11 @@ class PdbStruct(object):
           if file_out_name is not None and not flag_trj:
              out_data = open('%s.pdb'%file_out_name,'w')
           out_data.write("REMARK %s writen by me. \n"%self.name)
-          #for index in [ int(i.resi) for i in self.pdbdata ][1:-1]:
           for res in self:
-              for atn in res.atomnames:
-                  atom = res.GetAtom(atn)
+              for atom in res:
                   line = "ATOM"
                   line += "%7s"%atom.atom_number
-                  line += "%5s"%atn
+                  line += "%5s"%atom.name
                   line += "%4s"%res.resn
                   line += "%2s"%res.chain
                   line += "%4s"%res.resi
