@@ -34,8 +34,8 @@ class Atom(object):
           ATOM   1855  C   GLU D 250     -16.312 -74.893  -0.456  1.00133.59           C
           """
           line = "%-6s"%res_type
-          line += "%5s"%atomn
-          line += "%5s"%self.name
+          line += "%5s"%atomn 
+          line += "  %-3s"%self.name #the whitespaces is important
           line += "%4s"%resn
           line += "%2s"%resc
           line += "%4s"%resi
