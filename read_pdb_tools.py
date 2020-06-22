@@ -38,8 +38,13 @@ class Atom(object):
           line += "  %-3s"%self.name #the whitespaces is important
           line += "%4s"%resn
           line += "%2s"%resc
-          line += "%4s"%resi
-          line += "    "
+          try:
+              res_line = int(resi)
+              line += "%4s"%resi
+              line += "    "
+          except ValueError:
+              line += "%5s"%resi
+              line += "   "
           line += "%8.3f"%self.coord[0]
           line += "%8.3f"%self.coord[1]
           line += "%8.3f"%self.coord[2]
@@ -54,7 +59,7 @@ class Residue(object):
               Remember that the Atom Class is accessed through Residue.
               Atoms are defined as attributes of the Residue."""
       def __init__(self, resi, resn, chain, resx ,atomnames=None,atoms=None):
-          self.resi = int(resi)
+          self.resi = resi
           self.resn = resn
           self.chain = chain
           self.resx = resx # index on the pdbdata array
@@ -408,7 +413,7 @@ class PdbStruct(object):
                  r_fact = float(line[60:66])
                  chain = "".join(line[20:22].split())
                  occup = float("".join(line[57:61].split()))
-                 resi = int(line[22:26])
+                 resi = line[22:27].replace(" ","")
                  resn = line[17:20]
                  aton = line[12:17].replace(" ","")
                  chain = line[21]
@@ -442,17 +447,13 @@ class PdbStruct(object):
           print("Number of residues and frame: %s    %s"%(self.seqlength ,self.timefrm))
           print("Number of chains:             %s "%len(self.chains.keys()))
 
-      def GetSeqInd(self):
-          """ Retrive the sequence by residue number"""
-          return [ int(i.resi) for i in self.pdbdata ]
-
       def GetResSeq(self):
           """ Retrive the sequence by residue name"""
           return [ i.resn for i in self.pdbdata ]
 
       def GetRes(self, resi , chain):
           """ Retrive the residue object. As input the residue identifier number should be given."""
-          return [ res for res in self.pdbdata if int(res.resi) == resi and res.chain == chain ][0]
+          return [ res for res in self.pdbdata if res.resi == str(resi) and res.chain == chain ][0]
 
       def GetRex(self, idx):
           """ Retrive the residue object. As input the residue index should be given."""
@@ -499,14 +500,14 @@ class PdbStruct(object):
              raise SystemExit("Input should be a list (the residues of interest)")
 
           if setofinterest == None:
-             indexes = self.GetSeqInd()
+             indexes = range(len(self.pdbdata))
           else:
              indexes = [ int(i) for i in setofinterest ]
 
           data = []
           atm = atoms_to_consider
-          for idx in indexes:
-              res = self.GetRes(idx)
+          for res in self:
+            if res.resx in indexes:
               if hasattr(res, atm):
                  atom_ob = getattr(res,atm)
                  atom_pos = np.array(atom_ob.coord)
@@ -547,13 +548,12 @@ class PdbStruct(object):
       def SetRfactor(self , new_data):
           """ Asign external values to a pdb. Specific to put the new value in the B-factor value of the CA.
               DOTO: make it more general, to each atom??? """
-          sequence = self.GetSeqInd()
-          if not len(sequence) == len(new_data):
+          if not len(self.pdbdata) == len(new_data):
              raise NoSameLengthError(\
-                        "The current structure has %s residues and data that you want to assign has %s !!!"%(len(sequence), len(new_data)))
+                        "The current structure has %s residues and data that you want to assign has %s !!!"%(len(self.pdbdata), len(new_data)))
           c = 0
-          for index in sequence:
-              self.GetRes(index).UpDateValue('rfact',new_data[c])
+          for res in self:
+              res.UpDateValue('rfact',new_data[c])
               c += 1
 
       def RenameResidues(self, list_of_new_names):
@@ -734,8 +734,7 @@ class Trajectory(object):
               b_fact_data = self.frames[j].GetSeqRfact(['N','CA','C'])
               store_dist_data[j] = (np.average(b_fact_data),np.std(b_fact_data))
 
-          for index in self.frames[0].GetSeqInd():
-              temp_ob = self.frames[0].GetRes(index)
+          for temp_ob in self.frames[0]:
               resi = temp_ob.resi
               resn = temp_ob.resn
               chain = temp_ob.chain
@@ -752,7 +751,7 @@ class Trajectory(object):
                   temp_rfact = []
                   for i in set_frames:
                       fr = self.frames[i]
-                      res = fr.GetRes(index)
+                      res = fr.GetRex(temp_ob.resx)
                       atom = res.GetAtom(atn)
                       temp_coor.append(getattr(atom,'coord'))
                       #temp_rfact.append((getattr(atom,'rfact') - store_dist_data[i][0])/store_dist_data[i][1])
