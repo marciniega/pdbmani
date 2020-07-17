@@ -163,8 +163,8 @@ class Residue(object):
 
       def getHDs(self,debug=False):
           """ Name convection as found in gromacs amber99sb forcefield """
-          dict_one_don = {'SER':('HG','OG'),  'TYR':('HH','OH'),   'THR':('HG1','OG1'),
-                          'CYS':('HG','SG'),  'GLU':('HE2','OE2'), 'ASP':('HD2','OD2'),
+          dict_one_don = {'SER':('HG','OG')  ,'TYR':('HH','OH')   , 'THR':('HG1','OG1'),
+                          'CYS':('HG','SG')  ,'GLU':('HE2','OE2') , 'ASP':('HD2','OD2'),
                           'TRP':('HE1','NE1'),'ASN':('HD21','ND2'),'GLN':('HE21','NE2'),
                           'ARG':('HE','NE')}
           dict_two_don = {'ASN':('HD22','ND2'),'GLN':('HE22','NE2')}
@@ -235,11 +235,10 @@ class Residue(object):
                           'ASN':'OD1','GLN':'OE1','HIS':'ND1'}
 
           dict_two_acc = {'GLU':'OE2','ASP':'OD2','HIS':'NE2'}
+
           haccs =[]
           n_haccs =[]
-          #for atom in self.atoms:
-          #    if atom.element == 'OA' or atom.element == 'SA' or atom.element ==  'NA':
-          #       HAccs.append(atom.coord)
+
           haccs.append(self.GetAtom("O").coord)
           n_haccs.append("%s_%s_%s"%(self.resn,self.resi,"O"))
 
@@ -252,7 +251,116 @@ class Residue(object):
           if debug:
              return n_haccs
           else:
-             #return haccs
+             return [(haccs[i],n_haccs[i]) for i in range(len(n_haccs))]
+
+      def getHAcceptorsPDB(self,debug=False):
+          """ Name convection as found in gromacs amber99sb forcefield """
+          dict_one_acc = {'SER':('OG','CB'),'TYR':('OH','CZ'),'THR':('OG1','CB'),
+                          'CYS':('SG','CB'),'GLU':('OE1','CD'),'ASP':('OD1','CG'),
+                          'ASN':('OD1','CG'),'GLN':('OE1','CD'),}
+          dict_two_acc = {'GLU':('OE2','CD'),'ASP':('OD2','CG')}
+          
+          def h2n(n_coord,neigh_1,neigh_2,tar_angle):
+              n1 = normalize_vec(neigh_1 - n_coord)
+              n2 = normalize_vec(neigh_2 - n_coord)
+              t = np.cross(n1,n2)
+              angle = np.cos(tar_angle*np.pi/180.)
+              equ = np.array([[n2[0],n2[1],n2[2]],\
+                              [n1[0],n1[1],n1[2]],\
+                              [ t[0], t[1], t[2]]])
+              sol = np.array([[angle],[angle],[0.0]])
+              h = np_linalg.solve(equ,sol)
+              pos = n_coord+h.transpose()[0]
+              return pos
+
+          def set_h_mvec(h_name,d_name):
+              h = self.GetAtom(h_name).coord
+              d = self.GetAtom(d_name).coord
+              dh = normalize_vec(h-d)
+              return (h,dh)
+
+          def lp2carbonyl(c,ca,o):
+              n1 = normalize_vec(ca - c)
+              n2 = normalize_vec(o - c)
+              t = normalize_vec(np.cross(n1,n2))
+              equ = np.array([[n2[0],n2[1],n2[2]],\
+                              [n1[0],n1[1],n1[2]],\
+                              [ t[0], t[1], t[2]]])
+              dev = (angle(n1,n2)*180./np.pi)-120.0
+              ang = np.cos(60.*np.pi/180.)
+              ang1 = np.cos((60.+dev)*np.pi/180.)
+              ang2 = np.cos((180+dev)*np.pi/180.)
+
+              sol1 = np.array([[ang1],[ang],[0.0]])
+              h1 = np_linalg.solve(equ,sol1)
+              pos1 = o+h1.transpose()[0]
+              #print( 'ATOM      4  O   MET A  10    '+''.join( ['%8.3f'%i for i in pos])+'  0.00 23.46           O   ')
+              #r=angle(n1,h.transpose()[0])*180./np.pi
+              sol2 = np.array([[ang],[ang2],[0.0]])
+              h2 = np_linalg.solve(equ,sol2)
+              pos2 = o+h2.transpose()[0]
+              #print( 'ATOM      5  O   MET A  11    '+''.join( ['%8.3f'%i for i in pos])+'  0.00 23.46           O   ')
+              #s=angle(n2,h.transpose()[0])*180/np.pi
+              #print("%.2f  %.2f"%(r,s))
+              return [(pos1,normalize_vec(pos1-o)),(pos2,normalize_vec(pos2-o))] 
+
+          haccs =[]
+          n_haccs =[]
+
+          if "O" in self.atomnames: # N-term case does not have it
+             cblp = lp2carbonyl(self.GetAtom('C').coord,self.GetAtom('CA').coord,self.GetAtom('O').coord)    
+             haccs.append(cblp[0])
+             n_haccs.append("%s_%s_%s"%(self.resn,self.resi,"O"))
+             haccs.append(cblp[1])
+             n_haccs.append("%s_%s_%s"%(self.resn,self.resi,"O"))
+
+          if self.resn in dict_one_acc:
+             haccs.append(set_h_mvec(dict_one_acc[self.resn][0],dict_one_acc[self.resn][1]))
+             n_haccs.append("%s_%s_%s"%(self.resn,self.resi,dict_one_acc[self.resn][0]))
+          if self.resn in dict_two_acc:
+             haccs.append(set_h_mvec(dict_two_acc[self.resn][0],dict_two_acc[self.resn][1]))
+             n_haccs.append("%s_%s_%s"%(self.resn,self.resi,dict_two_acc[self.resn][0]))
+
+          if self.resn in ['ASP','ASN']:
+             cblp = lp2carbonyl(self.GetAtom('CG').coord,self.GetAtom('CB').coord,self.GetAtom('OD1').coord)    
+             haccs.append(cblp[0])
+             n_haccs.append("%s_%s_%s"%(self.resn,self.resi,"OD1"))
+             haccs.append(cblp[1])
+             n_haccs.append("%s_%s_%s"%(self.resn,self.resi,"OD1"))
+             if self.resn in ['ASP']:
+                cblp = lp2carbonyl(self.GetAtom('CG').coord,self.GetAtom('CB').coord,self.GetAtom('OD2').coord)    
+                haccs.append(cblp[0])
+                n_haccs.append("%s_%s_%s"%(self.resn,self.resi,"OD2"))
+                haccs.append(cblp[1])
+                n_haccs.append("%s_%s_%s"%(self.resn,self.resi,"OD2"))
+
+          if self.resn in ['GLU','GLN']:
+             cblp = lp2carbonyl(self.GetAtom('CD').coord,self.GetAtom('CG').coord,self.GetAtom('OE1').coord)    
+             haccs.append(cblp[0])
+             n_haccs.append("%s_%s_%s"%(self.resn,self.resi,"OE1"))
+             haccs.append(cblp[1])
+             n_haccs.append("%s_%s_%s"%(self.resn,self.resi,"OE1"))
+             if self.resn in ['GLU']:
+                cblp = lp2carbonyl(self.GetAtom('CD').coord,self.GetAtom('CG').coord,self.GetAtom('OE2').coord)    
+                haccs.append(cblp[0])
+                n_haccs.append("%s_%s_%s"%(self.resn,self.resi,"OE2"))
+                haccs.append(cblp[1])
+                n_haccs.append("%s_%s_%s"%(self.resn,self.resi,"OE2"))
+
+
+          if self.resn in ['HIS','HID','HIE','HIP']:
+             nd = h2n(self.GetAtom('ND1').coord,self.GetAtom('CG').coord,self.GetAtom('CE1').coord,120.0)     
+             ne = h2n(self.GetAtom('NE2').coord,self.GetAtom('CE1').coord,self.GetAtom('CD2').coord,120.0)
+             vn_nd =normalize_vec(nd-self.GetAtom('ND1').coord)
+             vn_ne =normalize_vec(ne-self.GetAtom('NE2').coord)
+             haccs.append((self.GetAtom('ND1').coord,vn_nd))
+             n_haccs.append("%s_%s_%s"%(self.resn,self.resi,'ND1'))
+             haccs.append((self.GetAtom('NE2').coord,vn_ne))
+             n_haccs.append("%s_%s_%s"%(self.resn,self.resi,'NE2'))
+
+          if debug:
+             return n_haccs
+          else:
              return [(haccs[i],n_haccs[i]) for i in range(len(n_haccs))]
 
       def getCations(self,debug=False):
@@ -412,7 +520,7 @@ class PdbStruct(object):
                  coord = [float(line[30:38]),float(line[38:46]),float(line[46:54])]
                  r_fact = float(line[60:66])
                  chain = "".join(line[20:22].split())
-                 occup = float("".join(line[57:61].split()))
+                 occup = float("".join(line[56:60].split()))
                  resi = line[22:27].replace(" ","")
                  resn = line[17:20]
                  aton = line[12:17].replace(" ","")
@@ -462,6 +570,13 @@ class PdbStruct(object):
       def GetLig(self):
           """ Retrive the residue object. As input the residue number should be given."""
           return [ res for res in self.pdbdata if res.resn == self.ligandname ][0]
+
+      def getChain(self, target_chain):
+          """ Retrive data from a specific chain. As input the residue number should be given."""
+          if not target_chain in self.chains:
+              print("The chain %s was not found in the structure."%target_chain)
+              sys.exit()
+          return [ res for res in self.pdbdata if res.chain == target_chain ]
 
       def GetSeqRfact(self,atoms_to_consider=None):
           """ Return an array of the B-factors, each residue has an assingment.

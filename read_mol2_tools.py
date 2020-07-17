@@ -252,6 +252,9 @@ class Molmol2():
       def getAtom(self,ndx):
           return self.atoms[ndx]
 
+      def getAtomByName(self,Aname):
+          return [ i for i in self if i.name == Aname ][0]
+
       def genMolGraph(self):
           adj_list_all_atms = self.getListOfPairs()
           g = mygraph.Graph(self.end)
