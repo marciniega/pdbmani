@@ -350,12 +350,16 @@ class Molmol2():
               if a.atype in ['O.3','O.2','O.co2','S.3','S.2','Se']:
                  accepts.append(a.index)
                  continue
+              if a.atype in ['N.1'] and a.nbonds == 3:
+                 accepts.append(a.index)
+                 continue
               if a.atype in ['N.2'] and a.nbonds < 3:
                  accepts.append(a.index)
                  continue
               if a.atype in ['N.ar','N.2'] and find_num_aro_bonds(a) < 3 and len(a.neighbors) == 2 :
                  accepts.append(a.index)
                  continue
+          print(accepts)
           self.acceptors = accepts
 
       def getCharged(self):
