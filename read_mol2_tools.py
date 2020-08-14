@@ -359,7 +359,6 @@ class Molmol2():
               if a.atype in ['N.ar','N.2'] and find_num_aro_bonds(a) < 3 and len(a.neighbors) == 2 :
                  accepts.append(a.index)
                  continue
-          print(accepts)
           self.acceptors = accepts
 
       def getCharged(self):
