@@ -5,8 +5,6 @@ from numpy import pi
 import graph as mygraph
 from math_vect_tools import normalize_vec,dihedral
 
-
-
 dict_sybyl = {'C.3' : 4 , 'C.2'  : 3    , 'C.1': 2 , 'C.ar': 3,
               'N.3' : 4 , 'N.2'  : 3    , 'N.1': 2 , 'N.ar': 3,
               'N.am': 4 , 'N.pl3': 4    , 'N.4': 4 , 'O.3' : 4,
@@ -240,6 +238,7 @@ class Molmol2():
           self.getHbs()
           self.getCharged()
           self.getPhobic()
+          self.setPhobicAndNonaroCycles() 
           self.findClusterHydrophobic()
 
       def addAtom(self,nx,nm,atp,crd,chrg):
@@ -390,9 +389,11 @@ class Molmol2():
           sarn = len(self.donors)+len(self.acceptors)+1 # starting aromatic residue number 
           for g in self.multi_aro:
               outfile.write("REMARK connected aromatic cycles : %s\n"% ','.join([ str(c+sarn) for c in g]))
-          
+          sprn = sarn+len(self.aro_data)+len(self.cations)+len(self.anions) # starting phobic residue number 
           try:
-              sprn = sarn+len(self.aro_data)+len(self.cations)+len(self.anions) # starting phobic residue number 
+              for g in self.phobic_cycles:
+                  outfile.write("REMARK hydrophobic cycles : %s\n"% ','.join([ str(c+sarn) for c in g]))
+                  sprn += 1
               for g in self.multi_pho:
                   end = sprn+len(g)
                   num = [ str(i) for i in range(sprn,end)]
@@ -437,12 +438,25 @@ class Molmol2():
               outfile.write("TER\n")
               r_count += 1
               a_count += 1
-          for a in self.phobic:
-              d = self.getAtom(a)
-              outfile.write("%s\n"%pdb_line(d.coord,a_count,"C",r_count,rs_nm="PHO"))
+          for c,a in enumerate(self.phocyc_data):
+              outfile.write("%s\n"%pdb_line(a,a_count,"Br",r_count,rs_nm="PHC"))
+              a_count += 1
+              for p in self.phobic_cycles[c]:
+                  d = self.getAtom(p)
+                  outfile.write("%s\n"%pdb_line(d.coord,a_count,"C",r_count,rs_nm="PHC"))
+                  a_count += 1
               outfile.write("TER\n")
               r_count += 1
-              a_count += 1
+          for c,a in enumerate(self.mulpho_data):
+              if len(self.multi_pho[c])>1:
+                 outfile.write("%s\n"%pdb_line(a,a_count,"I",r_count,rs_nm="PHO"))
+                 a_count += 1
+              for p in self.multi_pho[c]:
+                  d = self.getAtom(p)
+                  outfile.write("%s\n"%pdb_line(d.coord,a_count,"C",r_count,rs_nm="PHO"))
+                  a_count += 1
+              outfile.write("TER\n")
+              r_count += 1
 
       def findMultiAromatic(self):
           """Gets atoms on each aro cycle, groups the adjacent ones and sets them into groups if any. Prints on terminal and 
@@ -560,4 +574,43 @@ class Molmol2():
              setattr(self,'phobic',by_cluster_size)
           else:
              list_of_cluster = []
-          self.multi_pho = list_of_cluster 
+          setattr(self,'multi_pho',list_of_cluster)
+          setattr(self,'mulpho_data',[np.mean([self.getAtom(atm).coord for atm in grp],axis=0) for grp in list_of_cluster])
+
+
+      def setPhobicAndNonaroCycles(self):
+          """This function sets the hydrophobic cycles and the planar cycles that are not aromatics.
+             An hydrophobic cycle is consider as such if it contains a C.3 atom.
+             This function also rewrites the phobic list. This contains only the hydrophobic atoms
+             that are not in a cycle (and not next to a polar atom). """
+          phobic_cycles = []
+          planar_nonaro_cycles = []
+          phobic_coms = []
+          planar_nonaro_coms = []
+          for cyc in self.molgraph.cycles:
+              flag = 1
+              for aro_cyc in self.aro_cycles:
+                  if all( atm_ndx in aro_cyc for atm_ndx in cyc ):
+                     flag = 0
+                     break
+              if flag:
+                  cyc_coms = np.mean(np.array([ self.getAtom(atm_ndx).coord for atm_ndx in cyc ]),axis=0)
+                  if any( self.getAtom(atm_ndx).atype == 'C.3' for atm_ndx in cyc ):
+                     phobic_coms.append(cyc_coms)
+                     phobic_cycles.append(cyc)
+                  else:
+                     planar_nonaro_coms.append(cyc_coms)
+                     planar_nonaro_cycles.append(cyc)
+      
+          new_pho = []
+          for pho_atm in self.phobic:
+              if any(pho_atm in pho_cyc for pho_cyc in phobic_cycles):
+                 pass
+              else:
+                 new_pho.append(pho_atm)
+          setattr(self,'phobic_cycles',phobic_cycles)
+          setattr(self,'phocyc_data',phobic_coms)
+          setattr(self,'nonaro_cycles',planar_nonaro_cycles)
+          setattr(self,'nonarocyc_data',planar_nonaro_coms)
+          setattr(self,'phobic',new_pho)
+          
