@@ -74,3 +74,17 @@ def rmsd(mov, tar):
     pre_rmsd = (np.sum((mov - tar) ** 2, 1)).mean()
     rmsd_final = np.sqrt(pre_rmsd)
     return (rmsd_final)
+
+def rotation_angles(matriz_R,degrees=False):
+    eignvalues, eigenvectors = np.linalg.eig(matriz_R)
+    q = eigenvectors[:, np.argmax(eignvalues)]
+    q0, q1, q2, q3 = q[0], q[1], q[2], q[3]
+    phi = np.arctan2(2*((q0*q1)+(q2*q3)),1-2*(q1**2 +q2**2))
+    theta = np.arcsin(2*(q0*q2-q3*q1))
+    psi = np.arctan2(2*((q0*q3)+(q1*q2)),1-2*(q2**2+q3**2))
+    if degrees:
+       phi = phi*(180/np.pi)
+       theta = theta*(180/np.pi)
+       psi = psi*(180/np.pi)
+    return np.array([phi,theta,psi])
+
