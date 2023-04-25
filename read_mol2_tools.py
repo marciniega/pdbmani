@@ -617,3 +617,46 @@ class Molmol2():
           setattr(self,'nonarocyc_data',planar_nonaro_coms)
           setattr(self,'phobic',new_pho)
           
+      def writeMol2File(self,file_out_name=None,msg=None):
+          """Example of line:
+          0         1         2         3         4         5         6         7
+          01234567890123456789012345678901234567890123456789012345678901234567890123456789
+                1 C1         53.9720   16.3470  114.4140 C.ar   500 4HY1       -0.0346"""
+          if file_out_name is None:
+             file_out_name = self.name
+             out_data = open('%s.mol2'%file_out_name,'w')
+          if file_out_name is not None:
+             out_data = open('%s.mol2'%file_out_name,'w')
+          line = '@<TRIPOS>MOLECULE'
+          out_data.write("%s\n"%line)
+          out_data.write("%s\n"%self.name)
+          out_data.write("%4s %4s 0 0 0\n"%(len(self.atoms),len(self.bonds)))
+          out_data.write("SMALL\n")
+          out_data.write("GASTEIGER\n")
+          out_data.write("*****\n")
+          if msg == None:
+            out_data.write("This was writen by me.\n")
+          else:
+            out_data.write("%s\n"%msg)
+          line = '@<TRIPOS>ATOM'
+          out_data.write("%s\n"%line)
+          for ndx,atom in enumerate(self.atoms):
+              line = "%7s"%(ndx+1)
+              line += " %5s"%atom.name 
+              line += "%3s"%" "
+              line += " %9.4f"%atom.coord[0]
+              line += " %9.4f"%atom.coord[1]
+              line += " %9.4f"%atom.coord[2]
+              line += " %5s"%atom.atype
+              line += " %4s"%'1'
+              line += " %4s"%'LIG'
+              line += "%7s"%" "
+              line += "%7.4f"%atom.charge
+              out_data.write("%s\n"%line)
+          line = '@<TRIPOS>BOND'
+          out_data.write("%s\n"%line)
+          for ndx,bond in enumerate(self.bonds):
+              bp = [ int(i)+1  for i in bond.split("_") ]
+              bt = self.atoms[bp[0]-1].bonds[bond]
+              line = "   %4s  %4s  %4s  %s"%(ndx+1,bp[0],bp[1],bt)
+              out_data.write("%s\n"%line)
