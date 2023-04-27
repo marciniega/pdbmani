@@ -1,8 +1,6 @@
 import numpy as np
 import numpy.linalg as np_linalg
 from math_vect_tools import *
-from operations import *
-
 
 excluded_hetatms= ['SOL','HOH']
 excluded_res= ['ACE','NME']
@@ -161,6 +159,16 @@ class Residue(object):
           pos = n+h.transpose()[0]
           self.AddAtom('H',pos, '0.0', 0 , '0.0','H')
 
+      def getGeometricCenter(self,section='all',consider=None):
+          if section == 'all':
+             exclude = []
+          if section == 'side_chain':
+             exclude = ['N','CA','C','O']
+          if consider == None:
+             return np.mean(np.array([ i.coord for i in self.atoms if not i.name in exclude ]),axis=0)
+          else :
+             return np.mean(np.array([ i.coord for i in self.atoms if i.name in consider ]),axis=0)
+
       def getHDs(self,debug=False):
           """ Name convection as found in gromacs amber99sb forcefield """
           dict_one_don = {'SER':('HG','OG')  ,'TYR':('HH','OH')   , 'THR':('HG1','OG1'),
@@ -228,6 +236,59 @@ class Residue(object):
              #return hdons
              return [(hdons[i],n_hdons[i]) for i in range(len(n_hdons))]
 
+      def getHDsNoH(self,debug=False):
+          """ Name convection as found in gromacs amber99sb forcefield """
+          dict_one_don = {'SER':('HG','OG')  ,'TYR':('HH','OH')   , 'THR':('HG1','OG1'),
+                          'CYS':('HG','SG')  ,'GLU':('HE2','OE2') , 'ASP':('HD2','OD2'),
+                          'TRP':('HE1','NE1'),'ASN':('HD21','ND2'),'GLN':('HE21','NE2'),
+                          'ARG':('HE','NE')}
+          dict_two_don = {'ASN':('HD22','ND2'),'GLN':('HE22','NE2')}
+
+          def set_h_mvec(h_name,d_name):
+              h = self.GetAtom(h_name).coord
+              d = self.GetAtom(d_name).coord
+              dh = normalize_vec(h-d)
+              return (h,dh)
+
+          hdons = []
+          n_hdons = []
+
+          if self.resn in [ 'PRO' ]:
+             pass
+          else:
+              hdons.append(self.GetAtom("N").coord)
+              n_hdons.append("%s_%s_%s"%(self.resn,self.resi,"N"))
+
+          if self.resn in dict_one_don:
+             heavyatomname = dict_one_don[self.resn][1]
+             hdons.append(self.GetAtom(heavyatomname).coord)
+             n_hdons.append("%s_%s_%s"%(self.resn,self.resi,heavyatomname))
+
+          if self.resn in dict_two_don:
+             heavyatomname = dict_two_don[self.resn][1]
+             hdons.append(self.GetAtom(heavyatomname).coord)
+             n_hdons.append("%s_%s_%s"%(self.resn,self.resi,heavyatomname))
+
+          if self.resn[:2] == 'HI':
+             heavyatomname = 'ND1'
+             hdons.append(self.GetAtom(heavyatomname).coord)
+             n_hdons.append("%s_%s_%s"%(self.resn,self.resi,heavyatomname))
+             heavyatomname = 'NE2'
+             hdons.append(self.GetAtom(heavyatomname).coord)
+             n_hdons.append("%s_%s_%s"%(self.resn,self.resi,heavyatomname))
+
+          if self.resn == 'ARG':
+             heavyatomname = 'NH1'
+             hdons.append(self.GetAtom(heavyatomname).coord)
+             n_hdons.append("%s_%s_%s"%(self.resn,self.resi,heavyatomname))
+             heavyatomname = 'NH2'
+             hdons.append(self.GetAtom(heavyatomname).coord)
+             n_hdons.append("%s_%s_%s"%(self.resn,self.resi,heavyatomname))
+          if debug:
+             print(n_hdons)
+          else:
+             self.donors = [(hdons[i],np.array([0.,0.,0.])) for i in range(len(n_hdons))]
+
       def getHAcceptors(self,debug=False):
           """ Name convection as found in gromacs amber99sb forcefield """
           dict_one_acc = {'SER':'OG','TYR':'OH','THR':'OG1',
@@ -249,9 +310,9 @@ class Residue(object):
              haccs.append(self.GetAtom(dict_two_acc[self.resn]).coord)
              n_haccs.append("%s_%s_%s"%(self.resn,self.resi,dict_two_acc[self.resn]))
           if debug:
-             return n_haccs
+             print(n_haccs)
           else:
-             return [(haccs[i],n_haccs[i]) for i in range(len(n_haccs))]
+             self.acceptors = [haccs[i] for i in range(len(n_haccs))]
 
       def getHAcceptorsPDB(self,debug=False):
           """ Name convection as found in gromacs amber99sb forcefield """
@@ -385,34 +446,74 @@ class Residue(object):
              #return atoms_charged
              return [(atoms_charged[i],n_atoms_charged[i]) for i in range(len(n_atoms_charged))]
 
+      def getCationsNoH(self,debug=False):
+          """ Histide is not included """
+          """ Name convection as found in gromacs amber99sb forcefield """
+          dic_cations = { 'ARG': ['CZ','NH1','NH2'],
+                          'LYS': ['NZ'],
+                          #'HIS' : ['ND1','NE2'],
+                          'HIP' : ['ND1','NE2'],
+                          'end_1': ['N'],
+                        }
+          if not self.resn in dic_cations.keys() and not self.chain_start:
+             self.cations = None
+             return 
+          if self.resn in dic_cations.keys():
+             atoms_charged_info = dic_cations.get(self.resn,None)
+             posi_info = getGeometricCenter(consider=atoms_charged_info)
+             name_info = '%s_%s_%s'%(self.resn,self.resi,atoms_charged_info[0])
+             if debug:
+                print(name_info)
+             else:
+                self.cations = [posi_info]
+          if self.chain_start:
+             end_case = 'end_1'
+             atoms_charged_info = dic_cations.get(end_case,None)
+             posi_info = self.getGeometricCenter(consider=atoms_charged_info)
+             name_info = '%s_%s_%s'%(self.resn,self.resi,atoms_charged_info[0])
+             if debug:
+                print(name_info)
+             else:
+                 try:
+                    self.cations.append(posi_info)
+                 except AttributeError:
+                    self.cations = [posi_info]
+
       def getAnions(self,debug=False):
           """ Name convection as found in gromacs amber99sb forcefield """
-          atoms_charged = []
-          n_atoms_charged = []
-          if self.resn == 'GLU':
-             atoms_charged.append(np.array([ i.coord for i in self if i.name in ['CD','OE1','OE2']]).mean(axis=0) )
-             n_atoms_charged.append('%s_%s_%s'%(self.resn,self.resi,'CD'))
-          if self.resn == 'ASP':
-             atoms_charged.append(np.array([ i.coord for i in self if i.name in ['CG','OD1','OD2']]).mean(axis=0))
-             n_atoms_charged.append('%s_%s_%s'%(self.resn,self.resi,'CG'))
-          if self.chain_end:
-             n_atoms_charged.append('%s_%s_%s'%(self.resn,self.resi,'C'))
-             if 'OC1' in [ i.name for i in self ]:
-                atoms_charged.append(np.array([ i.coord for i in self if i.name in ['C','OC1','OC2']]).mean(axis=0))
+          dic_anions = { 'GLU': ['CD','OE1','CE2'],
+                         'ASP': ['CG','OD1','OD2'],
+                         'end_1': ['C','OC1','OC2'],
+                         'end_2': ['C','O','OXT'],
+                        }
+                  
+          if not self.resn in dic_anions.keys() and not self.chain_end:
+             self.anions = None
+             return 
+          if self.resn in dic_anions.keys():
+             atoms_charged_info = dic_anions.get(self.resn,None)
+             posi_info = getGeometricCenter(consider=atoms_charged_info)
+             name_info = '%s_%s_%s'%(self.resn,self.resi,atoms_charged_info[0])
+             if debug:
+                print(name_info)
              else:
-                atoms_charged.append(np.array([ i.coord for i in self if i.name in ['C','O','OXT']]).mean(axis=0)) # unique pymol exception
-          if debug:
-             return n_atoms_charged 
-          else:
-             #return atoms_charged
-             return [(atoms_charged[i],n_atoms_charged[i]) for i in range(len(n_atoms_charged))]
-
-      def getGeometricCenter(self,section='all'):
-          if section == 'all':
-             exclude = []
-          if section == 'side_chain':
-             exclude = ['N','CA','C','O']
-          return np.mean(np.array([ i.coord for i in self.atoms if not i.name in exclude ]),axis=0)
+                self.anions = [posi_info]
+          if self.chain_end:
+             try:
+                self.GetAtom('OC1')
+                end_case = 'end_1'
+             except IndexError:
+                end_case = 'end_2'
+             atoms_charged_info = dic_anions.get(end_case,None)
+             posi_info = self.getGeometricCenter(consider=atoms_charged_info)
+             name_info = '%s_%s_%s'%(self.resn,self.resi,atoms_charged_info[0])
+             if debug:
+                print(name_info)
+             else:
+                 try:
+                    self.anions.append(posi_info)
+                 except AttributeError:
+                    self.anions = [posi_info]
 
       def getAromaticData(self,debug=False):
           """
@@ -424,38 +525,154 @@ class Residue(object):
                            'PHE' : ['CG','CD1','CD2','CE1','CE2','CZ'],
                            'HI'  : ['CG','CD2','NE2','CE1','ND1']
                          }
-          if self.resn in ['TRP','TYR','PHE','HIS','HIE','HID','HIP']:
-             n_aro_data = []
-             aro_data = []
-             if self.resn == 'TRP':
-                aro_atms = [ dic_aro_atms['TRP6'] , dic_aro_atms['TRP5'] ]
-                n_aro_data.append("%s_%s"%('TRP6',self.resi) )
-                n_aro_data.append("%s_%s"%('TRP5',self.resi) )
-             if self.resn.find('HI')==0:
-                aro_atms = [ dic_aro_atms['HI'] ]
-                n_aro_data.append("%s_%s"%(self.resn,self.resi) )
-             if self.resn in ['TYR','PHE'] :
-                aro_atms = [ dic_aro_atms[self.resn] ]
-                n_aro_data.append("%s_%s"%(self.resn,self.resi))
-             for aa in aro_atms:
-                 ring_coord = []
-                 for atom in self.atoms:
-                     if atom.name in aa :
-                        ring_coord.append(atom.coord)
-                 ring_coord = np.array(ring_coord)
-                 if len(ring_coord) != len(aa):
-                    raise IncompleteResidue("Aromatic Residue incomplete!!!!")
-                 center = np.mean(ring_coord,axis=0)
-                 cross = np.cross(ring_coord[0]-center,ring_coord[1]-center)
-                 data = (center,normalize_vec(cross))
-                 aro_data.append(data)
-             if debug:
-                return n_aro_data
-             else:
-                #return aro_data
-                return [(aro_data[i],n_aro_data[i]) for i in range(len(n_aro_data))]
+          if not self.resn in ['TRP','TYR','PHE','HIS','HIE','HID','HIP']:
+             self.aro_data = None
+             return
+            
+          n_aro_data = []
+          aro_data = []
+
+          if self.resn == 'TRP':
+             aro_atms = [ dic_aro_atms['TRP6'] , dic_aro_atms['TRP5'] ]
+             n_aro_data.append("%s_%s"%('TRP6',self.resi) )
+             n_aro_data.append("%s_%s"%('TRP5',self.resi) )
+          if self.resn.find('HI')==0:
+             aro_atms = [ dic_aro_atms['HI'] ]
+             n_aro_data.append("%s_%s"%(self.resn,self.resi) )
+          if self.resn in ['TYR','PHE'] :
+             aro_atms = [ dic_aro_atms[self.resn] ]
+             n_aro_data.append("%s_%s"%(self.resn,self.resi))
+             
+          for aa in aro_atms:
+              ring_coord = []
+              for atom in self.atoms:
+                  if atom.name in aa :
+                     ring_coord.append(atom.coord)
+              ring_coord = np.array(ring_coord)
+              if len(ring_coord) != len(aa):
+                 raise IncompleteResidue("Aromatic Residue incomplete!!!!")
+              center = np.mean(ring_coord,axis=0)
+              cross = np.cross(ring_coord[0]-center,ring_coord[1]-center)
+              data = (center,normalize_vec(cross))
+              aro_data.append(data)
+          if debug:
+             print(n_aro_data)
           else:
-             pass
+             self.aro_data = [aro_data[i] for i in range(len(n_aro_data))]
+
+      def getPhobic(self,debug=False):
+          """ Function to identify the pharmacophoric features
+                of a residue."""
+          dict_of_res = {'THR':['CG2'],
+                         'HIS':['CB'],
+                         'ASN':['CB'],
+                         'ASP':['CB'],
+                         'ALA':['CB'],
+                         'TYR':['CB'],
+                         'PHE':['CB'],
+                         'TRP':['CB'],
+                         'ARG':['CB','CG'],
+                         'GLU':['CB','CG'],
+                         'GLN':['CB','CG'],
+                         'PRO':['CB','CG'],
+                         'LYS':['CB','CG','CD'],
+                         'VAL':['CB','CG1','CG2'],
+                         'ILE':['CB','CG1','CG2','CD1'],
+                         'LEU':['CB','CG','CD1','CD2'],
+                         'MET':['CB','CG','SD','CE']
+                         }
+          if debug:
+             print(dict_of_res.get(self.resn,None))
+          else:
+             self.phobic = dict_of_res.get(self.resn,None)
+
+      def GetPharPhoreLines(self,a_count=1,r_count=1):
+          def pdb_line(coor,at_nu="1",at_nm="C",rs_nu=1,rs_nm="XXX",ch="X"):
+              line = "ATOM"
+              line += "%7s"%at_nu
+              line += "%5s"%at_nm
+              line += "%4s"%rs_nm
+              line += "%2s"%ch
+              line += "%4s"%rs_nu
+              line += "    "
+              line += "%8.3f"%coor[0]
+              line += "%8.3f"%coor[1]
+              line += "%8.3f"%coor[2]
+              line += "%6.2f"%0.0
+              line += "%6.2f"%0.0
+              line += " "
+              line += "%3s"%at_nm
+              return line
+
+          list_of_phobics = ['ILE','VAL',
+                             'LEU','PRO',
+                             'MET','GLN',
+                             'GLU','ARG',
+                             'LYS']
+          out_lines = []
+          for v,a in self.donors:
+              line = pdb_line(v,a_count,"N",r_count,rs_nm="DON")
+              #print("%s"%line)
+              out_lines.append(line)
+              dh = v+a
+              if all( i != 0 for i in a ):
+                a_count += 1
+                line = pdb_line(dh,a_count,"H",r_count,rs_nm="DON")
+                #print("%s"%line)
+                out_lines.append(line)
+              r_count += 1
+              a_count += 1
+          if self.acceptors != None:
+             for v in self.acceptors:
+                 line = pdb_line(v,a_count,"O",r_count,rs_nm="ACC")
+                 #print("%s"%line)
+                 out_lines.append(line)
+                 r_count += 1
+                 a_count += 1
+          if self.aro_data != None:
+             for a,v in self.aro_data:
+                 line = pdb_line(a,a_count,"P",r_count,rs_nm="ARO")
+                 #print("%s"%line)
+                 out_lines.append(line)
+                 nv = a+v
+                 a_count += 1
+                 line = pdb_line(nv,a_count,"H",r_count,rs_nm="ARO")
+                 #print("%s"%line)
+                 out_lines.append(line)
+                 nv = a-v
+                 a_count += 1
+                 line = pdb_line(nv,a_count,"H",r_count,rs_nm="ARO")
+                 #print("%s"%line)
+                 out_lines.append(line)
+                 r_count += 1
+                 a_count += 1
+          if self.cations != None:
+             for v in self.cations:
+                 line = pdb_line(v,a_count,"Na",r_count,rs_nm="POS")
+                 #print("%s"%line)
+                 out_lines.append(line)
+                 r_count += 1
+                 a_count += 1
+          if self.anions != None:
+             for v in self.anions:
+                 line = pdb_line(v,a_count,"Cl",r_count,rs_nm="NEG")
+                 #print("%s"%line)
+                 out_lines.append(line)
+                 r_count += 1
+                 a_count += 1
+          if self.phobic != None:
+             for c,a in enumerate(self.phobic):
+                 d = self.GetAtom(a)
+                 line = pdb_line(d.coord,a_count,"C",r_count,rs_nm="PHO")
+                 #print("%s"%line)
+                 out_lines.append(line)
+                 a_count += 1
+                 if self.resn in list_of_phobics:
+                     continue
+                 r_count += 1
+             if self.resn in list_of_phobics:
+                 r_count += 1
+          return out_lines,a_count,r_count
 
       def writePdbRes(self,resi='',atmi=''):
           if resi == '':
@@ -470,6 +687,7 @@ class Residue(object):
                  atmn = atmi + atn_count
               line += atom.writePdbAtom(self.resn,self.chain,resi,atmn)
           return line
+
 
 class PdbStruct(object):
       """\n This class is defined to store a single pdb file.\n
